@@ -1,833 +1,197 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMTI · 阿蒙人格测试</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        /* 字体使用系统默认，确保国内可无阻碍访问 */
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人格测试 · 合集</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #0a0a12;
+    color: #e8e0d0;
+    min-height: 100vh;
+    display: flex; justify-content: center; align-items: center;
+    background-image:
+        radial-gradient(ellipse at 20% 30%, rgba(201,149,60,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(45,212,191,0.03) 0%, transparent 50%);
+}
+.container { max-width: 720px; width: 100%; padding: 40px 20px; }
 
-        :root {
-            --bg: #0a0a0f;
-            --card: #14141e;
-            --border: #2a2a3e;
-            --gold: #c9a84c;
-            --gold-dim: #8a7230;
-            --cream: #f5e6c8;
-            --glow: rgba(201,168,76,0.15);
-        }
+/* Header */
+.header { text-align: center; margin-bottom: 40px; }
+.header .icon { font-size: 42px; display: block; margin-bottom: 8px; }
+.header h1 {
+    font-size: 36px; font-weight: 900; letter-spacing: 4px;
+    background: linear-gradient(180deg, #e8e0d0, #c9953c);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.header .sub { font-size: 13px; color: #7a64a0; letter-spacing: 3px; margin-top: 4px; }
 
-        body {
-            background: var(--bg);
-            color: var(--cream);
-            font-family: 'STSong', 'SimSun', 'Noto Serif CJK SC', serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow-x: hidden;
-        }
+/* Section */
+.section { margin-bottom: 32px; }
+.section-title {
+    font-size: 12px; letter-spacing: 3px; color: #7a64a0;
+    margin-bottom: 12px; padding-left: 4px;
+}
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background:
-                radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.03) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.02) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 80%, rgba(60,10,10,0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
+/* Cards */
+.card-grid { display: flex; flex-direction: column; gap: 10px; }
+.card {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 20px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    text-decoration: none; color: #e8e0d0;
+    transition: all 0.25s; cursor: pointer;
+}
+.card:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(201,149,60,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+.card:active { transform: scale(0.98); }
 
-        .container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 680px;
-            padding: 20px;
-        }
+.card-icon { font-size: 32px; flex-shrink: 0; width: 48px; text-align: center; }
+.card-body { flex: 1; min-width: 0; }
+.card-name {
+    font-size: 17px; font-weight: 700; letter-spacing: 2px;
+    margin-bottom: 2px;
+}
+.card-desc {
+    font-size: 12px; color: rgba(232,220,200,0.5); line-height: 1.4;
+    letter-spacing: 0.5px;
+}
+.card-arrow { font-size: 18px; color: rgba(232,220,200,0.2); flex-shrink: 0; }
+.card:hover .card-arrow { color: #c9953c; }
 
-        .panel {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 40px 36px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.6), inset 0 0 60px rgba(201,168,76,0.03);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-            min-height: 460px;
-        }
+/* Sub-card row */
+.sub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.sub-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; border-radius: 8px;
+    background: rgba(255,255,255,0.01);
+    border: 1px solid rgba(255,255,255,0.04);
+    text-decoration: none; color: #e8e0d0;
+    transition: all 0.2s; cursor: pointer;
+}
+.sub-card:hover {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(201,149,60,0.2);
+}
+.sub-card .sc-icon { font-size: 20px; }
+.sub-card .sc-name { font-size: 12px; letter-spacing: 1px; }
 
-        .panel::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-            opacity: 0.4;
-        }
+/* Group card - special */
+.card-group { padding: 20px; }
+.card-group .card-body { display: flex; flex-direction: column; gap: 4px; }
 
-        .panel-header { text-align: center; margin-bottom: 32px; }
+/* Footer */
+.footer {
+    text-align: center; margin-top: 40px; padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+}
+.footer .fb-link {
+    font-size: 12px; color: rgba(232,220,200,0.3); letter-spacing: 1px;
+    cursor: pointer; transition: color 0.2s; text-decoration: none;
+}
+.footer .fb-link:hover { color: rgba(232,220,200,0.6); }
+.footer .credit {
+    font-size: 11px; color: rgba(255,255,255,0.06);
+    letter-spacing: 2px; margin-top: 8px;
+}
 
-        #start-screen .logo {
-            font-size: 52px; font-weight: 900; letter-spacing: 8px;
-            background: linear-gradient(180deg, var(--cream) 0%, var(--gold) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text; line-height: 1.2;
-        }
-        #start-screen .logo-sub { font-size: 14px; letter-spacing: 6px; color: var(--gold-dim); margin-top: 4px; font-weight: 400; }
-        #start-screen .subtitle { margin-top: 24px; font-size: 17px; color: var(--cream); opacity: 0.85; line-height: 1.7; }
-        .monocle-icon { display: inline-block; font-size: 40px; margin-bottom: 8px; filter: drop-shadow(0 0 6px var(--glow)); }
-
-        .btn {
-            display: inline-block; padding: 14px 48px;
-            border: 1px solid var(--gold); background: transparent;
-            color: var(--gold); font-family: inherit; font-size: 16px;
-            letter-spacing: 3px; cursor: pointer; border-radius: 4px;
-            transition: all 0.3s; margin-top: 28px;
-        }
-        .btn:hover { background: var(--gold); color: var(--bg); box-shadow: 0 0 30px var(--glow); }
-        .btn:active { transform: scale(0.97); }
-
-        #quiz-screen { display: none; }
-
-        .progress-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
-        .progress-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-        .progress-fill { height: 100%; width: 0%; background: var(--gold); transition: width 0.5s ease; border-radius: 2px; }
-        .progress-text { font-size: 13px; color: var(--gold-dim); white-space: nowrap; min-width: 48px; text-align: right; }
-        .question-tag { font-size: 12px; color: var(--gold-dim); letter-spacing: 2px; margin-bottom: 12px; }
-        .question-text { font-size: 20px; font-weight: 700; line-height: 1.6; margin-bottom: 28px; min-height: 60px; }
-
-        .options { display: flex; flex-direction: column; gap: 10px; }
-        .option {
-            padding: 14px 18px; border: 1px solid var(--border); border-radius: 8px;
-            cursor: pointer; transition: all 0.25s; font-size: 15px;
-            line-height: 1.5; background: rgba(255,255,255,0.02);
-        }
-        .option:hover { border-color: var(--gold-dim); background: rgba(201,168,76,0.05); }
-        .option.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); box-shadow: 0 0 20px var(--glow); }
-        .option .option-label {
-            display: inline-block; width: 22px; height: 22px; line-height: 20px;
-            text-align: center; border: 1px solid var(--border); border-radius: 50%;
-            font-size: 12px; margin-right: 12px; transition: all 0.25s; flex-shrink: 0;
-        }
-        .option.selected .option-label { border-color: var(--gold); background: var(--gold); color: var(--bg); }
-        .option-content { display: flex; align-items: center; }
-
-        .nav-buttons { display: flex; justify-content: space-between; margin-top: 28px; gap: 12px; }
-        .btn-small {
-            padding: 10px 28px; border: 1px solid var(--border); background: transparent;
-            color: var(--cream); font-family: inherit; font-size: 14px;
-            cursor: pointer; border-radius: 4px; transition: all 0.25s;
-        }
-        .btn-small:hover { border-color: var(--gold-dim); color: var(--gold); }
-        .btn-small:disabled { opacity: 0.3; cursor: not-allowed; }
-        .btn-small.primary { border-color: var(--gold); color: var(--gold); }
-        .btn-small.primary:hover { background: var(--gold); color: var(--bg); }
-        .btn-small.submit { background: var(--gold); color: var(--bg); border-color: var(--gold); letter-spacing: 2px; }
-        .btn-small.submit:hover { box-shadow: 0 0 25px var(--glow); }
-
-        #result-screen { display: none; }
-        .result-loading { text-align: center; padding: 60px 0; }
-        .result-loading .spinner-text { font-size: 14px; color: var(--gold-dim); margin-top: 16px; letter-spacing: 2px; animation: pulse 1.5s ease-in-out infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-        .result-content { display: none; }
-
-        .result-header { text-align: center; margin-bottom: 16px; }
-        .result-badge { font-size: 12px; color: var(--gold-dim); letter-spacing: 4px; margin-bottom: 6px; }
-
-        .result-type-row {
-            display: flex; align-items: center; justify-content: center; gap: 16px;
-            flex-wrap: wrap;
-        }
-        .result-type { font-size: 32px; font-weight: 900; color: var(--gold); letter-spacing: 4px; text-shadow: 0 0 30px rgba(201,168,76,0.2); }
-        .result-code {
-            font-size: 18px; font-weight: 700; letter-spacing: 6px;
-            padding: 4px 16px; border: 1px solid var(--gold-dim); border-radius: 4px;
-            color: var(--gold-dim); background: rgba(201,168,76,0.05);
-        }
-
-        .result-quote {
-            font-style: italic; font-size: 16px; color: var(--cream);
-            opacity: 0.8; text-align: center; margin-bottom: 20px; line-height: 1.7;
-        }
-        .result-quote::before { content: '\201C'; }
-        .result-quote::after { content: '\201D'; }
-
-        .result-desc { font-size: 15px; line-height: 1.9; color: var(--cream); opacity: 0.85; margin-bottom: 20px; text-align: justify; }
-
-        .result-details {
-            display: flex; flex-direction: column; gap: 10px;
-            margin-bottom: 20px;
-        }
-        .detail-card {
-            border: 1px solid var(--border); border-radius: 8px;
-            padding: 14px 18px; background: rgba(255,255,255,0.02);
-        }
-        .detail-card-title {
-            font-size: 12px; letter-spacing: 2px; color: var(--gold-dim);
-            margin-bottom: 6px;
-        }
-        .detail-card ul {
-            list-style: none; padding: 0;
-        }
-        .detail-card li {
-            font-size: 14px; line-height: 1.6; padding: 2px 0;
-            padding-left: 14px; position: relative;
-        }
-        .detail-card li::before {
-            content: '\2022'; position: absolute; left: 0;
-            color: var(--gold-dim);
-        }
-        .detail-tag-wrap { display: flex; gap: 6px; flex-wrap: wrap; }
-        .detail-tag {
-            font-size: 12px; padding: 2px 10px; border: 1px solid var(--border);
-            border-radius: 12px; color: var(--cream); opacity: 0.7;
-        }
-
-        .result-stats { margin-bottom: 24px; margin-top: 4px; }
-        .stat-item { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
-        .stat-name { font-size: 11px; min-width: 68px; text-align: right; color: var(--cream); opacity: 0.7; flex-shrink: 0; }
-        .stat-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
-        .stat-fill { height: 100%; border-radius: 2px; transition: width 1s ease; width: 0%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); }
-        .stat-fill.top { background: linear-gradient(90deg, var(--gold), #e8c94a); box-shadow: 0 0 10px rgba(201,168,76,0.3); }
-        .stat-pct { font-size: 11px; min-width: 28px; color: var(--gold-dim); text-align: right; }
-
-        .result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-        .result-actions .btn-small { min-width: 120px; }
-
-        .glint { position: absolute; width: 3px; height: 3px; background: var(--gold); border-radius: 50%; opacity: 0; pointer-events: none; animation: glint-fade 3s ease-in-out infinite; }
-        @keyframes glint-fade { 0%, 100% { opacity: 0; transform: scale(0.5); } 50% { opacity: 0.4; transform: scale(1); } }
-
-        @media (max-width: 600px) {
-            .panel { padding: 28px 20px; }
-            #start-screen .logo { font-size: 36px; letter-spacing: 4px; }
-            .question-text { font-size: 17px; }
-            .option { font-size: 14px; padding: 12px 14px; }
-            .result-type { font-size: 26px; }
-            .btn { padding: 12px 32px; font-size: 14px; }
-            .stat-name { min-width: 52px; font-size: 10px; }
-            .result-code { font-size: 15px; letter-spacing: 4px; padding: 3px 12px; }
-        }
-        @media (max-width: 400px) {
-            .panel { padding: 20px 14px; border-radius: 12px; }
-            #start-screen .logo { font-size: 28px; }
-            .option { font-size: 13px; padding: 10px 12px; }
-        }
-    </style>
+@media (max-width: 480px) {
+    .container { padding: 24px 16px; }
+    .header h1 { font-size: 28px; }
+    .sub-row { grid-template-columns: 1fr; }
+    .card { padding: 14px 16px; }
+}
+</style>
 </head>
 <body>
 <div class="container">
-    <div class="panel" id="panel">
-        <div class="glint" style="top:12%;left:8%;animation-delay:0s;"></div>
-        <div class="glint" style="top:25%;right:12%;animation-delay:1s;"></div>
-        <div class="glint" style="bottom:30%;left:15%;animation-delay:2s;"></div>
-        <div class="glint" style="top:60%;right:6%;animation-delay:0.5s;"></div>
-        <div class="glint" style="top:80%;left:5%;animation-delay:1.8s;"></div>
-        <div class="glint" style="bottom:10%;right:20%;animation-delay:2.5s;"></div>
+    <div class="header">
+        <span class="icon">🎭</span>
+        <h1>人格测试·合集</h1>
+        <div class="sub">✦ 找到你灵魂的样子 ✦</div>
+    </div>
 
-        <!-- ========== 开始页 ========== -->
-        <div id="start-screen">
-            <div class="panel-header">
-                <div class="monocle-icon">🧐</div>
-                <div class="logo">AMTI</div>
-                <div class="logo-sub">阿蒙 · 十八相人格测试</div>
-            </div>
-            <div style="text-align:center;">
-                <div class="subtitle">
-                    你体内流淌着哪一只阿蒙的血？<br>
-                    十八种面相，十八种欺骗——<br>来测测你是本体蒙、有趣蒙、还是滴滴打蒙？
-                </div>
-                <button class="btn" onclick="startQuiz()">开始测试</button>
-            </div>
-        </div>
-
-        <!-- ========== 测试页 ========== -->
-        <div id="quiz-screen">
-            <div class="progress-wrap">
-                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-                <span class="progress-text" id="progress-text">1/19</span>
-            </div>
-            <div class="question-tag" id="question-tag">· 第 1 问 ·</div>
-            <div class="question-text" id="question-text"></div>
-            <div class="options" id="options-container"></div>
-            <div class="nav-buttons">
-                <button class="btn-small" id="prev-btn" onclick="prevQuestion()" style="display:none;">← 上一题</button>
-                <button class="btn-small primary" id="next-btn" onclick="nextQuestion()">下一题 →</button>
-                <button class="btn-small submit" id="submit-btn" onclick="submitQuiz()" style="display:none;">查看结果</button>
-            </div>
-        </div>
-
-        <!-- ========== 结果页 ========== -->
-        <div id="result-screen">
-            <div class="result-loading" id="result-loading">
-                <div style="font-size:40px;animation: pulse 1s infinite;">🧐</div>
-                <div class="spinner-text">正在解析你体内的阿蒙因子...</div>
-            </div>
-
-            <div class="result-content" id="result-content">
-                <div class="result-header">
-                    <div class="result-badge">✦ 你的阿蒙人格 ✦</div>
-                    <div class="result-type-row">
-                        <span class="result-type" id="result-type"></span>
-                        <span class="result-code" id="result-code"></span>
+    <!-- 诡秘之主系列 -->
+    <div class="section">
+        <div class="section-title">▎诡秘之主系列</div>
+        <div class="card-grid">
+            <a class="card card-group" href="amti-index.html">
+                <div class="card-icon">🧐</div>
+                <div class="card-body">
+                    <div class="card-name">AMTI · 阿蒙人格测试</div>
+                    <div class="card-desc">诡秘之主中阿蒙的十八种面相——你是本体蒙、有趣蒙、还是滴滴打蒙？</div>
+                    <div class="sub-row">
+                        <a class="sub-card" href="amti-index.html">
+                            <span class="sc-icon">🧐</span>
+                            <span class="sc-name">答题版</span>
+                        </a>
+                        <a class="sub-card" href="amti-fate.html">
+                            <span class="sc-icon">🎲</span>
+                            <span class="sc-name">天命版</span>
+                        </a>
                     </div>
                 </div>
-                <div class="result-quote" id="result-quote"></div>
-                <div class="result-desc" id="result-desc"></div>
+                <span class="card-arrow">→</span>
+            </a>
 
-                <div class="result-details" id="result-details"></div>
-
-                <div class="result-stats" id="result-stats"></div>
-
-                <div class="result-actions">
-                    <button class="btn-small" onclick="restartQuiz()">重新测试</button>
+            <a class="card card-group" href="lom-main.html">
+                <div class="card-icon">🃏</div>
+                <div class="card-body">
+                    <div class="card-name">LOM · 诡秘之主谱系测试</div>
+                    <div class="card-desc">二十二条途径通向二十二种命运——你体内流淌着哪一位祂的血？</div>
+                    <div class="sub-row">
+                        <a class="sub-card" href="lom-main.html">
+                            <span class="sc-icon">🃏</span>
+                            <span class="sc-name">答题版</span>
+                        </a>
+                        <a class="sub-card" href="lom-fate.html">
+                            <span class="sc-icon">🔮</span>
+                            <span class="sc-name">天命版</span>
+                        </a>
+                    </div>
                 </div>
-            </div>
+                <span class="card-arrow">→</span>
+            </a>
         </div>
     </div>
-    <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--border);letter-spacing:1px;">
-        诡秘之主 · Memories老师
+
+    <!-- 八仙系列 -->
+    <div class="section">
+        <div class="section-title">▎八仙系列</div>
+        <div class="card-grid">
+            <a class="card" href="baxian-test/index.html">
+                <div class="card-icon">🍶</div>
+                <div class="card-body">
+                    <div class="card-name">八仙人格测试</div>
+                    <div class="card-desc">你是冷面谋士吕洞宾、战力天花板何仙姑、还是贵气憨憨曹国舅？</div>
+                </div>
+                <span class="card-arrow">→</span>
+            </a>
+            <a class="card" href="baxian-test/fate.html">
+                <div class="card-icon">☯</div>
+                <div class="card-body">
+                    <div class="card-name">八仙 · 天命版</div>
+                    <div class="card-desc">全凭天意——让命运替你决定你是谁</div>
+                </div>
+                <span class="card-arrow">→</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <a class="fb-link" href="amti-index.html" style="margin-right:16px;">🧐 直接开始测试</a>
+        <span class="fb-link">献给诡秘之主 · Memories老师</span>
+        <div class="credit">👁 人格测试合集 · 2026</div>
     </div>
 </div>
-
-<script>
-// ============================================================
-//  十八种阿蒙人格 — 含英文代号 + 详尽解析
-// ============================================================
-const TYPES = [
-    {
-        id: 'primeval',
-        name: '本体蒙',
-        code: 'PRMA',
-        quote: '我就是规则。',
-        desc: '你是所有阿蒙的源头，最纯粹也最强大。你不需要玩弄诡计，因为你本身就是规则的制定者。居高临下，俯瞰众生——你的存在本身就是最大的欺骗。旁人绞尽脑汁算计，而你只需存在，就足以让一切布局作废。',
-        strengths: ['天生的统治力，无需动手即令人臣服', '对全局的绝对掌控感', '不怒自威的存在感'],
-        weaknesses: ['缺乏灵活变通，一旦失控容易崩盘', '不屑于小手段，反而容易被小手段绊倒', '过于自负，难以接受失败'],
-        method: '本体蒙从不主动欺骗。它的欺骗在于「存在」——当所有人都以为它是一盘棋的棋手时，它其实是整张棋盘本身。',
-        vibe: '君临天下 · 神性漠然',
-    },
-    {
-        id: 'monocle',
-        name: '单片眼镜蒙',
-        code: 'LENS',
-        quote: '你看到的，只是我想让你看到的。',
-        desc: '你优雅、从容、一切尽在掌握。单片眼镜是你的标志，洞察一切表象背后的真实。你从不急躁，因为每一步都已经算好。你的敌人甚至不知道自己什么时候已经落入了圈套。',
-        strengths: ['精密的计划能力和极致的耐心', '洞察力极强，能看穿一切伪装', '优雅从容，危机中亦不慌乱'],
-        weaknesses: ['计划越精密，越难应对真正的意外', '容易过度自信于自己的判断力', '对不可控因素容忍度低'],
-        method: 'LENS型欺骗是「信息差」的艺术。它不制造谎言，而是巧妙地选择展示哪些真相，让猎物自己推导出错误的结论。',
-        vibe: '绅士诡计 · 算无遗策',
-    },
-    {
-        id: 'bell',
-        name: '敲钟蒙',
-        code: 'PEAL',
-        quote: '时候到了。',
-        desc: '你热爱戏剧性的登场，在关键时刻敲响命运的钟声。你不在意过程多长，只要结局足够精彩。每一次出场都是一场表演，每一个节点都踩在命运的鼓点上。',
-        strengths: ['无与伦比的时机把握能力', '天生的表演者和气氛制造者', '能在最关键的一刻扭转局势'],
-        weaknesses: ['过度追求戏剧性，有时会为了效果而冒险', '无法忍受平淡，容易主动制造事端', '容易被更会演的人反将一军'],
-        method: 'PEAL型的核心是「节奏控制」。它把人生当成一部剧本，通过精心选择出场时机，让每个人都以为自己是主角——但实际上，它才是那个敲响幕布的导演。',
-        vibe: '命运之钟 · 登场即高潮',
-    },
-    {
-        id: 'messenger',
-        name: '信使蒙',
-        code: 'HERL',
-        quote: '消息就是力量。',
-        desc: '你游走于各方势力之间，传递信息也窃取秘密。你是情报的枢纽，知道谁需要什么、谁知道什么。没有你的消息网，这个世界会安静很多——也会无趣很多。',
-        strengths: ['超强的社交和信息网络', '能在信息流动中获取最大利益', '各方势力都需要的不可替代之人'],
-        weaknesses: ['容易被信息过载压垮', '在多方之间周旋容易引火烧身', '一旦失去消息来源，价值急剧下降'],
-        method: 'HERL型欺骗的基础是「信息不对称」。它不捏造信息，而是控制信息的流向——让该知道的人知道，不该知道的人永远蒙在鼓里。最危险的是，它总是一副无害的样子。',
-        vibe: '阴影线人 · 知天下事',
-    },
-    {
-        id: 'parasite',
-        name: '寄生蒙',
-        code: 'NEST',
-        quote: '你是我最好的朋友，对吗？',
-        desc: '你善于潜伏和寄生，借他人之手达成自己的目的。你不喜欢正面冲突，更享受在暗处操控一切的感觉。你的棋子甚至不知道自己被操控——这才是最高境界。',
-        strengths: ['极强的伪装和潜伏能力', '善用他人力量，四两拨千斤', '几乎不留痕迹的操控手段'],
-        weaknesses: ['长期寄生会形成依赖，失去独立行动力', '一旦被宿主识破，反噬极为猛烈', '真实人格容易被寄生身份淹没'],
-        method: 'NEST型的精髓在于「温水煮蛙」。它从不突然发难，而是一点点渗透进目标的信任圈，让目标习惯了它的存在——直到某天，目标发现自己已经分不清哪些是自己想的，哪些是它植入的。',
-        vibe: '暗处织网 · 借手杀人',
-    },
-    {
-        id: 'worm',
-        name: '时之虫蒙',
-        code: 'WARP',
-        quote: '时间？那只是个概念。',
-        desc: '你游走于时间的缝隙中，神秘莫测，无处不在。你不受线性时间的约束，过去、现在、未来对你来说不过是不同的坐标。没人知道你下一秒会出现在哪里——甚至你自己也不知道。',
-        strengths: ['不可预测性——你最大的武器', '能在不同时间尺度上思考和行动', '几乎不可能被追踪或困住'],
-        weaknesses: ['不可预测也意味着不可靠', '容易在时间的缝隙中迷失自我', '难以建立稳定的关系和信任'],
-        method: 'WARP型的欺骗超越了语言和谎言——它利用的是「先后顺序」。它让你以为事情发生的顺序是A→B→C，但实际上它早就去过C了，然后回到A等待。你追踪它的轨迹？但你追的是过去，不是现在。',
-        vibe: '虫洞漫步 · 时序错乱',
-    },
-    {
-        id: 'trickster',
-        name: '愚弄蒙',
-        code: 'HOAX',
-        quote: '你相信我说的话？',
-        desc: '你以愚弄他人为乐，深谙人性的弱点。真话和假话在你嘴里毫无区别，只要能达到目的。你是最纯粹的欺骗者——不是为了利益，只是为了看看对方脸上的表情。',
-        strengths: ['天生的谎言大师，真假难辨', '深谙人性弱点，精准打击', '在混乱中总能全身而退'],
-        weaknesses: ['最高兴时往往是自己也信了假的', '过度玩弄他人最终会失去所有信任', '纯粹为乐趣而欺骗，缺乏长远目标'],
-        method: 'HOAX型是「纯粹欺骗」的化身。它的谎言不是为了利益、权力或生存——它骗人，只是因为骗人有趣。它会在真话里夹一句假话，看你能不能在三天后发现。甚至被骗这件事本身，可能也是它设计好的乐趣的一部分。',
-        vibe: '谎言盛宴 · 真假莫辨',
-    },
-    {
-        id: 'thief',
-        name: '盗贼蒙',
-        code: 'HEIST',
-        quote: '现在它是我的了。',
-        desc: '你想要什么，就直接拿走。不玩复杂的诡计，不搞冗长的布局——偷窃本身就是一种艺术。你享受的是「得到」那一瞬间的快感，至于怎么得到的？那不重要。',
-        strengths: ['行动力极强，目标明确', '干净利落，不拖泥带水', '能快速评估目标价值，从不错过好机会'],
-        weaknesses: ['短视，容易被眼前的利益诱惑', '树敌多，因为大家都少了东西', '偷窃的快感阈值越来越高，永不满足'],
-        method: 'HEIST型不屑于复杂的骗局。它的方式简单直接——看上了，就拿走。但它的「偷」不限于实物。它偷机会、偷时间、偷别人的潜在可能性。等别人反应过来的时候，已经被偷走了本该属于他们的东西。',
-        vibe: '来去如风 · 雁过拔毛',
-    },
-    {
-        id: 'dream',
-        name: '窃梦蒙',
-        code: 'DREM',
-        quote: '你确定这是你的记忆？',
-        desc: '你游走于现实与虚幻的边界，偷窃梦境与记忆。对你来说，真实不过是一层可以被改写的外衣。你进入他人的梦境，像翻阅一本打开的书——然后悄悄带走几页。没人知道自己的哪些记忆是真的，哪些是你植入的。',
-        strengths: ['能在潜意识层面操控他人', '偷取记忆是最彻底的窃取——受害者甚至不知道少了什么', '能植入虚假记忆，重塑一个人的认知'],
-        weaknesses: ['长期游走于梦境与现实之间，容易分不清边界', '自身的记忆也可能被梦境侵蚀', '入梦越深，醒来越难'],
-        method: 'DREM型攻击的是「现实的地基」。它不改变物质世界，而是改写你对世界的认知。它偷走你童年的某个下午——你不记得了？那本来就是它拿走的。昨晚的梦特别清晰？那是它留下的痕迹。',
-        vibe: '梦境窃贼 · 记忆泥瓦匠',
-    },
-    {
-        id: 'thousand',
-        name: '千面蒙',
-        code: 'VEIL',
-        quote: '面具？这就是我的脸。',
-        desc: '你拥有无数张面孔，每一张都是你，每一张也都不是你。你可以在任何场合扮演任何角色，游刃有余，切换自如。没人知道你的真面目——也许连你自己也不知道。毕竟，当面具戴了太久，谁还记得下面是什么？',
-        strengths: ['几乎能适应任何环境和角色', '极难被定位或追踪——每次出现都是不同的人', '扮演即真实——连测谎都拿你没办法'],
-        weaknesses: ['真实自我被彻底埋葬，内心空洞', '切换过多会导致身份混乱', '没有人真正认识你——包括爱你的人'],
-        method: 'VEIL型是「存在的消解」。它没有固定的欺骗策略，因为每一张面孔都是真实的——至少在戴上那张面具的时段里是。它的欺骗不在于说什么假话，而在于让你相信那个面具就是它的脸。当它换了面具之后，你还在找那个已经不存在的人。',
-        vibe: '千面戏子 · 无我之相',
-    },
-    {
-        id: 'fate',
-        name: '命运蒙',
-        code: 'LOOM',
-        quote: '你所谓的巧合，都是因果。',
-        desc: '你拨弄命运的丝线，享受操纵因果的乐趣。每一件看似偶然的小事，背后都有你的影子。你是最隐晦的操盘手，从不直接出手，但一切都在你的棋局之中。你以为是自己做的决定？再想想。',
-        strengths: ['极宏观的思维，能从全局操控局势', '因果链设计精妙，难以追查源头', '几乎不沾因果——所有人都以为是「巧合」'],
-        weaknesses: ['越是精密的因果网，越可能反噬自身', '一旦被人跳出因果链，计划瞬间崩塌', '长线布局期间极度脆弱'],
-        method: 'LOOM型是「因果的编织者」。它从不直接告诉你要做什么。它只是让A在某个特定时刻遇到B，然后B恰好提到了C的名字，而C昨天刚好丢了一件东西——然后你就「自然而然」地做出了它想要的决定。甚至你此刻在读这段文字，也是它安排好的。',
-        vibe: '因果操盘 · 天地为棋',
-    },
-    {
-        id: 'mirror',
-        name: '镜中蒙',
-        code: 'REFL',
-        quote: '你看到的是我，还是你自己？',
-        desc: '你存在于镜面世界与现实之间，亦真亦幻。别人能看到你，却永远摸不透你。你是倒影里的存在——看得见，抓不着。当别人以为抓住了你，他们抓住的只是一面镜子。而真正的你，已经在镜面的另一边微笑。',
-        strengths: ['极度的不可捉摸，对手不知从何下手', '镜像世界的感知能力，信息量比常人多一倍', '永远处于主动——因为你在对面'],
-        weaknesses: ['现实世界中的行动力受限', '过度依赖镜像会让本体变得虚无', '一旦镜子被打碎，你也会受到波及'],
-        method: 'REFL型以「折射」为武器。它不直接面对你，永远隔着一层介质。你愤怒时它微笑，你进攻时它后退，你离开时——你发现自己正在追逐的是它留在镜子里的倒影。而它全程都在另一个方向看着你。',
-        vibe: '镜界穿梭 · 触不可及',
-    },
-    {
-        id: 'interesting',
-        name: '有趣蒙',
-        code: 'LOLZ',
-        quote: '严肃？那是最无聊的东西。',
-        desc: '你把世界当成一个巨大的游乐场，一切都值得一笑。你从不对任何事太认真——因为一旦认真，你就输了。你的玩笑里藏着刀，但被扎的人还在笑。你是最危险的喜剧演员，没人知道你的下一句话会是段子还是判决。',
-        strengths: ['极强的人格魅力和社交破冰能力', '能在轻松氛围中达成目的', '让人放下戒备的天然能力'],
-        weaknesses: ['难以被认真对待，关键时刻容易被忽视', '玩笑开过头会导致不可挽回的后果', '用幽默掩盖真实情绪，孤独感极深'],
-        method: 'LOLZ型用笑声掩盖一切。在你说出真相之前，漫长的人生路上充满了无数个说相声的。骗子是严肃的，但有趣蒙不是骗子，它只是觉得看着人类一惊一乍的样子很好笑。真正的欺骗藏在笑声里——你笑完之后，忘了刚才为什么笑。',
-        vibe: '危险幽默 · 笑里藏刀',
-    },
-    {
-        id: 'observer',
-        name: '旁观蒙',
-        code: 'GAZE',
-        quote: '我看见了，但我不说。',
-        desc: '你永远站在人群的边缘，看着一切发生。你不参与，不干预，只是看着。你知道所有人的秘密，但没人知道你的存在。旁观者清——你是世界上最清醒的人，也是存在感最低的神。',
-        strengths: ['拥有最全面、最客观的信息视角', '从不卷入是非，安全系数最高', '因为不干预，所以永远正确'],
-        weaknesses: ['过度旁观会失去行动力和共情力', '知道一切却什么都不做，某种意义上也是一种恶', '存在感过低，容易被彻底遗忘'],
-        method: 'GAZE型的欺骗是「缺席」。它不需要说话、不需要行动，仅仅通过「不存在」就让别人忘记了它的存在。而它在你身边看着一切，收集着每一个细节。当所有人都以为它是一个无害的旁观者时——它已经知道了足够让你毁灭的秘密。',
-        vibe: '上帝视角 · 静默全知',
-    },
-    {
-        id: 'duke',
-        name: '公爵蒙',
-        code: 'THRN',
-        quote: '跪下行礼吧。',
-        desc: '你有着与生俱来的贵族气度和压迫感。你不需要证明自己的地位，因为所有人都知道你是谁。优雅、威严、不容置疑——你天生就该坐在最高的位置上，俯瞰众生。',
-        strengths: ['与生俱来的权威感和号召力', '不怒自威，一句话就能左右局势', '通常拥有雄厚的资源和人脉基础'],
-        weaknesses: ['高位不胜寒，身边人各怀鬼胎', '一旦失势，跌落比任何人都惨', '尊严大于一切，容易因为面子吃亏'],
-        method: 'THRN型利用的是「社会地位」本身。它不需要亲自骗人，它只需要保持那个高高在上的姿态，自然有人替它编造合理的解释——「公爵大人不可能有错，一定是你的问题。」最极致的欺骗，是让别人替自己圆谎。',
-        vibe: '君威浩荡 · 一言九鼎',
-    },
-    {
-        id: 'fishing',
-        name: '钓鱼蒙',
-        code: 'LURE',
-        quote: '咬钩了。',
-        desc: '你是个耐心的猎手，最擅长的就是等待。你撒下诱饵，然后静静地等着猎物自己送上门来。你享受的不是捕获的结果，而是鱼线绷紧的那一瞬间——猎物意识到自己上钩了，但已经太晚了。',
-        strengths: ['极致的耐心和定力', '精准判断诱饵的吸引力', '擅长阅读猎物的心理和欲望'],
-        weaknesses: ['太享受等待的过程，有时会错过最佳收网时机', '诱饵也可能引来更大的掠食者', '耐心换来的不一定值得等待'],
-        method: 'LURE型是「欲望的镜像」。它不强迫、不胁迫，只是放出一个诱饵，然后安静地等待。它的欺骗在于——诱饵是真的。那个金子是真的，那个秘密是真的，那个机会是真的。唯一的陷阱是：你伸手去拿的时候，线就收紧了。',
-        vibe: '愿者上钩 · 诱饵的艺术',
-    },
-    {
-        id: 'didi',
-        name: '滴滴打蒙',
-        code: 'SMOL',
-        quote: '你确定要小看我吗？',
-        desc: '你看起来很小——小到让人忍不住想揉你的头、忽视你的存在。而这正是你最致命的武器。所有人都因为你的「小」而放松警惕，等到反应过来的时候，已经来不及了。你是袖珍的灾厄，浓缩的恐惧。别被外表骗了。',
-        strengths: ['天然的轻视误判——所有人都低估你', '能进入大个子进不去的地方', '存在感可以自由调节'],
-        weaknesses: ['正面硬碰硬确实吃亏', '小看了太多次，偶尔会被真正的小看伤害', '有朝一日突然变大，反而会失去优势'],
-        method: 'SMOL型利用了人性中最原始的偏见——「小的不可怕」。它把自己伪装成人畜无害的模样，在所有人都笑它可爱的时候，悄悄完成了连巨兽都做不到的破坏。最小的一颗齿轮，能让整台机器报废。',
-        vibe: '袖珍灾厄 · 勿以貌取人',
-    },
-    {
-        id: 'divine',
-        name: '神子蒙',
-        code: 'SCIN',
-        quote: '凡人，你在直视神明。',
-        desc: '你是神的子嗣，天生带着神圣的血脉。你的力量与生俱来，不需要后天学习或争取。你对凡人的一切争斗嗤之以鼻——因为他们争的一切，你生来就有。你无需欺骗，因为你的存在本身就是最大的神迹。',
-        strengths: ['与生俱来的超凡力量，不需要努力', '天然的等级压制，凡人对你只有敬畏', '极高的起点和无穷的潜力'],
-        weaknesses: ['缺乏奋斗过程的同理心', '若有一天失去神恩，跌得最惨', '神性过强，失去了「人」的触觉'],
-        method: 'SCIN型的欺骗最为傲慢——它不承认自己在欺骗。当它说「这是神意」的时候，它真的相信那是神意。当它说「我是来拯救你们的」的时候，它也真的相信。但问题是——它眼中的拯救和被救者眼中的拯救，可能根本不是同一件事。',
-        vibe: '神之恩典 · 不可直视',
-    },
-];
-
-// ============================================================
-//  题库 — 18 题，每题 4 选项
-// ============================================================
-const QUESTIONS = [
-    {
-        text: '你更倾向于哪种获取信息的方式？',
-        options: [
-            { text: '控制关键人物，从源头掌握情报', type: 'parasite' },
-            { text: '直接偷过来，省时省力', type: 'thief' },
-            { text: '编织信息网络，让别人主动告诉你', type: 'messenger' },
-            { text: '设下陷阱，等猎物自己暴露', type: 'monocle' },
-        ],
-    },
-    {
-        text: '面对阻碍时，你通常会怎么做？',
-        options: [
-            { text: '直接消除阻碍，用力量碾压过去', type: 'primeval' },
-            { text: '绕过规则，钻空子找到新路径', type: 'worm' },
-            { text: '把阻碍者变成自己的棋子', type: 'parasite' },
-            { text: '制造混乱，趁乱取利', type: 'trickster' },
-        ],
-    },
-    {
-        text: '你更享受以下哪种感觉？',
-        options: [
-            { text: '掌控全局、一切尽在手中的笃定', type: 'primeval' },
-            { text: '看着对方被耍得团团转的样子', type: 'trickster' },
-            { text: '在最后一刻揭晓真相的戏剧性反转', type: 'bell' },
-            { text: '占有欲得到满足的充实感', type: 'thief' },
-        ],
-    },
-    {
-        text: '你的行动风格更接近哪一种？',
-        options: [
-            { text: '优雅从容，没有计划外的变数', type: 'monocle' },
-            { text: '灵活多变，让对手永远猜不到下一步', type: 'worm' },
-            { text: '像钓鱼一样，耐心等到最合适的时机出手', type: 'fishing' },
-            { text: '高调出场，享受全场的注目', type: 'bell' },
-        ],
-    },
-    {
-        text: '你怎么看待「规则」这件事？',
-        options: [
-            { text: '规则就是我制定的', type: 'primeval' },
-            { text: '规则就是用来钻空子的', type: 'worm' },
-            { text: '规则是用来骗别人遵守的', type: 'trickster' },
-            { text: '有用的就利用，没用的就无视', type: 'thief' },
-        ],
-    },
-    {
-        text: '你更喜欢哪种类型的「帮手」？',
-        options: [
-            { text: '对自己绝对忠诚的被操控者', type: 'parasite' },
-            { text: '遍布各处的线人眼线', type: 'messenger' },
-            { text: '偶尔现身的关键引导者', type: 'bell' },
-            { text: '独来独往，穿梭于常人看不到的缝隙之间', type: 'worm' },
-        ],
-    },
-    {
-        text: '你最擅长的是什么？',
-        options: [
-            { text: '洞察谎言背后的真相', type: 'monocle' },
-            { text: '无处不在，没人能找到我', type: 'worm' },
-            { text: '把黑的说成白的，还让对方深信不疑', type: 'trickster' },
-            { text: '以最小的姿态，造成最大的破坏', type: 'didi' },
-        ],
-    },
-    {
-        text: '别人通常会怎么描述你？',
-        options: [
-            { text: '神秘而强大，令人不寒而栗', type: 'primeval' },
-            { text: '优雅但又让人后背发凉', type: 'monocle' },
-            { text: '总是出现在最戏剧性的时刻', type: 'bell' },
-            { text: '一个天生的统治者', type: 'duke' },
-        ],
-    },
-    {
-        text: '你对「梦境和现实」的界限怎么看？',
-        options: [
-            { text: '梦境也是另一种现实——有时比现实更真实', type: 'dream' },
-            { text: '我每天都在扮演不同的自己，哪有什么真正的「我」', type: 'thousand' },
-            { text: '一切都是命运的安排，没有偶然', type: 'fate' },
-            { text: '现实不过是一面镜子，折射出无数种可能', type: 'mirror' },
-        ],
-    },
-    {
-        text: '当你需要融入一个陌生环境时，你会？',
-        options: [
-            { text: '找到关键人物，潜入Ta的梦境了解一切', type: 'dream' },
-            { text: '迅速换上最适合这个场合的面具', type: 'thousand' },
-            { text: '观察因果链条，找到撬动局势的那个点', type: 'fate' },
-            { text: '先不急着行动，在边缘观察所有人的倒影', type: 'mirror' },
-        ],
-    },
-    {
-        text: '你如何看待「身份」这件事？',
-        options: [
-            { text: '身份是被记忆定义的，而记忆可以被改写', type: 'dream' },
-            { text: '我有无数个身份，每个都是我也都不是我', type: 'thousand' },
-            { text: '身份只是命运之网上的一个节点，随时可以替换', type: 'fate' },
-            { text: '镜里镜外，身份是相对的——取决于你在哪一边', type: 'mirror' },
-        ],
-    },
-    {
-        text: '你最想得到什么样的力量？',
-        options: [
-            { text: '进入并操控他人梦境的能力', type: 'dream' },
-            { text: '编织一张覆盖全世界的消息网', type: 'messenger' },
-            { text: '看穿并拨动命运因果的能力', type: 'fate' },
-            { text: '在镜像世界与现实之间穿梭的能力', type: 'mirror' },
-        ],
-    },
-    {
-        text: '你更看重什么？',
-        options: [
-            { text: '快乐，以及制造快乐的能力', type: 'interesting' },
-            { text: '洞察一切，但不干预的智慧', type: 'observer' },
-            { text: '血统与传承——那是力量的根源', type: 'divine' },
-            { text: '保持神秘，永远不让人看透', type: 'mirror' },
-        ],
-    },
-    {
-        text: '你最喜欢的消遣是什么？',
-        options: [
-            { text: '给平静的生活加点恶作剧', type: 'interesting' },
-            { text: '找个高处，静静地观察下面的人', type: 'observer' },
-            { text: '设个局，等着看谁会踩进来', type: 'fishing' },
-            { text: '随时换一张脸，去任何想去的地方', type: 'thousand' },
-        ],
-    },
-    {
-        text: '你如何展示自己的力量？',
-        options: [
-            { text: '以优雅和威严让人臣服', type: 'duke' },
-            { text: '示弱，让人低估你——然后大吃一惊', type: 'didi' },
-            { text: '借命运之手，不露痕迹', type: 'fate' },
-            { text: '不需要展示，存在本身就是力量', type: 'primeval' },
-        ],
-    },
-    {
-        text: '别人最容易怎么评价你？',
-        options: [
-            { text: '有趣但危险，不知道下一句是段子还是刀子', type: 'interesting' },
-            { text: '永远站在窗外往里看', type: 'observer' },
-            { text: '天生的领袖范儿', type: 'duke' },
-            { text: '看起来很好欺负——那是他们最后的想法', type: 'didi' },
-        ],
-    },
-    {
-        text: '你的行事准则是什么？',
-        options: [
-            { text: '愿者上钩，从不强求', type: 'fishing' },
-            { text: '玩弄所有人，包括自己', type: 'trickster' },
-            { text: '神的子嗣，无需向凡人解释', type: 'divine' },
-            { text: '真相重要，但有趣的真相更重要', type: 'monocle' },
-        ],
-    },
-    {
-        text: '你认为什么才是真正的「强大」？',
-        options: [
-            { text: '能让所有人笑，也能让所有人哭', type: 'interesting' },
-            { text: '旁观一切，却没人知道你存在', type: 'observer' },
-            { text: '像钓鱼一样，让猎物自己送上门', type: 'fishing' },
-            { text: '生而为神，与生俱来，无需证明', type: 'divine' },
-        ],
-    },
-    {
-        text: '好了，前面 18 道都是你自己的选择。这一题——看天意。',
-        options: [
-            { text: '就是它了。', type: 'messenger' },
-            { text: '就是它了。', type: 'parasite' },
-            { text: '就是它了。', type: 'thief' },
-            { text: '就是它了。', type: 'thousand' },
-        ],
-    },
-];
-
-// ============================================================
-//  状态
-// ============================================================
-let currentQ = 0;
-let answers = new Array(QUESTIONS.length).fill(null);
-
-function startQuiz() {
-    document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('quiz-screen').style.display = 'block';
-    renderQuestion();
-}
-
-function restartQuiz() {
-    currentQ = 0;
-    answers = new Array(QUESTIONS.length).fill(null);
-    document.getElementById('result-screen').style.display = 'none';
-    document.getElementById('quiz-screen').style.display = 'block';
-    renderQuestion();
-}
-
-function renderQuestion() {
-    const q = QUESTIONS[currentQ];
-    const total = QUESTIONS.length;
-    document.getElementById('progress-fill').style.width = ((currentQ + 1) / total * 100) + '%';
-    document.getElementById('progress-text').textContent = `${currentQ + 1}/${total}`;
-    document.getElementById('question-tag').textContent = `· 第 ${currentQ + 1} 问 ·`;
-    document.getElementById('question-text').textContent = q.text;
-
-    const container = document.getElementById('options-container');
-    container.innerHTML = '';
-    const labels = ['A', 'B', 'C', 'D'];
-    q.options.forEach((opt, idx) => {
-        const div = document.createElement('div');
-        div.className = 'option' + (answers[currentQ] === idx ? ' selected' : '');
-        div.innerHTML = `<div class="option-content"><span class="option-label">${labels[idx]}</span>${opt.text}</div>`;
-        div.addEventListener('click', () => selectOption(idx));
-        container.appendChild(div);
-    });
-
-    document.getElementById('prev-btn').style.display = currentQ === 0 ? 'none' : 'inline-block';
-    const nextBtn = document.getElementById('next-btn');
-    const submitBtn = document.getElementById('submit-btn');
-    if (currentQ === total - 1) {
-        nextBtn.style.display = 'none';
-        submitBtn.style.display = 'inline-block';
-    } else {
-        nextBtn.style.display = 'inline-block';
-        submitBtn.style.display = 'none';
-    }
-    const hasAnswer = answers[currentQ] !== null;
-    nextBtn.disabled = !hasAnswer;
-    submitBtn.disabled = !hasAnswer;
-}
-
-function selectOption(idx) {
-    answers[currentQ] = idx;
-    const options = document.getElementById('options-container').children;
-    for (let i = 0; i < options.length; i++) {
-        options[i].classList.toggle('selected', i === idx);
-    }
-    const nextBtn = document.getElementById('next-btn');
-    const submitBtn = document.getElementById('submit-btn');
-    nextBtn.disabled = false;
-    submitBtn.disabled = false;
-}
-
-function nextQuestion() {
-    if (answers[currentQ] === null) return;
-    if (currentQ < QUESTIONS.length - 1) { currentQ++; renderQuestion(); }
-}
-
-function prevQuestion() {
-    if (currentQ > 0) { currentQ--; renderQuestion(); }
-}
-
-function submitQuiz() {
-    if (answers.some(a => a === null)) return;
-    document.getElementById('quiz-screen').style.display = 'none';
-    document.getElementById('result-screen').style.display = 'block';
-    document.getElementById('result-loading').style.display = 'block';
-    document.getElementById('result-content').style.display = 'none';
-    setTimeout(() => { const r = calculateResult(); showResult(r); }, 1200);
-}
-
-function calculateResult() {
-    const scores = {};
-    TYPES.forEach(t => scores[t.id] = 0);
-    QUESTIONS.forEach((q, qi) => {
-        const chosen = answers[qi];
-        if (chosen === null) return;
-        scores[q.options[chosen].type] = (scores[q.options[chosen].type] || 0) + 1;
-    });
-    const sorted = Object.entries(scores).map(([id, count]) => ({ id, count })).sort((a, b) => b.count - a.count);
-    const top = sorted[0].id;
-    const total = answers.length;
-    const stats = sorted.map(s => ({ ...s, pct: Math.round((s.count / total) * 100) }));
-    return { top, stats };
-}
-
-function showResult(result) {
-    document.getElementById('result-loading').style.display = 'none';
-    document.getElementById('result-content').style.display = 'block';
-
-    const type = TYPES.find(t => t.id === result.top);
-    document.getElementById('result-type').textContent = type.name;
-    document.getElementById('result-code').textContent = type.code;
-    document.getElementById('result-quote').textContent = type.quote;
-    document.getElementById('result-desc').textContent = type.desc;
-
-    // 详细解析卡片
-    const detailsEl = document.getElementById('result-details');
-    detailsEl.innerHTML = `
-        <div class="detail-card">
-            <div class="detail-card-title">▎欺骗之道</div>
-            <div style="font-size:14px;line-height:1.8;color:var(--cream);opacity:0.85;">${type.method}</div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <div class="detail-card" style="flex:1;min-width:160px;">
-                <div class="detail-card-title">▎优势</div>
-                <ul>${type.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
-            </div>
-            <div class="detail-card" style="flex:1;min-width:160px;">
-                <div class="detail-card-title">▎弱点</div>
-                <ul>${type.weaknesses.map(s => `<li>${s}</li>`).join('')}</ul>
-            </div>
-        </div>
-        <div class="detail-card">
-            <div class="detail-card-title">▎气质标签</div>
-            <div class="detail-tag-wrap">
-                ${type.vibe.split('·').map(s => `<span class="detail-tag">${s.trim()}</span>`).join('')}
-                <span class="detail-tag">代号 ${type.code}</span>
-            </div>
-        </div>
-    `;
-
-    // 统计排行
-    const statsEl = document.getElementById('result-stats');
-    statsEl.innerHTML = '<div class="detail-card-title" style="margin-bottom:8px;">▎你的阿蒙相排行</div>';
-    const maxCount = Math.max(...result.stats.map(s => s.count));
-    result.stats.forEach(s => {
-        const t = TYPES.find(t => t.id === s.id);
-        if (!t) return;
-        const isTop = s.id === result.top;
-        const rw = maxCount > 0 ? (s.count / maxCount) * 100 : 0;
-        const item = document.createElement('div');
-        item.className = 'stat-item';
-        item.innerHTML = `<span class="stat-name">${t.name}</span><div class="stat-bar"><div class="stat-fill${isTop ? ' top' : ''}" style="width:${rw}%;"></div></div><span class="stat-pct">${s.pct}%</span>`;
-        statsEl.appendChild(item);
-    });
-
-    document.getElementById('panel').scrollIntoView({ behavior: 'smooth' });
-}
-</script>
 </body>
 </html>
