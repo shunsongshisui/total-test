@@ -8,189 +8,262 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
     font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    background: #0a0a12;
+    background: #080a12;
     color: #e8e0d0;
     min-height: 100vh;
-    display: flex; justify-content: center; align-items: center;
-    background-image:
-        radial-gradient(ellipse at 20% 30%, rgba(201,149,60,0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 70%, rgba(45,212,191,0.03) 0%, transparent 50%);
+    overflow-x: hidden;
 }
-.container { max-width: 720px; width: 100%; padding: 40px 20px; }
+body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+        radial-gradient(ellipse at 15% 25%, rgba(201,149,60,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 75%, rgba(45,212,191,0.03) 0%, transparent 50%);
+    pointer-events: none; z-index: 0;
+}
+.container { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 48px 24px; }
 
 /* Header */
-.header { text-align: center; margin-bottom: 40px; }
-.header .icon { font-size: 42px; display: block; margin-bottom: 8px; }
+.header { text-align: center; margin-bottom: 48px; }
+.header-icon { font-size: 40px; display: block; margin-bottom: 6px; }
 .header h1 {
-    font-size: 36px; font-weight: 900; letter-spacing: 4px;
-    background: linear-gradient(180deg, #e8e0d0, #c9953c);
+    font-size: 32px; font-weight: 900; letter-spacing: 6px;
+    background: linear-gradient(135deg, #e8e0d0 0%, #c9953c 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.header .sub { font-size: 13px; color: #7a64a0; letter-spacing: 3px; margin-top: 4px; }
+.header .sub {
+    font-size: 13px; color: rgba(232,220,200,0.35); letter-spacing: 4px;
+    margin-top: 6px;
+}
+.header .divider {
+    width: 60px; height: 1px; margin: 16px auto 0;
+    background: linear-gradient(90deg, transparent, rgba(201,149,60,0.3), transparent);
+}
+
+/* Section label */
+.section-label {
+    font-size: 11px; letter-spacing: 4px; color: rgba(232,220,200,0.2);
+    margin-bottom: 16px; text-align: center; position: relative;
+}
+.section-label::before, .section-label::after {
+    content: ''; position: absolute; top: 50%; width: 40px; height: 1px;
+    background: rgba(255,255,255,0.05);
+}
+.section-label::before { right: calc(50% + 70px); }
+.section-label::after { left: calc(50% + 70px); }
 
 /* Section */
-.section { margin-bottom: 32px; }
-.section-title {
-    font-size: 12px; letter-spacing: 3px; color: #7a64a0;
-    margin-bottom: 12px; padding-left: 4px;
+.section { margin-bottom: 44px; }
+
+/* Card Grid */
+.card-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
-/* Cards */
-.card-grid { display: flex; flex-direction: column; gap: 10px; }
+/* Card */
 .card {
-    display: flex; align-items: center; gap: 16px;
-    padding: 18px 20px;
+    position: relative;
+    padding: 28px 24px 24px;
+    border-radius: 16px;
+    text-decoration: none; color: inherit;
     background: rgba(255,255,255,0.02);
     border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px;
-    text-decoration: none; color: #e8e0d0;
-    transition: all 0.25s; cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+}
+.card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    opacity: 0; transition: opacity 0.35s;
 }
 .card:hover {
-    background: rgba(255,255,255,0.04);
-    border-color: rgba(201,149,60,0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    transform: translateY(-6px);
+    border-color: rgba(255,255,255,0.12);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
 }
-.card:active { transform: scale(0.98); }
+.card:hover::before { opacity: 1; }
+.card:active { transform: translateY(-2px) scale(0.98); }
 
-.card-icon { font-size: 32px; flex-shrink: 0; width: 48px; text-align: center; }
-.card-body { flex: 1; min-width: 0; }
-.card-name {
-    font-size: 17px; font-weight: 700; letter-spacing: 2px;
-    margin-bottom: 2px;
+/* Card accent colors */
+.card-amti::before { background: linear-gradient(90deg, #c9a84c, #8a7230); }
+.card-amti:hover { border-color: rgba(201,168,76,0.25); background: rgba(201,168,76,0.04); }
+
+.card-lom::before { background: linear-gradient(90deg, #c9953c, #2dd4bf); }
+.card-lom:hover { border-color: rgba(45,212,191,0.2); background: rgba(45,212,191,0.03); }
+
+.card-baxian::before { background: linear-gradient(90deg, #e8c87a, #d4856b); }
+.card-baxian:hover { border-color: rgba(232,200,122,0.2); background: rgba(232,200,122,0.03); }
+
+.card-fate::before { background: linear-gradient(90deg, #b89ce0, #7a64a0); }
+.card-fate:hover { border-color: rgba(184,156,224,0.2); background: rgba(184,156,224,0.03); }
+
+/* Card icon area */
+.card-icon-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.card-icon {
+    font-size: 32px; width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+.card-amti .card-icon { background: rgba(201,168,76,0.1); }
+.card-lom .card-icon { background: rgba(45,212,191,0.08); }
+.card-baxian .card-icon { background: rgba(232,200,122,0.08); }
+.card-fate .card-icon { background: rgba(184,156,224,0.08); }
+
+.card-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.card-badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 4px;
+    letter-spacing: 1px; font-weight: 500;
+}
+.card-amti .card-badge { background: rgba(201,168,76,0.12); color: #c9a84c; }
+.card-lom .card-badge { background: rgba(45,212,191,0.12); color: #2dd4bf; }
+.card-baxian .card-badge { background: rgba(232,200,122,0.12); color: #e8c87a; }
+.card-fate .card-badge { background: rgba(184,156,224,0.12); color: #b89ce0; }
+
+/* Card content */
+.card-title {
+    font-size: 19px; font-weight: 700; letter-spacing: 2px;
+    margin-bottom: 4px;
 }
 .card-desc {
-    font-size: 12px; color: rgba(232,220,200,0.5); line-height: 1.4;
-    letter-spacing: 0.5px;
+    font-size: 13px; line-height: 1.6;
+    color: rgba(232,220,200,0.45); margin-bottom: 16px;
+    flex: 1;
 }
-.card-arrow { font-size: 18px; color: rgba(232,220,200,0.2); flex-shrink: 0; }
-.card:hover .card-arrow { color: #c9953c; }
 
-/* Sub-card row */
-.sub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-.sub-card {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 14px; border-radius: 8px;
-    background: rgba(255,255,255,0.01);
-    border: 1px solid rgba(255,255,255,0.04);
-    text-decoration: none; color: #e8e0d0;
-    transition: all 0.2s; cursor: pointer;
+/* Card variants */
+.card-variants {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    padding-top: 14px; margin-top: auto;
+    border-top: 1px solid rgba(255,255,255,0.04);
 }
-.sub-card:hover {
+.card-variant {
+    font-size: 11px; padding: 4px 12px;
+    border-radius: 6px;
     background: rgba(255,255,255,0.03);
-    border-color: rgba(201,149,60,0.2);
+    border: 1px solid rgba(255,255,255,0.04);
+    color: rgba(232,220,200,0.5);
+    text-decoration: none; transition: all 0.2s;
+    letter-spacing: 1px;
 }
-.sub-card .sc-icon { font-size: 20px; }
-.sub-card .sc-name { font-size: 12px; letter-spacing: 1px; }
-
-/* Group card - special */
-.card-group { padding: 20px; }
-.card-group .card-body { display: flex; flex-direction: column; gap: 4px; }
+.card-variant:hover {
+    background: rgba(255,255,255,0.06);
+    color: rgba(232,220,200,0.8);
+    border-color: rgba(255,255,255,0.1);
+}
 
 /* Footer */
 .footer {
-    text-align: center; margin-top: 40px; padding-top: 24px;
-    border-top: 1px solid rgba(255,255,255,0.04);
-}
-.footer .fb-link {
-    font-size: 12px; color: rgba(232,220,200,0.3); letter-spacing: 1px;
-    cursor: pointer; transition: color 0.2s; text-decoration: none;
-}
-.footer .fb-link:hover { color: rgba(232,220,200,0.6); }
-.footer .credit {
-    font-size: 11px; color: rgba(255,255,255,0.06);
-    letter-spacing: 2px; margin-top: 8px;
+    text-align: center; margin-top: 48px; padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.03);
+    font-size: 11px; color: rgba(255,255,255,0.08);
+    letter-spacing: 2px;
 }
 
-@media (max-width: 480px) {
-    .container { padding: 24px 16px; }
-    .header h1 { font-size: 28px; }
-    .sub-row { grid-template-columns: 1fr; }
-    .card { padding: 14px 16px; }
+@media (max-width: 640px) {
+    .container { padding: 32px 16px; }
+    .header h1 { font-size: 26px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .card { padding: 22px 18px 18px; }
+}
+@media (min-width: 900px) {
+    .card-grid-4 { grid-template-columns: 1fr 1fr; }
 }
 </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <span class="icon">🎭</span>
+        <span class="header-icon">🎭</span>
         <h1>人格测试·合集</h1>
         <div class="sub">✦ 找到你灵魂的样子 ✦</div>
+        <div class="divider"></div>
     </div>
 
     <!-- 诡秘之主系列 -->
     <div class="section">
-        <div class="section-title">▎诡秘之主系列</div>
+        <div class="section-label">诡秘之主系列</div>
         <div class="card-grid">
-            <a class="card card-group" href="amti-index.html">
-                <div class="card-icon">🧐</div>
-                <div class="card-body">
-                    <div class="card-name">AMTI · 阿蒙人格测试</div>
-                    <div class="card-desc">诡秘之主中阿蒙的十八种面相——你是本体蒙、有趣蒙、还是滴滴打蒙？</div>
-                    <div class="sub-row">
-                        <a class="sub-card" href="amti-index.html">
-                            <span class="sc-icon">🧐</span>
-                            <span class="sc-name">答题版</span>
-                        </a>
-                        <a class="sub-card" href="amti-fate.html">
-                            <span class="sc-icon">🎲</span>
-                            <span class="sc-name">天命版</span>
-                        </a>
+            <!-- AMTI -->
+            <a class="card card-amti" href="amti-index.html">
+                <div class="card-icon-row">
+                    <div class="card-icon">🧐</div>
+                    <div class="card-badges">
+                        <span class="card-badge">阿蒙</span>
+                        <span class="card-badge">18面相</span>
                     </div>
                 </div>
-                <span class="card-arrow">→</span>
+                <div class="card-title">AMTI · 阿蒙人格</div>
+                <div class="card-desc">你体内流淌着哪一只阿蒙的血？本体蒙、有趣蒙、还是滴滴打蒙？</div>
+                <div class="card-variants">
+                    <a class="card-variant" href="amti-index.html">📝 答题版</a>
+                    <a class="card-variant" href="amti-fate.html">🎲 天命版</a>
+                </div>
             </a>
 
-            <a class="card card-group" href="lom-main.html">
-                <div class="card-icon">🃏</div>
-                <div class="card-body">
-                    <div class="card-name">LOM · 诡秘之主谱系测试</div>
-                    <div class="card-desc">二十二条途径通向二十二种命运——你体内流淌着哪一位祂的血？</div>
-                    <div class="sub-row">
-                        <a class="sub-card" href="lom-main.html">
-                            <span class="sc-icon">🃏</span>
-                            <span class="sc-name">答题版</span>
-                        </a>
-                        <a class="sub-card" href="lom-fate.html">
-                            <span class="sc-icon">🔮</span>
-                            <span class="sc-name">天命版</span>
-                        </a>
+            <!-- LOM -->
+            <a class="card card-lom" href="lom-main.html">
+                <div class="card-icon-row">
+                    <div class="card-icon">🃏</div>
+                    <div class="card-badges">
+                        <span class="card-badge">诡秘之主</span>
+                        <span class="card-badge">22途径</span>
                     </div>
                 </div>
-                <span class="card-arrow">→</span>
+                <div class="card-title">LOM · 人格谱系</div>
+                <div class="card-desc">二十二条途径通向二十二种命运——你体内流淌着哪一位祂的血？</div>
+                <div class="card-variants">
+                    <a class="card-variant" href="lom-main.html">📝 答题版</a>
+                    <a class="card-variant" href="lom-fate.html">🔮 天命版</a>
+                </div>
             </a>
         </div>
     </div>
 
     <!-- 八仙系列 -->
     <div class="section">
-        <div class="section-title">▎八仙系列</div>
+        <div class="section-label">八仙系列</div>
         <div class="card-grid">
-            <a class="card" href="baxian-test/index.html">
-                <div class="card-icon">🍶</div>
-                <div class="card-body">
-                    <div class="card-name">八仙人格测试</div>
-                    <div class="card-desc">你是冷面谋士吕洞宾、战力天花板何仙姑、还是贵气憨憨曹国舅？</div>
+            <!-- 八仙 -->
+            <a class="card card-baxian" href="baxian-test/index.html">
+                <div class="card-icon-row">
+                    <div class="card-icon">🍶</div>
+                    <div class="card-badges">
+                        <span class="card-badge">八仙</span>
+                        <span class="card-badge">10角色</span>
+                    </div>
                 </div>
-                <span class="card-arrow">→</span>
+                <div class="card-title">八仙人格测试</div>
+                <div class="card-desc">冷面谋士吕洞宾、战力天花板何仙姑、贵气憨憨曹国舅——你是哪一位？</div>
+                <div class="card-variants">
+                    <a class="card-variant" href="baxian-test/index.html">📝 全面版</a>
+                    <a class="card-variant" href="baxian-test/fate.html">☯ 天命版</a>
+                </div>
             </a>
-            <a class="card" href="baxian-test/fate.html">
-                <div class="card-icon">☯</div>
-                <div class="card-body">
-                    <div class="card-name">八仙 · 天命版</div>
-                    <div class="card-desc">全凭天意——让命运替你决定你是谁</div>
+
+            <!-- LOM Fate (separate card) -->
+            <a class="card card-fate" href="lom-fate.html">
+                <div class="card-icon-row">
+                    <div class="card-icon">🔮</div>
+                    <div class="card-badges">
+                        <span class="card-badge">命运</span>
+                        <span class="card-badge">占卜</span>
+                    </div>
                 </div>
-                <span class="card-arrow">→</span>
+                <div class="card-title">天命占卜</div>
+                <div class="card-desc">不需要选择——星盘早已写好你的答案。让命运替你开口。</div>
+                <div class="card-variants">
+                    <a class="card-variant" href="lom-fate.html">🔮 LOM天命</a>
+                    <a class="card-variant" href="baxian-test/fate.html">☯ 八仙天命</a>
+                </div>
             </a>
         </div>
     </div>
 
     <div class="footer">
-        <a class="fb-link" href="amti-index.html" style="margin-right:16px;">🧐 直接开始测试</a>
-        <span class="fb-link">献给诡秘之主 · Memories老师</span>
-        <div class="credit">👁 人格测试合集 · 2026</div>
+        献给诡秘之主 · Memories老师 &nbsp;·&nbsp; 人格测试合集 2026
     </div>
 </div>
 </body>
