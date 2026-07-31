@@ -7,9 +7,9 @@ desktop.ini
 # 百度网盘同步目录
 BaiduSyncdisk/
 
-# 磁盘扫描产物
-C:Usersswscan_log.txt
-C:Usersswstorage_scan.json
+# 磁盘扫描产物（文件名带全角冒号）
+*scan_log.txt
+*scan_*.json
 
 # 安装包
 *.msi
