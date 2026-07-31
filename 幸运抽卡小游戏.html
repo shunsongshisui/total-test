@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>幸运抽卡小游戏</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #080a12;
+    color: #e8e0d0;
+    min-height: 100vh;
+}
+body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(201,149,60,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 15% 90%, rgba(139,92,246,0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 80%, rgba(45,212,191,0.04) 0%, transparent 50%);
+}
+.container { position: relative; z-index: 1; max-width: 920px; margin: 0 auto; padding: 40px 20px 60px; }
+
+/* Header */
+.header { text-align: center; margin-bottom: 24px; }
+.header h1 {
+    font-size: 30px; font-weight: 900; letter-spacing: 8px;
+    background: linear-gradient(135deg, #e8e0d0 0%, #c9953c 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.header .sub { font-size: 12px; color: rgba(232,220,200,0.35); letter-spacing: 4px; margin-top: 6px; }
+
+/* Stats bar */
+.stats {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 22px;
+}
+.stat {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 8px 16px;
+    font-size: 13px; display: flex; align-items: center; gap: 8px;
+}
+.stat .k { color: rgba(232,220,200,0.45); }
+.stat .v { font-weight: 700; font-size: 15px; }
+.stat .v.gold { color: #e8c87a; }
+.stat .v.purple { color: #c084fc; }
+.stat .v.blue { color: #7cc4f0; }
+.stat .v.green { color: #8fd9a0; }
+
+/* Pity bar */
+.pity-wrap { max-width: 460px; margin: 0 auto 24px; }
+.pity-label { font-size: 12px; color: rgba(232,220,200,0.45); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.pity-bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.pity-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #c9953c, #e8c87a);
+    transition: width .4s ease;
+}
+
+/* Draw display */
+.draw-area {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 26px 16px;
+    min-height: 300px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+.draw-hint { font-size: 14px; color: rgba(232,220,200,0.35); letter-spacing: 3px; }
+.draw-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+/* Card flip */
+.dcard { width: 128px; height: 180px; perspective: 900px; }
+@media (max-width: 560px) { .dcard { width: 100px; height: 142px; } }
+.dinner {
+    width: 100%; height: 100%; position: relative;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.4,.2,.2,1);
+}
+.dinner.flip { transform: rotateY(180deg); }
+.dface {
+    position: absolute; inset: 0; border-radius: 12px;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    overflow: hidden;
+}
+/* 牌背 */
+.dback {
+    background: linear-gradient(150deg, #16233c 0%, #0c1626 100%);
+    border: 2px solid #31466e;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 4px;
+}
+.dback .yun { font-size: 44px; color: #7f9ccb; text-shadow: 0 0 18px rgba(127,156,203,.6); }
+.dback .t { font-size: 10px; color: #46608e; letter-spacing: 4px; }
+/* 牌面 */
+.dfront {
+    transform: rotateY(180deg);
+    border: 2px solid rgba(255,255,255,0.12);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px;
+}
+.dfront .emoji { font-size: 46px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); }
+.dfront .nm { font-size: 15px; font-weight: 700; text-align: center; line-height: 1.3; }
+.dfront .rg { font-size: 10px; letter-spacing: 3px; padding: 2px 8px; border-radius: 4px; background: rgba(0,0,0,.25); }
+.rar-传说  { background: linear-gradient(160deg, #8a6a1a, #c9953c 45%, #f3df9a); box-shadow: 0 0 22px rgba(233,180,60,.45); }
+.rar-史诗  { background: linear-gradient(160deg, #4c1d95, #7c3aed 50%, #c4a1ff); box-shadow: 0 0 18px rgba(139,92,246,.35); }
+.rar-稀有  { background: linear-gradient(160deg, #1e40af, #3b82f6 50%, #9cc4ff); }
+.rar-普通  { background: linear-gradient(160deg, #334155, #52627a 50%, #8fa2b8); }
+.rar-传说 .rg { color: #ffe9a8; }
+.rar-史诗 .rg { color: #e3d2ff; }
+.rar-稀有 .rg { color: #d3e6ff; }
+.rar-普通 .rg { color: #cbd5e1; }
+
+/* Banner */
+.banner {
+    display: none;
+    padding: 10px 22px; border-radius: 10px; font-size: 16px; font-weight: 800; letter-spacing: 3px;
+    animation: pop .5s cubic-bezier(.34,1.56,.64,1);
+}
+.banner.show { display: block; }
+.banner-传说 { background: linear-gradient(90deg,#7a5a12,#b8860b); color:#ffe9a8; box-shadow: 0 0 30px rgba(233,180,60,.5); }
+.banner-史诗 { background: linear-gradient(90deg,#3b1d6e,#6d28d9); color:#e3d2ff; box-shadow: 0 0 26px rgba(139,92,246,.45); }
+.banner-稀有 { background: linear-gradient(90deg,#173a7e,#2563eb); color:#d3e6ff; }
+.banner-普通 { background: linear-gradient(90deg,#2b3648,#475569); color:#cbd5e1; }
+@keyframes pop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* Buttons */
+.btns { display: flex; justify-content: center; gap: 14px; margin-bottom: 30px; flex-wrap: wrap; }
+.btn {
+    border: none; cursor: pointer;
+    padding: 13px 34px; border-radius: 12px;
+    font-size: 16px; font-weight: 800; letter-spacing: 4px;
+    color: #221a06;
+    background: linear-gradient(135deg, #f3df9a, #d4a643 60%, #b8860b);
+    box-shadow: 0 6px 20px rgba(201,149,60,.25);
+    transition: all .2s;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(201,149,60,.35); }
+.btn:active { transform: translateY(0) scale(.97); }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.btn.ghost {
+    background: rgba(255,255,255,0.05); color: rgba(232,220,200,.75);
+    box-shadow: none; border: 1px solid rgba(255,255,255,.1); font-size: 13px; letter-spacing: 2px;
+}
+.btn.ghost:hover { background: rgba(255,255,255,.09); }
+
+/* Rates legend */
+.rates {
+    display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;
+    margin-bottom: 34px; font-size: 12px;
+}
+.rate { display: flex; align-items: center; gap: 6px; color: rgba(232,220,200,.55); }
+.rate .dot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* Collection */
+.collection-title {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+}
+.collection-title h2 { font-size: 18px; letter-spacing: 4px; color: rgba(232,220,200,.8); }
+.collection-title .prog { font-size: 13px; color: rgba(232,220,200,.45); }
+.cgrid {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+}
+.ctile {
+    border-radius: 10px; padding: 10px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.02);
+    transition: transform .15s;
+}
+.ctile:hover { transform: translateY(-2px); }
+.ctile .emoji { font-size: 26px; }
+.ctile .nm { font-size: 11px; text-align: center; color: rgba(232,220,200,.8); line-height: 1.2; }
+.ctile .cnt { font-size: 10px; color: rgba(232,220,200,.45); }
+.ctile .rn { width: 100%; height: 3px; border-radius: 2px; }
+.ctile.owned-传说 { border-color: rgba(233,180,60,.45); background: rgba(201,149,60,.07); }
+.ctile.owned-史诗 { border-color: rgba(139,92,246,.4); background: rgba(139,92,246,.07); }
+.ctile.owned-稀有 { border-color: rgba(59,130,246,.3); background: rgba(59,130,246,.05); }
+.ctile.owned-普通 { border-color: rgba(148,163,184,.25); background: rgba(148,163,184,.04); }
+/* 未收集的暗卡 */
+.ctile.locked {
+    border-style: dashed; border-color: rgba(255,255,255,0.09);
+    background: rgba(255,255,255,0.01);
+}
+.ctile.locked .nm { color: rgba(232,220,200,.22); }
+.ctile.locked .q { font-size: 24px; color: rgba(232,220,200,.18); }
+
+.footer { text-align: center; margin-top: 40px; font-size: 11px; color: rgba(255,255,255,0.1); letter-spacing: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>幸运抽卡</h1>
+        <div class="sub">✦ 今天的手气，交给运气 ✦</div>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><span class="k">总抽数</span><span class="v" id="sTotal">0</span></div>
+        <div class="stat"><span class="k">传说</span><span class="v gold" id="sLegend">0</span></div>
+        <div class="stat"><span class="k">史诗</span><span class="v purple" id="sEpic">0</span></div>
+        <div class="stat"><span class="k">稀有</span><span class="v blue" id="sRare">0</span></div>
+        <div class="stat"><span class="k">普通</span><span class="v green" id="sCommon">0</span></div>
+        <div class="stat"><span class="k">图鉴</span><span class="v" id="sProgress">0/60</span></div>
+    </div>
+
+    <div class="pity-wrap">
+        <div class="pity-label"><span>⭐ 传说保底进度</span><span id="pityText">0 / 80</span></div>
+        <div class="pity-bar"><div class="pity-fill" id="pityFill"></div></div>
+    </div>
+
+    <div class="draw-area" id="drawArea">
+        <div class="draw-hint" id="drawHint">🃏 点击下方按钮开始抽卡</div>
+        <div class="draw-cards" id="drawCards"></div>
+        <div class="banner" id="banner"></div>
+    </div>
+
+    <div class="btns">
+        <button class="btn" id="btn1" onclick="drawCards(1)">单抽</button>
+        <button class="btn" id="btn10" onclick="drawCards(10)">十连</button>
+        <button class="btn ghost" id="btnReset" onclick="resetAll()">清空重来</button>
+    </div>
+
+    <div class="rates">
+        <div class="rate"><span class="dot" style="background:#e8c87a"></span>传说 0.8%</div>
+        <div class="rate"><span class="dot" style="background:#c084fc"></span>史诗 4.2%</div>
+        <div class="rate"><span class="dot" style="background:#7cc4f0"></span>稀有 15%</div>
+        <div class="rate"><span class="dot" style="background:#8fa2b8"></span>普通 80%</div>
+    </div>
+
+    <div class="collection-title">
+        <h2>✦ 收集图鉴</h2>
+        <div class="prog" id="cProgress"></div>
+    </div>
+    <div class="cgrid" id="cgrid"></div>
+
+    <div class="footer">幸运抽卡小游戏 · 保底 80 抽必出传说 · 2026</div>
+</div>
+
+<script>
+/* ============ 卡池数据 ============ */
+const RARITY_ORDER = ['传说', '史诗', '稀有', '普通'];
+const RATES = { 传说: 0.008, 史诗: 0.042, 稀有: 0.15, 普通: 0.80 };
+const PITY = 80;          // 传说保底
+const RARE_PLUS = '稀有';  // 十连保底：至少一张该稀有度以上
+
+const CARDS = [
+    // —— 传说 4 张 ——
+    { name: '九龙升天', emoji: '🐉', rarity: '传说' },
+    { name: '蟠龙衔珠', emoji: '🐲', rarity: '传说' },
+    { name: '天马行空', emoji: '🦄', rarity: '传说' },
+    { name: '凤凰涅槃', emoji: '🦚', rarity: '传说' },
+    // —— 史诗 10 张 ——
+    { name: '金玉满堂', emoji: '🏮', rarity: '史诗' },
+    { name: '锦鲤跃龙门', emoji: '🐋', rarity: '史诗' },
+    { name: '莲花宝座', emoji: '🪷', rarity: '史诗' },
+    { name: '瑞狮报喜', emoji: '🦁', rarity: '史诗' },
+    { name: '海豚逐浪', emoji: '🐬', rarity: '史诗' },
+    { name: '骏马奔腾', emoji: '🐎', rarity: '史诗' },
+    { name: '灵鹿回春', emoji: '🦌', rarity: '史诗' },
+    { name: '虎虎生威', emoji: '🐯', rarity: '史诗' },
+    { name: '白鹤亮翅', emoji: '🦢', rarity: '史诗' },
+    { name: '蓝鲸吐珠', emoji: '🐳', rarity: '史诗' },
+    // —— 稀有 20 张 ——
+    { name: '彩蝶纷飞', emoji: '🦋', rarity: '稀有' },
+    { name: '蜜蜂采蜜', emoji: '🐝', rarity: '稀有' },
+    { name: '喜鹊报春', emoji: '🐦', rarity: '稀有' },
+    { name: '守夜猫头鹰', emoji: '🦉', rarity: '稀有' },
+    { name: '企鹅摇摆', emoji: '🐧', rarity: '稀有' },
+    { name: '鸳鸯戏水', emoji: '🦆', rarity: '稀有' },
+    { name: '鹦鹉学舌', emoji: '🦜', rarity: '稀有' },
+    { name: '龟鹤延年', emoji: '🐢', rarity: '稀有' },
+    { name: '玉兔捣药', emoji: '🐇', rarity: '稀有' },
+    { name: '招财猫', emoji: '🐈', rarity: '稀有' },
+    { name: '年年有余', emoji: '🐟', rarity: '稀有' },
+    { name: '螃蟹横行', emoji: '🦀', rarity: '稀有' },
+    { name: '珊瑚小鱼', emoji: '🐠', rarity: '稀有' },
+    { name: '花开富贵', emoji: '🌺', rarity: '稀有' },
+    { name: '大吉大利', emoji: '🍊', rarity: '稀有' },
+    { name: '平安如意', emoji: '🍎', rarity: '稀有' },
+    { name: '寿桃献瑞', emoji: '🍑', rarity: '稀有' },
+    { name: '节节高升', emoji: '🎋', rarity: '稀有' },
+    { name: '好事花生', emoji: '🥜', rarity: '稀有' },
+    { name: '五谷丰登', emoji: '🌾', rarity: '稀有' },
+    // —— 普通 26 张 ——
+    { name: '米饭一碗', emoji: '🍚', rarity: '普通' },
+    { name: '热气腾腾', emoji: '🍜', rarity: '普通' },
+    { name: '饺子团圆', emoji: '🥟', rarity: '普通' },
+    { name: '糖果甜甜', emoji: '🍬', rarity: '普通' },
+    { name: '一杯清茶', emoji: '☕', rarity: '普通' },
+    { name: '茶香四溢', emoji: '🍵', rarity: '普通' },
+    { name: '面包出炉', emoji: '🍞', rarity: '普通' },
+    { name: '好运鸡蛋', emoji: '🥚', rarity: '普通' },
+    { name: '大鸡腿', emoji: '🍗', rarity: '普通' },
+    { name: '香蕉一根', emoji: '🍌', rarity: '普通' },
+    { name: '西瓜一瓣', emoji: '🍉', rarity: '普通' },
+    { name: '葡萄成串', emoji: '🍇', rarity: '普通' },
+    { name: '草莓红红', emoji: '🍓', rarity: '普通' },
+    { name: '胡萝卜', emoji: '🥕', rarity: '普通' },
+    { name: '西兰花', emoji: '🥦', rarity: '普通' },
+    { name: '小蘑菇', emoji: '🍄', rarity: '普通' },
+    { name: '小星星', emoji: '⭐', rarity: '普通' },
+    { name: '棉花云朵', emoji: '☁️', rarity: '普通' },
+    { name: '及时雨', emoji: '🌧️', rarity: '普通' },
+    { name: '四叶草', emoji: '🍀', rarity: '普通' },
+    { name: '彩虹', emoji: '🌈', rarity: '普通' },
+    { name: '青蛙王子', emoji: '🐸', rarity: '普通' },
+    { name: '小鸡', emoji: '🐤', rarity: '普通' },
+    { name: '小绵羊', emoji: '🐑', rarity: '普通' },
+    { name: '小香猪', emoji: '🐷', rarity: '普通' },
+    { name: '老黄牛', emoji: '🐂', rarity: '普通' },
+];
+
+const CARDS_BY_RARITY = {};
+RARITY_ORDER.forEach(r => CARDS_BY_RARITY[r] = CARDS.filter(c => c.rarity === r));
+
+/* ============ 状态 ============ */
+const SAVE_KEY = 'luckDrawGameV1';
+let state = { total: 0, pity: 0, inventory: {} };  // inventory: name -> count
+let busy = false;
+
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
+function load() {
+    try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (raw) state = JSON.parse(raw);
+        if (typeof state.total !== 'number') state.total = 0;
+        if (typeof state.pity !== 'number') state.pity = 0;
+        if (!state.inventory) state.inventory = {};
+    } catch (e) {}
+}
+
+/* ============ 抽取逻辑 ============ */
+function pickCard(rarity) {
+    const pool = CARDS_BY_RARITY[rarity];
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+function drawOne(forceRarity) {
+    let rarity;
+    if (forceRarity) rarity = forceRarity;
+    else if (state.pity >= PITY) rarity = '传说';
+    else rarity = rollRarity();
+    state.pity++;
+    state.total++;
+    if (rarity === '传说') state.pity = 0;
+    const card = pickCard(rarity);
+    state.inventory[card.name] = (state.inventory[card.name] || 0) + 1;
+    return card;
+}
+function rollRarity() {
+    const r = Math.random();
+    let acc = 0;
+    for (const rg of RARITY_ORDER) {
+        acc += RATES[rg];
+        if (r < acc) return rg;
+    }
+    return '普通';
+}
+function drawN(n) {
+    const results = [];
+    for (let i = 0; i < n; i++) results.push(drawOne());
+    // 十连保底：至少一张稀有及以上
+    const hasRarePlus = results.some(c => RARITY_ORDER.indexOf(c.rarity) <= RARITY_ORDER.indexOf(RARE_PLUS));
+    if (!hasRarePlus) {
+        const last = results.pop();
+        state.inventory[last.name]--;
+        state.total--;
+        state.pity--;
+        results.push(drawOne(RARE_PLUS));
+    }
+    return results;
+}
+
+/* ============ 渲染 ============ */
+function el(id) { return document.getElementById(id); }
+
+function renderStats() {
+    let c = { 传说: 0, 史诗: 0, 稀有: 0, 普通: 0 };
+    for (const name in state.inventory) {
+        const card = CARDS.find(x => x.name === name);
+        if (card) c[card.rarity] += state.inventory[name];
+    }
+    el('sTotal').textContent = state.total;
+    el('sLegend').textContent = c.传说;
+    el('sEpic').textContent = c.史诗;
+    el('sRare').textContent = c.稀有;
+    el('sCommon').textContent = c.普通;
+    const owned = Object.keys(state.inventory).filter(n => state.inventory[n] > 0).length;
+    el('sProgress').textContent = owned + '/' + CARDS.length;
+    el('pityText').textContent = state.pity + ' / ' + PITY;
+    el('pityFill').style.width = Math.min(100, state.pity / PITY * 100) + '%';
+}
+
+function renderCollection() {
+    const grid = el('cgrid');
+    let html = '';
+    const owned = new Set(Object.keys(state.inventory).filter(n => state.inventory[n] > 0));
+    for (const rg of RARITY_ORDER) {
+        for (const card of CARDS_BY_RARITY[rg]) {
+            const cnt = state.inventory[card.name] || 0;
+            const has = owned.has(card.name);
+            if (has) {
+                html += `<div class="ctile owned-${rg}">
+                    <div class="emoji">${card.emoji}</div>
+                    <div class="nm">${card.name}</div>
+                    <div class="cnt">×${cnt}</div>
+                    <div class="rn rar-${rg}"></div></div>`;
+            } else {
+                html += `<div class="ctile locked"><div class="q">❓</div>
+                    <div class="nm">？？？</div><div class="cnt">&nbsp;</div>
+                    <div class="rn" style="opacity:.15"></div></div>`;
+            }
+        }
+    }
+    grid.innerHTML = html;
+    el('cProgress').textContent = '已收集 ' + owned.size + ' / ' + CARDS.length + ' 张';
+}
+
+/* ============ 翻牌动画 ============ */
+function showResult(cards) {
+    const area = el('drawCards');
+    area.innerHTML = '';
+    el('drawHint').style.display = 'none';
+    el('banner').className = 'banner';
+
+    // 先按稀有度排序渲染，传说/史诗放前面更爽
+    const sorted = [...cards].sort((a, b) =>
+        RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity));
+
+    sorted.forEach((card, i) => {
+        const d = document.createElement('div');
+        d.className = 'dcard';
+        d.innerHTML = `
+            <div class="dinner">
+                <div class="dface dback"><span class="yun">运</span><span class="t">✦ 幸 运 ✦</span></div>
+                <div class="dface dfront rar-${card.rarity}">
+                    <span class="emoji">${card.emoji}</span>
+                    <span class="nm">${card.name}</span>
+                    <span class="rg">${card.rarity}</span>
+                </div>
+            </div>`;
+        area.appendChild(d);
+        const inner = d.querySelector('.dinner');
+        setTimeout(() => {
+            inner.classList.add('flip');
+            playFlip(card.rarity);
+        }, 250 + i * 320);
+    });
+
+    const best = sorted[0];  // 排序后第一张是最稀有的
+    const bannerEl = el('banner');
+    setTimeout(() => {
+        bannerEl.className = 'banner banner-' + best.rarity + ' show';
+        const stars = best.rarity === '传说' ? '✦ ✦ ✦ ' : (best.rarity === '史诗' ? '✦ ✦ ' : '✦ ');
+        bannerEl.textContent = stars + best.name + ' ' + stars;
+        if (best.rarity === '传说' || best.rarity === '史诗') playJingle(best.rarity);
+    }, 250 + (sorted.length - 1) * 320 + 250);
+}
+
+function drawCards(n) {
+    if (busy) return;
+    ensureAudio();  // 在点击手势内初始化音频，避免浏览器拦掉首次音效
+    busy = true;
+    el('btn1').disabled = true;
+    el('btn10').disabled = true;
+    el('banner').className = 'banner';
+
+    const cards = drawN(n);
+    save();
+    renderStats();
+    renderCollection();
+    showResult(cards);
+
+    setTimeout(() => {
+        busy = false;
+        el('btn1').disabled = false;
+        el('btn10').disabled = false;
+    }, 600 + n * 320);
+}
+
+function resetAll() {
+    if (busy) return;
+    if (!confirm('确定清空全部抽卡记录吗？')) return;
+    state = { total: 0, pity: 0, inventory: {} };
+    save();
+    renderStats();
+    renderCollection();
+    el('drawCards').innerHTML = '';
+    el('drawHint').style.display = '';
+    el('banner').className = 'banner';
+}
+
+/* ============ 音效 ============ */
+let audioCtx = null;
+function ensureAudio() {
+    try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+}
+function tone(freq, dur, type, vol, delay) {
+    if (!audioCtx) return;
+    try {
+        const t = audioCtx.currentTime + (delay || 0);
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = type || 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(vol || 0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) {}
+}
+function playFlip(rarity) {
+    ensureAudio();
+    if (rarity === '传说') { tone(600, .15, 'triangle', .18); tone(900, .2, 'triangle', .16, .08); }
+    else if (rarity === '史诗') { tone(500, .12, 'sine', .12); }
+    else { tone(320, .09, 'sine', .09); }
+}
+function playJingle(rarity) {
+    ensureAudio();
+    if (rarity === '传说') { [523, 659, 784, 1046].forEach((f, i) => tone(f, .35, 'triangle', .16, i * .14)); }
+    else { [523, 659, 784].forEach((f, i) => tone(f, .25, 'sine', .12, i * .11)); }
+}
+
+/* ============ 启动 ============ */
+load();
+renderStats();
+renderCollection();
+</script>
+</body>
+</html>
