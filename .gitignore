@@ -1,0 +1,15 @@
+# 系统与临时文件
+~$*
+Thumbs.db
+desktop.ini
+*.tmp
+
+# 百度网盘同步目录
+BaiduSyncdisk/
+
+# 磁盘扫描产物
+C:Usersswscan_log.txt
+C:Usersswstorage_scan.json
+
+# 安装包
+*.msi
