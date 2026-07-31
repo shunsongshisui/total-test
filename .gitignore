@@ -9,7 +9,7 @@ BaiduSyncdisk/
 
 # 磁盘扫描产物（文件名带全角冒号）
 *scan_log.txt
-*scan_*.json
+*_scan.json
 
 # 安装包
 *.msi
