@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哈利波特 · 幸运抽卡</title>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #0a0e16;
+    color: #f0e8d8;
+    min-height: 100vh;
+}
+body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(184,56,44,0.10) 0%, transparent 55%),
+        radial-gradient(ellipse at 15% 90%, rgba(212,175,55,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 80%, rgba(46,139,87,0.07) 0%, transparent 50%);
+}
+.container { position: relative; z-index: 1; max-width: 920px; margin: 0 auto; padding: 40px 20px 60px; }
+
+/* Header */
+.header { text-align: center; margin-bottom: 24px; }
+.header h1 {
+    font-size: 30px; font-weight: 900; letter-spacing: 8px;
+    background: linear-gradient(135deg, #f2e7c9 0%, #e0b64c 45%, #a83220 75%, #7b2f1f 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% auto;
+    animation: shine 8s ease-in-out infinite;
+}
+@keyframes shine { 0% { background-position: 0% center; } 50% { background-position: 100% center; } 100% { background-position: 0% center; } }
+.header .sub { font-size: 12px; color: rgba(240,232,216,0.4); letter-spacing: 4px; margin-top: 6px; }
+
+/* 顶部 tips */
+.tips {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+    max-width: 780px; margin: 0 auto 22px;
+}
+.tip {
+    font-size: 12px; padding: 6px 13px; border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    color: rgba(240,232,216,0.75);
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+.tip b { color: #e8c87a; font-weight: 700; }
+
+/* Stats bar */
+.stats {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 22px;
+}
+.stat {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 8px 16px;
+    font-size: 13px; display: flex; align-items: center; gap: 8px;
+}
+.stat .k { color: rgba(240,232,216,0.45); }
+.stat .v { font-weight: 700; font-size: 15px; }
+.stat .v.gold { color: #e8c87a; }
+.stat .v.purple { color: #c084fc; }
+.stat .v.blue { color: #7cc4f0; }
+.stat .v.green { color: #8fd9a0; }
+.stat .v.red { color: #f87171; }
+.stat .v.orange { color: #fbbf24; }
+.stat .v.gray { color: #94a3b8; }
+.stat .v.muggle { color: #c8c84a; }
+
+/* Pity bar */
+.pity-wrap { max-width: 460px; margin: 0 auto 24px; }
+.pity-label { font-size: 12px; color: rgba(240,232,216,0.45); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.pity-bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.pity-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #a83220, #e0b64c);
+    transition: width .4s ease;
+}
+
+/* Draw display */
+.draw-area {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 26px 16px;
+    min-height: 300px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+.draw-hint { font-size: 14px; color: rgba(240,232,216,0.35); letter-spacing: 3px; }
+.draw-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+/* Card flip */
+.dcard { width: 128px; height: 180px; perspective: 900px; }
+@media (max-width: 560px) { .dcard { width: 100px; height: 142px; } }
+.dinner {
+    width: 100%; height: 100%; position: relative;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.4,.2,.2,1);
+}
+.dinner.flip { transform: rotateY(180deg); }
+.dface {
+    position: absolute; inset: 0; border-radius: 12px;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    overflow: hidden;
+}
+/* 牌背 */
+.dback {
+    background: linear-gradient(150deg, #1a1830 0%, #0d0b1a 100%);
+    border: 2px solid #b8902e;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 4px;
+}
+.dback .yun { font-size: 44px; color: #e0b64c; text-shadow: 0 0 18px rgba(224,182,76,.55); }
+.dback .t { font-size: 10px; color: #9a7b3a; letter-spacing: 4px; }
+/* 牌面 */
+.dfront {
+    transform: rotateY(180deg);
+    border: 2px solid rgba(255,255,255,0.12);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px;
+}
+.dfront .emoji { font-size: 42px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); }
+.dfront .nm { font-size: 15px; font-weight: 700; text-align: center; line-height: 1.3; }
+.dfront .sub { font-size: 10px; color: rgba(255,255,255,0.78); text-align: center; line-height: 1.2; }
+.dfront .rg { font-size: 10px; letter-spacing: 3px; padding: 2px 8px; border-radius: 4px; background: rgba(0,0,0,.25); }
+.rar-SSS  { background: linear-gradient(160deg, #7c3aed, #f59e0b 35%, #fde68a 70%, #f3df9a); box-shadow: 0 0 26px rgba(245,158,11,.55); }
+.rar-SS   { background: linear-gradient(160deg, #6d28d9, #a855f7 50%, #e9d5ff); box-shadow: 0 0 22px rgba(168,85,247,.5); }
+.rar-S    { background: linear-gradient(160deg, #7f1d1d, #f87171 50%, #fecaca); box-shadow: 0 0 18px rgba(248,113,113,.4); }
+.rar-A    { background: linear-gradient(160deg, #92400e, #f59e0b 50%, #fde68a); }
+.rar-B    { background: linear-gradient(160deg, #1e40af, #60a5fa 50%, #bfdbfe); }
+.rar-C    { background: linear-gradient(160deg, #166534, #4ade80 50%, #bbf7d0); }
+.rar-D    { background: linear-gradient(160deg, #334155, #64748b 50%, #cbd5e1); }
+.rar-麻瓜  { background: linear-gradient(160deg, #4a4a08, #8a8a1a 50%, #c8c84a); }
+.rar-SSS .rg { color: #fff7d6; }
+.rar-SS .rg { color: #f3e8ff; }
+.rar-S .rg { color: #ffe4e6; }
+.rar-A .rg { color: #fef3c7; }
+.rar-B .rg { color: #dbeafe; }
+.rar-C .rg { color: #dcfce7; }
+.rar-D .rg { color: #e2e8f0; }
+.rar-麻瓜 .rg { color: #f2f2b0; }
+
+/* Banner */
+.banner {
+    display: none;
+    padding: 10px 22px; border-radius: 10px; font-size: 16px; font-weight: 800; letter-spacing: 3px;
+    animation: pop .5s cubic-bezier(.34,1.56,.64,1);
+}
+.banner.show { display: block; }
+.banner-SSS { background: linear-gradient(90deg,#7c3aed,#f59e0b); color:#fff7d6; box-shadow: 0 0 32px rgba(245,158,11,.6); }
+.banner-SS { background: linear-gradient(90deg,#4c1d95,#7c3aed); color:#f3e8ff; box-shadow: 0 0 28px rgba(168,85,247,.55); }
+.banner-S { background: linear-gradient(90deg,#7f1d1d,#ef4444); color:#ffe4e6; box-shadow: 0 0 24px rgba(248,113,113,.5); }
+.banner-A { background: linear-gradient(90deg,#92400e,#f59e0b); color:#fef3c7; }
+.banner-B { background: linear-gradient(90deg,#1e3a8a,#3b82f6); color:#dbeafe; }
+.banner-C { background: linear-gradient(90deg,#14532d,#22c55e); color:#dcfce7; }
+.banner-D { background: linear-gradient(90deg,#2b3648,#475569); color:#e2e8f0; }
+.banner-麻瓜 { background: linear-gradient(90deg,#2f2f05,#6b6b10); color:#e8e8a0; }
+@keyframes pop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* Buttons */
+.btns { display: flex; justify-content: center; gap: 14px; margin-bottom: 30px; flex-wrap: wrap; }
+.btn {
+    border: none; cursor: pointer;
+    padding: 13px 34px; border-radius: 12px;
+    font-size: 16px; font-weight: 800; letter-spacing: 4px;
+    color: #3a1f0a;
+    background: linear-gradient(135deg, #ffe0a0, #e0b64c 55%, #c0392b);
+    box-shadow: 0 6px 20px rgba(192,57,43,.28);
+    transition: all .2s;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(224,182,76,.35); }
+.btn:active { transform: translateY(0) scale(.97); }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.btn.ghost {
+    background: rgba(255,255,255,0.05); color: rgba(240,232,216,.75);
+    box-shadow: none; border: 1px solid rgba(255,255,255,.1); font-size: 13px; letter-spacing: 2px;
+}
+.btn.ghost:hover { background: rgba(255,255,255,.09); }
+
+/* Rates legend */
+.rates {
+    display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;
+    margin-bottom: 34px; font-size: 12px;
+}
+.rate { display: flex; align-items: center; gap: 6px; color: rgba(240,232,216,.55); }
+.rate .dot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* Collection */
+.collection-title {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+}
+.collection-title h2 { font-size: 18px; letter-spacing: 4px; color: rgba(240,232,216,.8); }
+.collection-title .prog { font-size: 13px; color: rgba(240,232,216,.45); }
+.cgrid {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+}
+.ctile {
+    border-radius: 10px; padding: 10px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.02);
+    transition: transform .15s;
+}
+.ctile { text-decoration: none; color: inherit; }
+.ctile:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.4); }
+.ctile .lk { font-size: 9px; opacity: .45; margin-left: 3px; }
+.hint { text-align: center; font-size: 11px; color: rgba(240,232,216,.4); margin: -6px 0 14px; letter-spacing: 1px; }
+.ctile .emoji { font-size: 26px; }
+.ctile .nm { font-size: 11px; text-align: center; color: rgba(240,232,216,.8); line-height: 1.2; }
+.ctile .sub { font-size: 9px; text-align: center; color: rgba(240,232,216,.45); line-height: 1.15; }
+.ctile .cnt { font-size: 10px; color: rgba(240,232,216,.45); }
+.ctile .rn { width: 100%; height: 3px; border-radius: 2px; }
+.ctile.owned-SSS { border-color: rgba(245,158,11,.55); background: rgba(245,158,11,.08); }
+.ctile.owned-SS { border-color: rgba(168,85,247,.5); background: rgba(139,92,246,.08); }
+.ctile.owned-S { border-color: rgba(248,113,113,.45); background: rgba(248,113,113,.07); }
+.ctile.owned-A { border-color: rgba(245,158,11,.4); background: rgba(245,158,11,.07); }
+.ctile.owned-B { border-color: rgba(96,165,250,.4); background: rgba(96,165,250,.06); }
+.ctile.owned-C { border-color: rgba(74,222,128,.35); background: rgba(74,222,128,.05); }
+.ctile.owned-D { border-color: rgba(148,163,184,.3); background: rgba(148,163,184,.04); }
+.ctile.owned-麻瓜 { border-color: rgba(154,154,31,.5); background: rgba(154,154,31,.08); }
+/* 未收集的暗卡 */
+.ctile.locked {
+    border-style: dashed; border-color: rgba(255,255,255,0.09);
+    background: rgba(255,255,255,0.01);
+}
+.ctile.locked .nm { color: rgba(240,232,216,.22); }
+.ctile.locked .q { font-size: 24px; color: rgba(240,232,216,.18); }
+
+.footer { text-align: center; margin-top: 40px; font-size: 11px; color: rgba(255,255,255,0.1); letter-spacing: 2px; }
+.feedback-toggle{margin-top:28px;text-align:center;opacity:.5;transition:opacity .3s;cursor:pointer}
+.feedback-toggle:hover{opacity:1}
+.feedback-toggle span{font-size:12px;color:rgba(232,200,122,.7);letter-spacing:2px;border-bottom:1px dashed rgba(255,255,255,.15);padding-bottom:2px}
+.feedback-section{display:none;margin-top:20px;border-top:1px solid rgba(255,255,255,.07);padding-top:20px}
+.feedback-section.active{display:block}
+.feedback-section h3{font-size:13px;color:#e8c87a;letter-spacing:2px;margin-bottom:4px}
+.feedback-section .fb-desc{font-size:11px;color:rgba(240,232,216,.5);margin-bottom:14px;line-height:1.6}
+.fb-row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.fb-row select,.fb-row input{flex:1;min-width:120px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0e8d8;font-size:13px;font-family:inherit;outline:none;transition:border-color .25s;-webkit-appearance:none;appearance:none}
+.fb-row select option{background:#141024;color:#f0e8d8}
+.fb-textarea{width:100%;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0e8d8;font-size:13px;font-family:inherit;line-height:1.6;resize:vertical;outline:none;min-height:80px;box-sizing:border-box}
+.fb-textarea:focus,.fb-row select:focus,.fb-row input:focus{border-color:#e0b64c}
+.fb-textarea::placeholder{color:rgba(240,232,216,.25)}
+.fb-submit-row{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.fb-btn{padding:10px 28px;border:1px solid #e0b64c;background:transparent;color:#e0b64c;font-family:inherit;font-size:13px;letter-spacing:2px;cursor:pointer;border-radius:8px;transition:all .3s}
+.fb-btn:hover{background:#e0b64c;color:#0a0e16}
+.fb-btn:disabled{opacity:.3;cursor:not-allowed}
+.fb-status{font-size:12px;color:rgba(232,200,122,.7);margin-left:4px}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>哈利波特 · 幸运抽卡</h1>
+        <div class="sub">✦ 霍格沃茨之上，命运已经注定 ✦</div>
+    </div>
+
+    <div class="tips">
+        <div class="tip">🔍 点击角色卡片可<b>跳转百度搜索</b></div>
+        <div class="tip">💜 <b>SSS</b> 最高稀有度 · 保底 <b>200</b> 抽</div>
+        <div class="tip">⭐ 王牌角色出现率更低 · 最难集齐</div>
+        <div class="tip">🔟 十连保底至少一张 <b>A</b></div>
+        <div class="tip">⚡ 每 <b>100</b> 抽保底一位邓布利多军成员</div>
+        <div class="tip">✨ 单抽 <b>10</b> 次必出 <b>A</b> 及以上</div>
+        <div class="tip">💾 抽卡进度<b>自动保存</b></div>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><span class="k">总抽数</span><span class="v" id="sTotal">0</span></div>
+        <div class="stat"><span class="k">SSS</span><span class="v gold" id="s-SSS">0</span></div>
+        <div class="stat"><span class="k">SS</span><span class="v purple" id="s-SS">0</span></div>
+        <div class="stat"><span class="k">S</span><span class="v red" id="s-S">0</span></div>
+        <div class="stat"><span class="k">A</span><span class="v orange" id="s-A">0</span></div>
+        <div class="stat"><span class="k">B</span><span class="v blue" id="s-B">0</span></div>
+        <div class="stat"><span class="k">C</span><span class="v green" id="s-C">0</span></div>
+        <div class="stat"><span class="k">D</span><span class="v gray" id="s-D">0</span></div>
+        <div class="stat"><span class="k">🚪麻瓜</span><span class="v muggle" id="s-麻瓜">0</span></div>
+        <div class="stat"><span class="k">图鉴</span><span class="v" id="sProgress">0/199</span></div>
+    </div>
+
+    <div class="pity-wrap">
+        <div class="pity-label"><span>⭐ SSS 保底进度</span><span id="pityText">0 / 200</span></div>
+        <div class="pity-bar"><div class="pity-fill" id="pityFill"></div></div>
+        <div class="pity-label" style="margin-top:10px"><span>⚡ 邓布利多军保底进度</span><span id="daText">0 / 100</span></div>
+        <div class="pity-label" style="margin-top:10px"><span>✨ 单抽金保底进度</span><span id="goldText">0 / 10</span></div>
+    </div>
+
+    <div class="draw-area" id="drawArea">
+        <div class="draw-hint" id="drawHint">🦉 点击下方按钮，聆听分院帽的呼唤</div>
+        <div class="draw-cards" id="drawCards"></div>
+        <div class="banner" id="banner"></div>
+    </div>
+
+    <div class="btns">
+        <button class="btn" id="btn1" onclick="drawCards(1)">单抽</button>
+        <button class="btn" id="btn10" onclick="drawCards(10)">十连</button>
+        <button class="btn ghost" id="btnReset" onclick="resetAll()">清空重来</button>
+    </div>
+
+    <div class="collection-title">
+        <h2>✦ 角色图鉴</h2>
+        <div class="prog" id="cProgress"></div>
+    </div>
+    <div class="cgrid" id="cgrid"></div>
+
+    <div class="feedback-toggle" onclick="toggleFeedback()"><span>✎ 意见反馈</span></div>
+    <div class="feedback-section" id="feedbackSection">
+        <h3>📬 意见箱</h3>
+        <div class="fb-desc">抽卡游戏玩起来怎么样？爆率、稀有度、保底设置有什么想吐槽的？<br>每条意见都会直接发到我的邮箱，我会认真看 🙏</div>
+        <textarea class="fb-textarea" id="fbText" placeholder="写点什么吧……（你的意见会直接发到我的邮箱）" rows="3"></textarea>
+        <div class="fb-submit-row">
+            <input id="fbEmail" type="email" placeholder="你的邮箱（选填）">
+            <button class="fb-btn" onclick="sendFeedback()">📨 发送</button>
+            <span class="fb-status" id="fbStatus"></span>
+        </div>
+    </div>
+
+    <div class="footer">哈利波特 · 幸运抽卡 &nbsp;·&nbsp; SSS 保底 200 抽 &nbsp;·&nbsp; 献给霍格沃茨 &nbsp;·&nbsp; 🦉 已接待 <span id="busuanzi_value_page_pv">---</span> 次来访</div>
+</div>
+
+<script>
+/* ============ 卡池数据（173 张） ============ */
+const RARITY_ORDER = ['SSS', 'SS', 'S', 'A', 'B', 'C', 'D', '麻瓜'];
+const RATES = { SSS: 0.001, SS: 0.006, S: 0.023, A: 0.06, B: 0.12, C: 0.25, D: 0.535, 麻瓜: 0.005 };
+const PITY = 200;          // SSS 保底
+const RARE_PLUS = 'A';     // 十连保底：至少一张该稀有度以上
+const DA_PITY = 100;       // 邓布利多军保底：每100抽必出一位邓布利多军成员
+const SINGLE_PITY = 10;    // 单抽金保底：10次单抽必出 A 及以上
+
+const CARDS = [
+{"name":"伏地魔","sub":"黑魔王 · 汤姆·里德尔","emoji":"🐍","rarity":"SSS","w":0.4},
+{"name":"阿不思·邓布利多","sub":"当代最伟大的白巫师","emoji":"🧙","rarity":"SSS"},
+{"name":"盖勒特·格林德沃","sub":"第一代黑魔王","emoji":"🌍","rarity":"SSS","w":0.6},
+{"name":"哈利·波特","sub":"大难不死的男孩 · 救世之星","emoji":"⚡","rarity":"SSS","w":0.5},
+{"name":"西弗勒斯·斯内普","sub":"双面间谍 · 最勇敢的人","emoji":"🖤","rarity":"SSS","w":0.55},
+{"name":"戈德里克·格兰芬多","sub":"创始人 · 勇气","emoji":"🦁","rarity":"SSS"},
+{"name":"萨拉查·斯莱特林","sub":"创始人 · 野心","emoji":"🐍","rarity":"SSS"},
+{"name":"罗伊纳·拉文克劳","sub":"创始人 · 智慧","emoji":"🦅","rarity":"SSS"},
+{"name":"赫尔加·赫奇帕奇","sub":"创始人 · 忠诚","emoji":"🦡","rarity":"SSS"},
+{"name":"尼可·勒梅","sub":"魔法石 · 600岁的炼金术士","emoji":"⭐","rarity":"SSS"},
+{"name":"米勒娃·麦格","sub":"变形术大师 · 副校长","emoji":"🐱","rarity":"SS","w":0.5},
+{"name":"小天狼星·布莱克","sub":"教父 · 逃犯","emoji":"🐺","rarity":"SS"},
+{"name":"莱姆斯·卢平","sub":"狼人教授 · 凤凰社","emoji":"🌕","rarity":"SS","w":0.6},
+{"name":"詹姆·波特","sub":"掠夺者 · 哈利的父亲","emoji":"🎸","rarity":"SS"},
+{"name":"莉莉·波特","sub":"最后一道爱的屏障","emoji":"❤️","rarity":"SS"},
+{"name":"阿拉斯托·穆迪","sub":"疯眼汉 · 最强傲罗","emoji":"👁️","rarity":"SS","w":0.6},
+{"name":"尼法朵拉·唐克斯","sub":"易容马格斯 · 傲罗","emoji":"🎨","rarity":"SS"},
+{"name":"金斯莱·沙克尔","sub":"傲罗 · 魔法部长","emoji":"🏰","rarity":"SS"},
+{"name":"多比","sub":"自由的家养小精灵","emoji":"🧦","rarity":"SS","w":0.6},
+{"name":"霍拉斯·斯拉格霍恩","sub":"魔药大师 · 前校长","emoji":"🥃","rarity":"SS"},
+{"name":"贝拉特里克斯·莱斯特兰奇","sub":"最狂热的食死徒","emoji":"⛓️","rarity":"SS","w":0.5},
+{"name":"卢修斯·马尔福","sub":"食死徒 · 马尔福家主","emoji":"🪄","rarity":"SS"},
+{"name":"雷古勒斯·布莱克","sub":"R.A.B. · 偷换挂坠盒","emoji":"📿","rarity":"SS"},
+{"name":"纽特·斯卡曼德","sub":"神奇动物学家","emoji":"🧳","rarity":"SS"},
+{"name":"纳吉尼","sub":"大蛇 · 第七魂器","emoji":"🐍","rarity":"SS"},
+{"name":"福克斯","sub":"不死凤凰 · 眼泪可治愈","emoji":"🔥","rarity":"SS"},
+{"name":"魔法石","sub":"贤者之石 · 长生不老","emoji":"💎","rarity":"SS"},
+{"name":"老魔杖","sub":"死亡圣器 · 接骨木魔杖","emoji":"🪄","rarity":"SS","w":0.6},
+{"name":"复活石","sub":"死亡圣器 · 召唤逝者","emoji":"🪨","rarity":"SS"},
+{"name":"隐身衣","sub":"死亡圣器 · 波特家传","emoji":"🧥","rarity":"SS","w":0.6},
+{"name":"格兰芬多宝剑","sub":"妖精锻造 · 蛇怪克星","emoji":"🗡️","rarity":"SS"},
+{"name":"魂器·日记本","sub":"第一魂器 · 十六岁的里德尔","emoji":"📔","rarity":"SS"},
+{"name":"魂器·挂坠盒","sub":"斯莱特林的挂坠盒","emoji":"🏵️","rarity":"SS"},
+{"name":"魂器·冠冕","sub":"拉文克劳的冠冕","emoji":"👑","rarity":"SS"},
+{"name":"魂器·金杯","sub":"赫奇帕奇的金杯","emoji":"🏆","rarity":"SS"},
+{"name":"魂器·戒指","sub":"马沃罗的戒指","emoji":"💍","rarity":"SS"},
+{"name":"罗恩·韦斯莱","sub":"哈利最好的朋友 · 巫师棋高手","emoji":"♟️","rarity":"S","da":true,"w":0.75},
+{"name":"赫敏·格兰杰","sub":"万事通 · 最聪明的女巫","emoji":"📚","rarity":"S","da":true,"w":0.7},
+{"name":"金妮·韦斯莱","sub":"红发追球手 · 哈利的妻子","emoji":"🌹","rarity":"S","da":true,"w":0.8},
+{"name":"纳威·隆巴顿","sub":"草药学 · 真正的格兰芬多","emoji":"🌱","rarity":"S","da":true,"w":0.8},
+{"name":"卢娜·洛夫古德","sub":"疯姑娘 · 看见常人看不见的","emoji":"🌙","rarity":"S","da":true,"w":0.7},
+{"name":"弗雷德·韦斯莱","sub":"双子 · 恶作剧之王","emoji":"🎉","rarity":"S","da":true,"w":0.75},
+{"name":"乔治·韦斯莱","sub":"双子 · 恶作剧之王","emoji":"🎈","rarity":"S","da":true,"w":0.75},
+{"name":"鲁伯·海格","sub":"猎场看守 · 混血巨人","emoji":"🍺","rarity":"S"},
+{"name":"德拉科·马尔福","sub":"斯莱特林 · 铂金少爷","emoji":"🐍","rarity":"S"},
+{"name":"塞德里克·迪戈里","sub":"赫奇帕奇之光 · 三强争霸勇士","emoji":"🌟","rarity":"S"},
+{"name":"维克多尔·克鲁姆","sub":"保加利亚找球手","emoji":"🥇","rarity":"S"},
+{"name":"芙蓉·德拉库尔","sub":"布斯巴顿勇士 · 媚娃血统","emoji":"💃","rarity":"S"},
+{"name":"秋·张","sub":"拉文克劳 · 哈利的初恋","emoji":"🌸","rarity":"S"},
+{"name":"菲利乌斯·弗立维","sub":"魔咒大师 · 拉文克劳院长","emoji":"🎻","rarity":"S"},
+{"name":"波莫娜·斯普劳特","sub":"草药大师 · 赫奇帕奇院长","emoji":"🌿","rarity":"S"},
+{"name":"西比尔·特里劳妮","sub":"占卜教授 · 天眼","emoji":"🔮","rarity":"S"},
+{"name":"多洛雷斯·乌姆里奇","sub":"粉色的癞蛤蟆 · 魔法部","emoji":"🎀","rarity":"S"},
+{"name":"丽塔·斯基特","sub":"八卦记者 · 未登记的阿尼马格斯","emoji":"🪶","rarity":"S"},
+{"name":"海德薇","sub":"哈利的猫头鹰","emoji":"🦉","rarity":"S","w":0.8},
+{"name":"巴克比克","sub":"鹰头马身有翼兽","emoji":"🦅","rarity":"S"},
+{"name":"独角兽","sub":"纯洁的魔法生物","emoji":"🦄","rarity":"S"},
+{"name":"嗅嗅","sub":"爱财如命的神奇动物","emoji":"🪙","rarity":"S"},
+{"name":"分院帽","sub":"霍格沃茨 · 会说话的老帽子","emoji":"🎩","rarity":"S"},
+{"name":"活点地图","sub":"掠夺者 · 恶作剧的杰作","emoji":"🗺️","rarity":"S"},
+{"name":"厄里斯魔镜","sub":"心中最深的渴望","emoji":"🪞","rarity":"S"},
+{"name":"时间转换器","sub":"赫敏的项链 · 逆转时间","emoji":"⏳","rarity":"S"},
+{"name":"火弩箭","sub":"世界最快的飞天扫帚","emoji":"🚀","rarity":"S"},
+{"name":"冥想盆","sub":"记忆之池 · 银白色的雾","emoji":"🫙","rarity":"S"},
+{"name":"小巴蒂·克劳奇","sub":"冒牌疯眼汉 · 食死徒","emoji":"🎭","rarity":"S"},
+{"name":"奥利凡德","sub":"魔杖制造大师 · 龙的心弦","emoji":"🕯️","rarity":"S"},
+{"name":"庞弗雷夫人","sub":"校医 · 医疗翼","emoji":"🩹","rarity":"A"},
+{"name":"克利切","sub":"布莱克家的小精灵","emoji":"🧟","rarity":"A"},
+{"name":"阿不福思·邓布利多","sub":"猪头酒吧 · 山羊狂热者","emoji":"🐐","rarity":"A"},
+{"name":"比尔·韦斯莱","sub":"古灵阁解咒员 · 芙蓉的丈夫","emoji":"🧿","rarity":"A"},
+{"name":"查理·韦斯莱","sub":"龙类研究 · 罗马尼亚","emoji":"🐉","rarity":"A"},
+{"name":"莫丽·韦斯莱","sub":"韦斯莱夫人 · 慈爱","emoji":"🍲","rarity":"A"},
+{"name":"亚瑟·韦斯莱","sub":"麻瓜物品狂热者","emoji":"🚗","rarity":"A"},
+{"name":"小矮星彼得","sub":"虫尾巴 · 背叛者","emoji":"🐀","rarity":"A"},
+{"name":"诺伯","sub":"挪威脊背龙 · 海格的宝贝","emoji":"🐲","rarity":"A"},
+{"name":"摄魂怪","sub":"阿兹卡班的守卫 · 摄魂怪之吻","emoji":"🥶","rarity":"A"},
+{"name":"人马","sub":"禁林族群 · 观星者","emoji":"🐴","rarity":"A"},
+{"name":"阿兹卡班","sub":"巫师监狱 · 孤岛堡垒","emoji":"🏚️","rarity":"A"},
+{"name":"金色飞贼","sub":"魁地奇 · 150分的小球","emoji":"🟡","rarity":"A"},
+{"name":"福灵剂","sub":"液态幸运","emoji":"🧪","rarity":"A"},
+{"name":"复方汤剂","sub":"变身药剂","emoji":"🍵","rarity":"A"},
+{"name":"吐真剂","sub":"真相药剂","emoji":"💧","rarity":"A"},
+{"name":"熄灯器","sub":"邓布利多 · 收集光明","emoji":"💡","rarity":"A"},
+{"name":"纳西莎·马尔福","sub":"德拉科的母亲 · 为了孩子","emoji":"💙","rarity":"A"},
+{"name":"鲁弗斯·斯克林杰","sub":"魔法部长 · 前任傲罗","emoji":"🎖️","rarity":"A"},
+{"name":"灰女士","sub":"拉文克劳幽灵 · 冠冕之迷","emoji":"🌫️","rarity":"A"},
+{"name":"拉环","sub":"古灵阁妖精 · 宝剑鉴定","emoji":"👹","rarity":"A"},
+{"name":"圣芒戈","sub":"魔法伤病医院","emoji":"🏥","rarity":"A"},
+{"name":"对角巷","sub":"魔法商业街","emoji":"🛍️","rarity":"A"},
+{"name":"康奈利·福吉","sub":"前魔法部长 · 粉色恐慌","emoji":"🎩","rarity":"B"},
+{"name":"巴蒂·克劳奇","sub":"前魔法法律执行司司长","emoji":"⚖️","rarity":"B"},
+{"name":"卡卡洛夫","sub":"德姆斯特朗校长 · 前食死徒","emoji":"🧊","rarity":"B"},
+{"name":"芬里尔·格雷伯克","sub":"狼人 · 最爱咬小孩","emoji":"🐺","rarity":"B"},
+{"name":"奥古斯塔·隆巴顿","sub":"纳威的奶奶 · 毛线帽","emoji":"👵","rarity":"B"},
+{"name":"谢诺菲留斯·洛夫古德","sub":"卢娜的爸爸 · 唱唱反调主编","emoji":"📰","rarity":"B"},
+{"name":"西莫·斐尼甘","sub":"爱爆炸的格兰芬多","emoji":"💥","rarity":"B"},
+{"name":"迪安·托马斯","sub":"格兰芬多 · 寻找亲人的男孩","emoji":"⚽","rarity":"B"},
+{"name":"珀西·韦斯莱","sub":"魔法部优秀员工","emoji":"📋","rarity":"B"},
+{"name":"差点没头的尼克","sub":"格兰芬多幽灵","emoji":"⚰️","rarity":"B"},
+{"name":"胖修士","sub":"赫奇帕奇幽灵","emoji":"🕊️","rarity":"B"},
+{"name":"哭泣的桃金娘","sub":"女生盥洗室的幽灵","emoji":"🛁","rarity":"B"},
+{"name":"血人巴罗","sub":"斯莱特林幽灵","emoji":"🩸","rarity":"B"},
+{"name":"阿拉戈克","sub":"巨型蜘蛛 · 禁林之王","emoji":"🕷️","rarity":"B"},
+{"name":"打人柳","sub":"暴躁的老柳树","emoji":"🌳","rarity":"B"},
+{"name":"三头犬路威","sub":"海格的大宝贝","emoji":"🐶","rarity":"B"},
+{"name":"匈牙利树蜂","sub":"最凶狠的龙 · 三强争霸","emoji":"🌋","rarity":"B"},
+{"name":"夜骐","sub":"见过死亡的人才能看见","emoji":"🦇","rarity":"B"},
+{"name":"光轮2000","sub":"哈利的旧扫帚","emoji":"🧹","rarity":"B"},
+{"name":"奎里纳斯·奇洛","sub":"黑魔法防御术教授 · 双面人","emoji":"🥴","rarity":"B"},
+{"name":"布雷司·扎比尼","sub":"斯莱特林 · 帅气的毒舌","emoji":"🥂","rarity":"B"},
+{"name":"西奥多·诺特","sub":"斯莱特林 · 安静的贵族","emoji":"📕","rarity":"B"},
+{"name":"潘西·帕金森","sub":"斯莱特林 · 高傲的跟班","emoji":"🦚","rarity":"B"},
+{"name":"阿里安娜·邓布利多","sub":"邓布利多的妹妹 · 默默然","emoji":"🌼","rarity":"B"},
+{"name":"帕瓦蒂·佩蒂尔","sub":"格兰芬多 · 双胞胎之一","emoji":"🌺","rarity":"C"},
+{"name":"帕德玛·佩蒂尔","sub":"拉文克劳 · 双胞胎之一","emoji":"🌷","rarity":"C"},
+{"name":"拉文德·布朗","sub":"占卜迷妹 · 罗恩的女友","emoji":"💅","rarity":"C"},
+{"name":"汉娜·艾博","sub":"赫奇帕奇 · 破釜酒吧老板娘","emoji":"🍯","rarity":"C"},
+{"name":"厄尼·麦克米兰","sub":"赫奇帕奇 · 能说会道","emoji":"👓","rarity":"C"},
+{"name":"苏珊·博恩斯","sub":"赫奇帕奇 · 魔法部家庭","emoji":"🐝","rarity":"C"},
+{"name":"贾斯廷·芬列里","sub":"赫奇帕奇 · 麻瓜出身","emoji":"🤕","rarity":"C"},
+{"name":"迈克尔·科纳","sub":"拉文克劳 · 卢娜前任","emoji":"🍀","rarity":"C"},
+{"name":"泰瑞·布特","sub":"拉文克劳 · 会看星星","emoji":"🎲","rarity":"C"},
+{"name":"克拉布","sub":"斯莱特林 · 马尔福的跟班","emoji":"🧱","rarity":"C"},
+{"name":"高尔","sub":"斯莱特林 · 马尔福的跟班","emoji":"🗿","rarity":"C"},
+{"name":"罗米达·万尼","sub":"格兰芬多 · 哈利脑残粉","emoji":"🌈","rarity":"C"},
+{"name":"科林·克里维","sub":"爱拍照的迷弟","emoji":"📷","rarity":"C"},
+{"name":"丹尼斯·克里维","sub":"科林的弟弟 · 照相机","emoji":"🎞️","rarity":"C"},
+{"name":"达芙妮·格林格拉斯","sub":"斯莱特林 · 冰雪美人","emoji":"🦢","rarity":"C"},
+{"name":"宾斯教授","sub":"幽灵 · 最无聊的历史课","emoji":"🧓","rarity":"C"},
+{"name":"特雷弗","sub":"纳威的蟾蜍 · 老走丢","emoji":"🐸","rarity":"C"},
+{"name":"克鲁克山","sub":"赫敏的猫 · 有猫腻","emoji":"🐈","rarity":"C"},
+{"name":"狼毒药剂","sub":"让狼人保持理智","emoji":"☠️","rarity":"C"},
+{"name":"迷情剂","sub":"爱情魔药 · 致命的诱惑","emoji":"💘","rarity":"C"},
+{"name":"门钥匙","sub":"瞬间传送 · 碰一下就行","emoji":"🚪","rarity":"C"},
+{"name":"飞路粉","sub":"壁炉旅行粉","emoji":"💨","rarity":"C"},
+{"name":"吼叫信","sub":"红色的吼叫信","emoji":"📢","rarity":"C"},
+{"name":"预言家日报","sub":"巫师界的报纸","emoji":"🗞️","rarity":"C"},
+{"name":"比比多味豆","sub":"每颗口味都不同","emoji":"🍬","rarity":"C"},
+{"name":"禁林","sub":"霍格沃茨的秘密森林","emoji":"🌲","rarity":"C"},
+{"name":"有求必应屋","sub":"来去无踪的房间","emoji":"🛋️","rarity":"C"},
+{"name":"巨人格洛普","sub":"海格的巨人弟弟","emoji":"🗻","rarity":"C"},
+{"name":"巧克力蛙","sub":"卡牌随盒附赠","emoji":"🍫","rarity":"C"},
+{"name":"魁地奇世界杯","sub":"巫师界的盛事","emoji":"🏟️","rarity":"C"},
+{"name":"洛丽丝夫人","sub":"费尔奇的猫 · 目光如炬","emoji":"🐈‍⬛","rarity":"D"},
+{"name":"牙牙","sub":"海格的猎犬 · 胆子不小","emoji":"🐕","rarity":"D"},
+{"name":"飞天汽车","sub":"魔法福特安格里亚","emoji":"🚙","rarity":"D"},
+{"name":"中国火球龙","sub":"龙的一种 · 龙蛋有价","emoji":"🀄","rarity":"D"},
+{"name":"麻瓜首相","sub":"唐宁街10号 · 被魔法部烦扰","emoji":"🏛️","rarity":"D"},
+{"name":"马库斯·弗林特","sub":"斯莱特林魁地奇队长","emoji":"💪","rarity":"D"},
+{"name":"蒙太","sub":"斯莱特林 · 找茬高手","emoji":"🏏","rarity":"D"},
+{"name":"奥利弗·伍德","sub":"格兰芬多守门员 · 热血","emoji":"🥅","rarity":"D"},
+{"name":"安吉丽娜·约翰逊","sub":"格兰芬多追球手","emoji":"🏀","rarity":"D"},
+{"name":"艾丽娅·斯平内特","sub":"格兰芬多追球手","emoji":"🏃","rarity":"D"},
+{"name":"凯蒂·贝尔","sub":"格兰芬多追球手","emoji":"🎯","rarity":"D"},
+{"name":"沃尔布加·布莱克","sub":"布莱克夫人 · 画框里的咆哮","emoji":"🖼️","rarity":"D"},
+{"name":"韦斯莱魔法把戏坊","sub":"恶作剧商店 · 大粪弹","emoji":"🎪","rarity":"D"},
+{"name":"猪头酒吧","sub":"霍格莫德 · 破旧小酒馆","emoji":"🍻","rarity":"D"},
+{"name":"三把扫帚","sub":"霍格莫德 · 黄油啤酒","emoji":"🧉","rarity":"D"},
+{"name":"蜂蜜公爵","sub":"糖果店 · 比比多味豆","emoji":"🍭","rarity":"D"},
+{"name":"德姆斯特朗战舰","sub":"黑帆的魔法船","emoji":"⚓","rarity":"D"},
+{"name":"布斯巴顿马车","sub":"带翅膀的马车","emoji":"🐎","rarity":"D"},
+{"name":"尖叫棚屋","sub":"霍格莫德 · 闹鬼小屋","emoji":"🛖","rarity":"D"},
+{"name":"魔法部","sub":"巫师政府 · 神秘事务司","emoji":"🏢","rarity":"D"},
+{"name":"弗农·德思礼","sub":"麻瓜姨父 · 最恨魔法","emoji":"🚗","rarity":"麻瓜"},
+{"name":"佩妮·德思礼","sub":"麻瓜姨妈 · 锅铲攻击","emoji":"🍳","rarity":"麻瓜"},
+{"name":"达力·德思礼","sub":"麻瓜表哥 · 猪尾巴","emoji":"🍩","rarity":"麻瓜"},
+{"name":"玛姬姑妈","sub":"被吹成气球的姑妈","emoji":"💨","rarity":"麻瓜"},
+{"name":"吉德罗·洛哈特","sub":"骗子 · 遗忘咒的代价","emoji":"📸","rarity":"麻瓜"},
+{"name":"皮皮鬼","sub":"霍格沃茨最烦人的幽灵","emoji":"👻","rarity":"A"},
+{"name":"蒙顿格斯·弗莱奇","sub":"凤凰社最不靠谱的人","emoji":"🚬","rarity":"麻瓜"},
+{"name":"费尔奇","sub":"哑炮 · 霍格沃茨管理员","emoji":"🔑","rarity":"麻瓜"},
+{"name":"动物园大蟒蛇","sub":"哈利的第一句蛇佬腔","emoji":"🐍","rarity":"麻瓜"},
+{"name":"麻瓜科技","sub":"手机 · 汽车 · 魔法的笑柄","emoji":"📱","rarity":"麻瓜"},
+{"name":"阿瓦达索命","sub":"不可饶恕咒 · 索命咒","emoji":"💀","rarity":"S"},
+{"name":"钻心剜骨","sub":"不可饶恕咒 · 钻心咒","emoji":"💢","rarity":"S"},
+{"name":"魂魄出窍","sub":"不可饶恕咒 · 夺魂咒","emoji":"🌀","rarity":"S"},
+{"name":"呼神护卫","sub":"守护神咒 · 哈利是一只雄鹿","emoji":"🦌","rarity":"S"},
+{"name":"除你武器","sub":"缴械咒 · 哈利的招牌咒语","emoji":"✋","rarity":"A"},
+{"name":"飞来飞去","sub":"召唤咒 · 应召而来","emoji":"🪃","rarity":"A"},
+{"name":"幻影移形","sub":"随从显形 · 瞬移","emoji":"💨","rarity":"A"},
+{"name":"荧光闪烁","sub":"照明咒 · 魔杖亮起","emoji":"💡","rarity":"A"},
+{"name":"一忘皆空","sub":"遗忘咒 · 记忆删除","emoji":"🌫️","rarity":"A"},
+{"name":"滑稽滑稽","sub":"博格特克星 · 大笑","emoji":"🤡","rarity":"A"},
+{"name":"昏昏倒地","sub":"昏迷咒 · 常见决斗咒","emoji":"😵","rarity":"B"},
+{"name":"统统石化","sub":"石化咒 · 全身僵硬","emoji":"🧊","rarity":"B"},
+{"name":"盔甲护身","sub":"防御咒 · 反弹","emoji":"🛡️","rarity":"B"},
+{"name":"神锋无影","sub":"斯内普的杰作 · 伤人无形","emoji":"🗡️","rarity":"B"},
+{"name":"粉身碎骨","sub":"粉碎咒 · 目标碎成渣","emoji":"💥","rarity":"B"},
+{"name":"厉火","sub":"厉火咒 · 越烧越旺","emoji":"🔥","rarity":"B"},
+{"name":"咒立停","sub":"反咒 · 解除漂浮","emoji":"🙌","rarity":"C"},
+{"name":"门户大开","sub":"开锁咒 · 阿拉霍洞开","emoji":"🔓","rarity":"C"},
+{"name":"火焰熊熊","sub":"火焰咒 · 点燃","emoji":"🔥","rarity":"C"},
+{"name":"清水如泉","sub":"清水咒 · 解渴","emoji":"💦","rarity":"C"},
+{"name":"悬浮咒","sub":"羽加迪姆勒维奥萨 · 羽毛飞起来","emoji":"🪶","rarity":"C"},
+{"name":"统统加护","sub":"铜墙铁壁 · 大范围防御","emoji":"⛲","rarity":"C"},
+{"name":"飞鸟群群","sub":"召唤飞鸟 · 干扰对手","emoji":"🐦","rarity":"D"},
+{"name":"塔朗泰拉舞","sub":"舞蹈咒 · 停不下来","emoji":"🕺","rarity":"D"},
+{"name":"咧嘴呼啦啦","sub":"搔痒咒 · 笑到不能自已","emoji":"🤣","rarity":"D"},
+{"name":"恢复如初","sub":"修复咒 · 修好打碎的碗","emoji":"🛠️","rarity":"D"}
+];
+
+const CARDS_BY_RARITY = {};
+RARITY_ORDER.forEach(r => CARDS_BY_RARITY[r] = CARDS.filter(c => c.rarity === r));
+const DA_POOL = CARDS.filter(c => c.da);
+const GOLD_POOL = CARDS.filter(c => RARITY_ORDER.indexOf(c.rarity) <= RARITY_ORDER.indexOf('A'));
+
+/* ============ 状态 ============ */
+const SAVE_KEY = 'hpGachaV1';
+let state = { total: 0, pity: 0, daPity: 0, singlePity: 0, inventory: {} };  // inventory: name -> count
+let busy = false;
+
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
+function load() {
+    try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (raw) state = JSON.parse(raw);
+        if (typeof state.total !== 'number') state.total = 0;
+        if (typeof state.pity !== 'number') state.pity = 0;
+        if (typeof state.daPity !== 'number') state.daPity = 0;
+        if (typeof state.singlePity !== 'number') state.singlePity = 0;
+        if (!state.inventory) state.inventory = {};
+    } catch (e) {}
+}
+
+/* ============ 抽取逻辑 ============ */
+function pickCard(rarity) {
+    const pool = CARDS_BY_RARITY[rarity];
+    let total = 0;
+    for (const c of pool) total += c.w || 1;
+    let r = Math.random() * total;
+    for (const c of pool) { r -= (c.w || 1); if (r <= 0) return c; }
+    return pool[pool.length - 1];
+}
+function drawOne(forceRarity) {
+    let rarity;
+    if (forceRarity === 'GOLD') rarity = 'GOLD';
+    else if (forceRarity) rarity = forceRarity;
+    else if (state.pity >= PITY) rarity = 'SSS';
+    else if (state.daPity >= DA_PITY) rarity = null;
+    else rarity = rollRarity();
+    state.pity++;
+    state.daPity++;
+    state.total++;
+    let card;
+    if (rarity === 'GOLD') {
+        card = GOLD_POOL[Math.floor(Math.random() * GOLD_POOL.length)];
+        rarity = card.rarity;
+    } else if (rarity === null) {
+        card = DA_POOL[Math.floor(Math.random() * DA_POOL.length)];
+        rarity = card.rarity;
+    } else {
+        card = pickCard(rarity);
+    }
+    if (rarity === 'SSS') state.pity = 0;
+    if (card.da) state.daPity = 0;
+    state.inventory[card.name] = (state.inventory[card.name] || 0) + 1;
+    return card;
+}
+function rollRarity() {
+    const r = Math.random();
+    let acc = 0;
+    for (const rg of RARITY_ORDER) {
+        acc += RATES[rg];
+        if (r < acc) return rg;
+    }
+    return '普通';
+}
+function drawN(n, force) {
+    const results = [];
+    for (let i = 0; i < n; i++) results.push(drawOne(force));
+    // 十连保底：至少一张 A 及以上
+    const hasRarePlus = results.some(c => RARITY_ORDER.indexOf(c.rarity) <= RARITY_ORDER.indexOf(RARE_PLUS));
+    if (n > 1 && !hasRarePlus) {
+        const last = results.pop();
+        state.inventory[last.name]--;
+        state.total--;
+        state.pity--;
+        state.daPity--;
+        results.push(drawOne(RARE_PLUS));
+    }
+    return results;
+}
+
+/* ============ 渲染 ============ */
+function el(id) { return document.getElementById(id); }
+
+function renderStats() {
+    const c = {};
+    RARITY_ORDER.forEach(rg => c[rg] = 0);
+    for (const name in state.inventory) {
+        const card = CARDS.find(x => x.name === name);
+        if (card) c[card.rarity] += state.inventory[name];
+    }
+    el('sTotal').textContent = state.total;
+    RARITY_ORDER.forEach(rg => el('s-' + rg).textContent = c[rg] || 0);
+    const owned = Object.keys(state.inventory).filter(n => state.inventory[n] > 0).length;
+    el('sProgress').textContent = owned + '/' + CARDS.length;
+    el('pityText').textContent = state.pity + ' / ' + PITY;
+    el('pityFill').style.width = Math.min(100, state.pity / PITY * 100) + '%';
+    el('daText').textContent = state.daPity + ' / ' + DA_PITY;
+    el('goldText').textContent = state.singlePity + ' / ' + SINGLE_PITY;
+}
+
+function renderCollection() {
+    const grid = el('cgrid');
+    let html = '';
+    const owned = new Set(Object.keys(state.inventory).filter(n => state.inventory[n] > 0));
+    for (const rg of RARITY_ORDER) {
+        for (const card of CARDS_BY_RARITY[rg]) {
+            const cnt = state.inventory[card.name] || 0;
+            const has = owned.has(card.name);
+            if (has) {
+                html += `<a class="ctile owned-${rg}" href="https://www.baidu.com/s?wd=${encodeURIComponent('哈利波特 ' + card.name)}" target="_blank" rel="noopener">
+                    <div class="emoji">${card.emoji}</div>
+                    <div class="nm">${card.name}</div>
+                    <div class="sub">${card.sub}</div>
+                    <div class="cnt">×${cnt}<span class="lk">🔍</span></div>
+                    <div class="rn rar-${rg}"></div></a>`;
+            } else {
+                html += `<div class="ctile locked"><div class="q">❓</div>
+                    <div class="nm">？？？</div><div class="cnt">&nbsp;</div>
+                    <div class="rn" style="opacity:.15"></div></div>`;
+            }
+        }
+    }
+    grid.innerHTML = html;
+    el('cProgress').textContent = '已收集 ' + owned.size + ' / ' + CARDS.length + ' 张';
+}
+
+/* ============ 翻牌动画 ============ */
+function showResult(cards) {
+    const area = el('drawCards');
+    area.innerHTML = '';
+    el('drawHint').style.display = 'none';
+    el('banner').className = 'banner';
+
+    // 先按稀有度排序渲染，SSS/SS 放前面更爽
+    const sorted = [...cards].sort((a, b) =>
+        RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity));
+
+    sorted.forEach((card, i) => {
+        const d = document.createElement('div');
+        d.className = 'dcard';
+        d.title = '点击搜索：' + card.name;
+        d.style.cursor = 'pointer';
+        d.onclick = () => window.open('https://www.baidu.com/s?wd=' + encodeURIComponent('哈利波特 ' + card.name), '_blank');
+        d.innerHTML = `
+            <div class="dinner">
+                <div class="dface dback"><span class="yun">⚡</span><span class="t">✦ 霍格沃茨 ✦</span></div>
+                <div class="dface dfront rar-${card.rarity}">
+                    <span class="emoji">${card.emoji}</span>
+                    <span class="nm">${card.name}</span>
+                    <span class="sub">${card.sub}</span>
+                    <span class="rg">${card.rarity}</span>
+                </div>
+            </div>`;
+        area.appendChild(d);
+        const inner = d.querySelector('.dinner');
+        setTimeout(() => {
+            inner.classList.add('flip');
+            playFlip(card.rarity);
+        }, 250 + i * 320);
+    });
+
+    const best = sorted[0];  // 排序后第一张是最稀有的
+    const bannerEl = el('banner');
+    setTimeout(() => {
+        bannerEl.className = 'banner banner-' + best.rarity + ' show';
+        const stars = best.rarity === 'SSS' ? '✦ ✦ ✦ ' : (best.rarity === 'SS' ? '✦ ✦ ' : '✦ ');
+        bannerEl.textContent = stars + best.name + ' ' + stars;
+        if (best.rarity === 'SSS' || best.rarity === 'SS') playJingle(best.rarity);
+    }, 250 + (sorted.length - 1) * 320 + 250);
+}
+
+function drawCards(n) {
+    if (busy) return;
+    ensureAudio();  // 在点击手势内初始化音频，避免浏览器拦掉首次音效
+    busy = true;
+    el('btn1').disabled = true;
+    el('btn10').disabled = true;
+    el('banner').className = 'banner';
+
+    // 单抽金保底：10 次单抽内未出 A+ 则本次强制出
+    const forceGold = (n === 1) && (state.singlePity >= SINGLE_PITY - 1);
+    const cards = drawN(n, forceGold ? 'GOLD' : null);
+    // 更新单抽计数：出了 A+ 就归零，否则单抽 +1
+    if (cards.some(c => RARITY_ORDER.indexOf(c.rarity) <= RARITY_ORDER.indexOf('A'))) state.singlePity = 0;
+    else if (n === 1) state.singlePity++;
+    save();
+    renderStats();
+    renderCollection();
+    showResult(cards);
+
+    setTimeout(() => {
+        busy = false;
+        el('btn1').disabled = false;
+        el('btn10').disabled = false;
+    }, 600 + n * 320);
+}
+
+function resetAll() {
+    if (busy) return;
+    if (!confirm('确定清空全部抽卡记录吗？')) return;
+    state = { total: 0, pity: 0, daPity: 0, singlePity: 0, inventory: {} };
+    save();
+    renderStats();
+    renderCollection();
+    el('drawCards').innerHTML = '';
+    el('drawHint').style.display = '';
+    el('banner').className = 'banner';
+}
+
+/* ============ 音效 ============ */
+let audioCtx = null;
+function ensureAudio() {
+    try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+}
+function tone(freq, dur, type, vol, delay) {
+    if (!audioCtx) return;
+    try {
+        const t = audioCtx.currentTime + (delay || 0);
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = type || 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(vol || 0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) {}
+}
+function playFlip(rarity) {
+    ensureAudio();
+    if (rarity === 'SSS') { tone(600, .15, 'triangle', .18); tone(900, .2, 'triangle', .16, .08); }
+    else if (rarity === 'SS') { tone(500, .12, 'sine', .12); }
+    else { tone(320, .09, 'sine', .09); }
+}
+function playJingle(rarity) {
+    ensureAudio();
+    if (rarity === 'SSS') { [523, 659, 784, 1046].forEach((f, i) => tone(f, .35, 'triangle', .16, i * .14)); }
+    else { [523, 659, 784].forEach((f, i) => tone(f, .25, 'sine', .12, i * .11)); }
+}
+
+/* ============ 意见箱 ============ */
+const FEEDBACK_ENDPOINT = 'https://formsubmit.co/ajax/2538894931@qq.com';
+function toggleFeedback() { document.getElementById('feedbackSection').classList.toggle('active'); }
+function sendFeedback() {
+    const t = document.getElementById('fbText').value.trim();
+    const e = document.getElementById('fbEmail').value.trim();
+    const s = document.getElementById('fbStatus');
+    if (!t) { s.textContent = '请先写点什么～'; s.style.color = '#b06060'; return; }
+    const b = document.querySelector('.fb-btn');
+    b.disabled = 1; b.textContent = '📨 发送中…'; s.textContent = '';
+    const x = e ? '\n\n来自邮箱：' + e : '';
+    fetch(FEEDBACK_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ message: t + x, _subject: '《哈利波特·幸运抽卡》意见反馈', _captcha: false })
+    }).then(r => {
+        if (r.ok) {
+            s.textContent = '✅ 已发送！感谢你的意见 🙏'; s.style.color = '#6a8a6a';
+            document.getElementById('fbText').value = '';
+            document.getElementById('fbEmail').value = '';
+        } else throw new Error();
+    }).catch(() => { s.textContent = '❌ 发送失败，请稍后再试'; s.style.color = '#b06060'; })
+      .finally(() => { b.disabled = 0; b.textContent = '📨 发送'; });
+}
+
+/* ============ 启动 ============ */
+load();
+renderStats();
+renderCollection();
+</script>
+</body>
+</html>

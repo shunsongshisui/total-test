@@ -13,3 +13,17 @@ BaiduSyncdisk/
 
 # 安装包
 *.msi
+
+# 个人资料（不上传 GitHub）
+作文积累/
+微积分/
+盗笔/
+海克利尔案·十六项待查方向.md
+记忆里的蓝围巾.md
+
+# 系统快捷方式
+*.lnk
+
+# Python 缓存
+__pycache__/
+*.pyc
