@@ -25,10 +25,13 @@ body::before {
 .header { text-align: center; margin-bottom: 24px; }
 .header h1 {
     font-size: 30px; font-weight: 900; letter-spacing: 8px;
-    background: linear-gradient(135deg, #e8e0d0 0%, #9f7aea 60%, #c9953c 100%);
+    background: linear-gradient(135deg, #e8e0d0 0%, #9f7aea 40%, #c9953c 60%, #9f7aea 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
+    background-size: 200% auto;
+    animation: shine 8s ease-in-out infinite;
 }
+@keyframes shine { 0% { background-position: 0% center; } 50% { background-position: 100% center; } 100% { background-position: 0% center; } }
 .header .sub { font-size: 12px; color: rgba(232,220,200,0.4); letter-spacing: 4px; margin-top: 6px; }
 
 /* Stats bar */
@@ -186,7 +189,10 @@ body::before {
     background: rgba(255,255,255,0.02);
     transition: transform .15s;
 }
-.ctile:hover { transform: translateY(-2px); }
+.ctile { text-decoration: none; color: inherit; }
+.ctile:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.4); }
+.ctile .lk { font-size: 9px; opacity: .45; margin-left: 3px; }
+.hint { text-align: center; font-size: 11px; color: rgba(232,220,200,.4); margin: -6px 0 14px; letter-spacing: 1px; }
 .ctile .emoji { font-size: 26px; }
 .ctile .nm { font-size: 11px; text-align: center; color: rgba(232,220,200,.8); line-height: 1.2; }
 .ctile .sub { font-size: 9px; text-align: center; color: rgba(232,220,200,.45); line-height: 1.15; }
@@ -260,6 +266,7 @@ body::before {
         <h2>✦ 角色图鉴</h2>
         <div class="prog" id="cProgress"></div>
     </div>
+    <div class="hint">🖱️ 点击任意角色可跳转百度搜索该人物</div>
     <div class="cgrid" id="cgrid"></div>
 
     <div class="footer">诡秘之主 · 幸运抽卡 &nbsp;·&nbsp; SSS 保底 150 抽 &nbsp;·&nbsp; 献给愚者先生</div>
@@ -361,12 +368,12 @@ function renderCollection() {
             const cnt = state.inventory[card.name] || 0;
             const has = owned.has(card.name);
             if (has) {
-                html += `<div class="ctile owned-${rg}">
+                html += `<a class="ctile owned-${rg}" href="https://www.baidu.com/s?wd=${encodeURIComponent('诡秘之主 ' + card.name)}" target="_blank" rel="noopener">
                     <div class="emoji">${card.emoji}</div>
                     <div class="nm">${card.name}</div>
                     <div class="sub">${card.sub}</div>
-                    <div class="cnt">×${cnt}</div>
-                    <div class="rn rar-${rg}"></div></div>`;
+                    <div class="cnt">×${cnt}<span class="lk">🔍</span></div>
+                    <div class="rn rar-${rg}"></div></a>`;
             } else {
                 html += `<div class="ctile locked"><div class="q">❓</div>
                     <div class="nm">？？？</div><div class="cnt">&nbsp;</div>
@@ -392,6 +399,9 @@ function showResult(cards) {
     sorted.forEach((card, i) => {
         const d = document.createElement('div');
         d.className = 'dcard';
+        d.title = '点击搜索：' + card.name;
+        d.style.cursor = 'pointer';
+        d.onclick = () => window.open('https://www.baidu.com/s?wd=' + encodeURIComponent('诡秘之主 ' + card.name), '_blank');
         d.innerHTML = `
             <div class="dinner">
                 <div class="dface dback"><span class="yun">☕</span><span class="t">✦ 愚 者 ✦</span></div>
