@@ -34,6 +34,21 @@ body::before {
 @keyframes shine { 0% { background-position: 0% center; } 50% { background-position: 100% center; } 100% { background-position: 0% center; } }
 .header .sub { font-size: 12px; color: rgba(232,220,200,0.4); letter-spacing: 4px; margin-top: 6px; }
 
+/* 顶部 tips */
+.tips {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+    max-width: 780px; margin: 0 auto 22px;
+}
+.tip {
+    font-size: 12px; padding: 6px 13px; border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    color: rgba(232,220,200,0.75);
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+.tip b { color: #e8c87a; font-weight: 700; }
+
 /* Stats bar */
 .stats {
     display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 22px;
@@ -223,6 +238,15 @@ body::before {
         <div class="sub">✦ 灰雾之上，命运已注定 ✦</div>
     </div>
 
+    <div class="tips">
+        <div class="tip">🔍 点击任意角色可<b>跳转百度搜索</b></div>
+        <div class="tip">💜 <b>SSS</b> 最高稀有度 · 保底 <b>150</b> 抽</div>
+        <div class="tip">🔟 十连保底至少一张 <b>A</b></div>
+        <div class="tip">💾 抽卡进度<b>自动保存</b></div>
+        <div class="tip">🎲 爆率 SSS<b>0.1%</b> / SS<b>0.6%</b> / S<b>2.3%</b> / A<b>6%</b></div>
+        <div class="tip">🎴 B<b>12%</b> / C<b>25%</b> / D<b>54%</b></div>
+    </div>
+
     <div class="stats">
         <div class="stat"><span class="k">总抽数</span><span class="v" id="sTotal">0</span></div>
         <div class="stat"><span class="k">SSS</span><span class="v gold" id="s-SSS">0</span></div>
@@ -266,7 +290,6 @@ body::before {
         <h2>✦ 角色图鉴</h2>
         <div class="prog" id="cProgress"></div>
     </div>
-    <div class="hint">🖱️ 点击任意角色可跳转百度搜索该人物</div>
     <div class="cgrid" id="cgrid"></div>
 
     <div class="footer">诡秘之主 · 幸运抽卡 &nbsp;·&nbsp; SSS 保底 150 抽 &nbsp;·&nbsp; 献给愚者先生</div>
