@@ -101,7 +101,7 @@ body::before {
 .dinner {
     width: 100%; height: 100%; position: relative;
     transform-style: preserve-3d;
-    transition: transform .55s cubic-bezier(.4,.2,.2,1);
+    transition: transform .32s cubic-bezier(.4,.2,.2,1);
 }
 .dinner.flip { transform: rotateY(180deg); }
 .dface {
@@ -506,7 +506,7 @@ function showResult(cards, extraHtml, gifts, newNames) {
         setTimeout(() => {
             inner.classList.add('flip');
             playFlip(card.rarity);
-        }, 250 + i * 320);
+        }, 150 + i * 160);
     });
 
     // 💰 霍尔伯爵赠礼卡：在展示栏一起翻出
@@ -532,7 +532,7 @@ function showResult(cards, extraHtml, gifts, newNames) {
         setTimeout(() => {
             inner.classList.add('flip');
             playFlip(card.rarity);
-        }, 250 + (sorted.length + i) * 320);
+        }, 150 + (sorted.length + i) * 160);
     });
 
     const best = sorted[0];  // 排序后第一张是最稀有的
@@ -542,7 +542,7 @@ function showResult(cards, extraHtml, gifts, newNames) {
         const stars = best.rarity === 'SSS' ? '✦ ✦ ✦ ' : (best.rarity === 'SS' ? '✦ ✦ ' : '✦ ');
         bannerEl.innerHTML = stars + best.name + ' ' + stars + (extraHtml || '');
         if (best.rarity === 'SSS' || best.rarity === 'SS') playJingle(best.rarity);
-    }, 250 + (sorted.length - 1 + giftCount) * 320 + 250);
+    }, 150 + (sorted.length - 1 + giftCount) * 160 + 200);
 }
 
 function drawCards(n) {
@@ -600,7 +600,7 @@ function drawCards(n) {
         busy = false;
         el('btn1').disabled = false;
         el('btn10').disabled = false;
-    }, 600 + n * 320);
+    }, 350 + n * 160);
 }
 
 function resetAll() {
