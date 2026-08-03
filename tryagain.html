@@ -567,7 +567,13 @@ function drawCards(n) {
     let extraHtml = '';
     const amons = cards.filter(c => c.amon);
     for (let i = 0; i < amons.length; i++) {
-        const targets = Object.keys(state.inventory).filter(name => state.inventory[name] > 0 && !(CARDS.find(c => c.name === name) || {}).amon);
+        const amonTier = RARITY_ORDER.indexOf(amons[i].rarity);
+        const targets = Object.keys(state.inventory).filter(name => {
+            if (state.inventory[name] <= 0) return false;
+            const card = CARDS.find(c => c.name === name) || {};
+            if (card.amon) return false;  // 阿蒙不偷阿蒙
+            return RARITY_ORDER.indexOf(card.rarity) >= amonTier;  // 只能偷同级或更低
+        });
         if (targets.length) {
             const stolen = targets[Math.floor(Math.random() * targets.length)];
             state.inventory[stolen]--;
