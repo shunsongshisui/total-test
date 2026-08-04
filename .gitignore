@@ -27,3 +27,6 @@ BaiduSyncdisk/
 # Python 缓存
 __pycache__/
 *.pyc
+
+# 本地缓存
+.cache/
