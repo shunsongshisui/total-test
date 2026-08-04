@@ -34,39 +34,60 @@ window.CRIME_DATA = {
     bandHigh: 70    // 浓度 >= 70 为高危
   },
 
-  /* ---------- 21 道题（每题不标注测量方向，降低迎合性作答） ----------
-     type   : 所属维度 key
+  /* ---------- 38 道题（35 计分 + 3 缓冲） ----------
+     计分题已做"隐晦化"处理：全部改为情境式描述，题面不出现测量
+     维度的名称，也不暗示哪个答案"更好"，降低迎合性作答；
+     3 道缓冲题（type: filler）不计分，用于进一步打乱作答者的
+     方向猜测。搭配"作答页不显示维度标签"一起使用。
+     type   : 所属维度 key（filler 为缓冲题）
      reverse: true 表示反向计分（同意得低分）
   */
   questions: [
     // 冲动失控
-    { id: 'q01', type: 'impulse', text: '想做就做，很少认真考虑后果。', reverse: false },
-    { id: 'q02', type: 'impulse', text: '看到想要的东西或机会，我几乎等不到"以后再说"。', reverse: false },
-    { id: 'q03', type: 'impulse', text: '遇到突发状况，我能先停下来想一想，再决定怎么做。', reverse: true },
+    { id: 'q01', type: 'impulse', text: '深夜刷到一件很想买的东西，我会先付款再说，等冷静了才后悔。', reverse: false },
+    { id: 'q02', type: 'impulse', text: '我常说走就走，计划表只是摆设——事情总在最后一刻才定下来。', reverse: false },
+    { id: 'q03', type: 'impulse', text: '排队、等红灯、等回复，这些"等待"对我来说格外漫长难熬。', reverse: false },
+    { id: 'q04', type: 'impulse', text: '重要的决定，我会先理清来龙去脉，第二天再拍板。', reverse: true },
+    { id: 'q05', type: 'impulse', text: '每件要花钱的事，我都会先算一算它值不值得。', reverse: true },
+    { id: 'f01', type: 'filler', text: '我晚上比白天更容易集中注意力。', reverse: false },
     // 共情缺失
-    { id: 'q04', type: 'cold', text: '别人的痛苦很少真正影响我的心情。', reverse: false },
-    { id: 'q05', type: 'cold', text: '伤害一个陌生人对我来说并不难，只要那对我有利。', reverse: false },
-    { id: 'q06', type: 'cold', text: '看到别人难过，我也会忍不住跟着低落。', reverse: true },
+    { id: 'q06', type: 'cold', text: '地铁里有人摔倒时，我的第一反应通常是继续低头看手机。', reverse: false },
+    { id: 'q07', type: 'cold', text: '朋友声泪俱下时，我常在心里默默换算"这大概要占用我多久"。', reverse: false },
+    { id: 'q08', type: 'cold', text: '新闻里那些悲惨的意外，我很快就忘了，很少会替当事人难过。', reverse: false },
+    { id: 'q09', type: 'cold', text: '电影里主角失去至亲的片段，我常常会跟着鼻酸。', reverse: true },
+    { id: 'q10', type: 'cold', text: '朋友兴冲冲和我分享好消息时，我的高兴是真的，不是装出来的。', reverse: true },
     // 规则漠视
-    { id: 'q07', type: 'rule', text: '只要不会被发现，很多"不该做的事"其实也没那么不该做。', reverse: false },
-    { id: 'q08', type: 'rule', text: '我遵守规则更多是因为怕受罚，而不是觉得它有多神圣。', reverse: false },
-    { id: 'q09', type: 'rule', text: '即使没人监督，我也会老老实实按规定来。', reverse: true },
+    { id: 'q11', type: 'rule', text: '深夜人少的马路上，红灯亮着但没车，我常常直接就过去了。', reverse: false },
+    { id: 'q12', type: 'rule', text: '为了省一点手续费或税，我会认真研究那些"灰色操作"。', reverse: false },
+    { id: 'q13', type: 'rule', text: '大家都规规矩矩时，我会忍不住想："按规矩来到底图什么？"', reverse: false },
+    { id: 'q14', type: 'rule', text: '即使垃圾分类很麻烦，我也会认真分，因为我认同这件事。', reverse: true },
+    { id: 'q15', type: 'rule', text: '遇到说不清"该不该做"的场合，我会选最保守、最稳妥的做法。', reverse: true },
+    { id: 'f02', type: 'filler', text: '甜的和辣的相比，我更喜欢甜食。', reverse: false },
     // 攻击倾向
-    { id: 'q10', type: 'rage', text: '被人激怒时，我脑子里会冒出一些很暴力的画面。', reverse: false },
-    { id: 'q11', type: 'rage', text: '我觉得很多时候，"先下手为强"是有道理的。', reverse: false },
-    { id: 'q12', type: 'rage', text: '与人发生冲突之后，我能很快放下，不再较劲。', reverse: true },
+    { id: 'q16', type: 'rage', text: '打游戏或比赛时，如果对方挑衅，我会想尽办法让他难受。', reverse: false },
+    { id: 'q17', type: 'rage', text: '被人当众下面子时，我脑子里常常会编排一场"还击"的画面。', reverse: false },
+    { id: 'q18', type: 'rage', text: '我更记得别人对不起我的地方，而不是他们帮过我的地方。', reverse: false },
+    { id: 'q19', type: 'rage', text: '即使被气得发抖，我也从没动过真正伤害对方的念头。', reverse: true },
+    { id: 'q20', type: 'rage', text: '吵架的时候，我通常比对方更先冷静下来。', reverse: true },
     // 刺激寻求
-    { id: 'q13', type: 'thrill', text: '平淡安稳的日子会让我觉得无聊，想找点刺激。', reverse: false },
-    { id: 'q14', type: 'thrill', text: '如果有一个"危险但刺激"的机会摆在我面前，我很难拒绝。', reverse: false },
-    { id: 'q15', type: 'thrill', text: '我更喜欢确定、安全、可预期的生活。', reverse: true },
+    { id: 'q21', type: 'thrill', text: '比起熟悉的路线，我更喜欢走没走过的路，哪怕会绕远。', reverse: false },
+    { id: 'q22', type: 'thrill', text: '如果"过山车"和"安静的咖啡馆"二选一，我几乎不用犹豫就选前者。', reverse: false },
+    { id: 'q23', type: 'thrill', text: '一切都在掌控之中、毫无意外的日子，反而让我觉得有点无聊。', reverse: false },
+    { id: 'q24', type: 'thrill', text: '旅行时我倾向按攻略来，不太喜欢惊喜和突发状况。', reverse: true },
+    { id: 'q25', type: 'thrill', text: '蹦极、跳伞这类活动对我没有吸引力，我更喜欢确定又踏实的快乐。', reverse: true },
+    { id: 'f03', type: 'filler', text: '我习惯把手机放在自己视线范围内。', reverse: false },
     // 操控心机
-    { id: 'q16', type: 'manip', text: '为了达成目的，我可以利用别人的感情或信任。', reverse: false },
-    { id: 'q17', type: 'manip', text: '我很清楚怎样说能让别人按我的意思做，并且会用这一套。', reverse: false },
-    { id: 'q18', type: 'manip', text: '和别人相处时，我习惯直来直去，从不绕弯子。', reverse: true },
+    { id: 'q26', type: 'manip', text: '我知道怎样说，能让对方"自愿"帮我去做他本不想做的事。', reverse: false },
+    { id: 'q27', type: 'manip', text: '认识一个人时，我会下意识评估"他以后对我有什么用"。', reverse: false },
+    { id: 'q28', type: 'manip', text: '为了让场面更好看，我可以面不改色地说出一些场面话。', reverse: false },
+    { id: 'q29', type: 'manip', text: '违心的恭维我很难说出口，哪怕它能让场面更好。', reverse: true },
+    { id: 'q30', type: 'manip', text: '被人看穿心思，我无所谓——我本来就没有什么可藏的。', reverse: true },
     // 怨恨复仇
-    { id: 'q19', type: 'grudge', text: '被人伤害后，我会在心里记很久，盘算着"还回去"。', reverse: false },
-    { id: 'q20', type: 'grudge', text: '别人对我做的坏事，我会用别的方式加倍奉还。', reverse: false },
-    { id: 'q21', type: 'grudge', text: '即使被亏待，我也能很快翻篇，不再放在心上。', reverse: true }
+    { id: 'q31', type: 'grudge', text: '别人欠我的"那一下"，我能记上好几年，偶尔想起来还会咬牙。', reverse: false },
+    { id: 'q32', type: 'grudge', text: '看到曾经亏待过我的人倒霉，我嘴上不说，心里其实有点爽。', reverse: false },
+    { id: 'q33', type: 'grudge', text: '我倾向于认为，"伤害过我的人不会真的变好"。', reverse: false },
+    { id: 'q34', type: 'grudge', text: '被误会之后，我更愿意解释清楚就翻篇，而不是记着这笔账。', reverse: true },
+    { id: 'q35', type: 'grudge', text: '和有过节的人重逢，我也能自然地打招呼，像什么都没发生过。', reverse: true }
   ],
 
   /* ---------- 犯罪潜力指数分档 ---------- */
