@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="犯罪潜力测试：21 题 × 7 个犯罪风险因子（冲动失控/共情缺失/规则漠视/攻击倾向/刺激寻求/操控心机/怨恨复仇），趣味化的自我探索，附文献支撑。">
+<title>犯罪潜力测试 · Crime Potential Test</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">犯罪潜力测试<span class="brand-sub">CRIME·POTENTIAL</span></div>
+    <button id="themeToggle" class="icon-btn" title="切换深浅主题" aria-label="切换深浅主题"><span id="themeIcon">◐</span></button>
+  </header>
+
+  <!-- ============ 开始页 ============ -->
+  <main id="view-start" class="view">
+    <section class="card hero-card">
+      <h1>你身上，藏着多少犯罪风险因子？</h1>
+      <p class="lead">没有人天生想当反派，但每个人心里都有几条"暗线"：冲动、冷漠、漠视规则、攻击、刺激欲、操控、记仇。本测验用 <strong>21 道题</strong> 测量这 <strong>7 个犯罪风险因子</strong>的浓度，合成你的"犯罪潜力指数"——这是一个基于实证研究的趣味自评，供自我探索与娱乐。作答时每题不标注测量方向，请凭第一直觉。请记住：风险因子浓度高 ≠ 会犯罪，你永远可以选择。</p>
+
+      <div class="basis-grid">
+        <div class="basis-item"><b>7 个犯罪风险因子</b><span>冲动 · 共情 · 规则 · 攻击 · 刺激 · 操控 · 复仇</span></div>
+        <div class="basis-item"><b>实证研究依据</b><span>自我控制理论 · 道德脱离 · 感觉寻求等</span></div>
+        <div class="basis-item"><b>双向计分</b><span>正反题混合，降低惯性作答</span></div>
+        <div class="basis-item"><b>精细报告</b><span>潜力指数 + 主导风险 + 雷达图 + 参考文献</span></div>
+      </div>
+
+      <div class="settings">
+        <div class="field">
+          <span class="field-label">选项</span>
+          <label class="check"><input type="checkbox" id="optShuffle"> 打乱题目顺序（降低惯性作答）</label>
+          <label class="check"><input type="checkbox" id="optSkip" checked> 允许跳过题目（跳过的按"中立"计分）</label>
+        </div>
+      </div>
+
+      <button id="btnStart" class="btn-primary">开始测验</button>
+      <p class="note">21 道题约需 4 分钟 · 结果仅供娱乐与自我探索，不构成任何评估或诊断</p>
+    </section>
+  </main>
+
+  <!-- ============ 答题页 ============ -->
+  <main id="view-test" class="view" hidden>
+    <div class="progress-wrap">
+      <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+      <div class="progress-meta">
+        <span id="qCounter">第 1 / 21 题</span>
+        <button id="btnQuit" class="link-btn">退出并重新开始</button>
+      </div>
+    </div>
+
+    <section class="card question-card">
+      <div class="q-head">
+        <span id="dimTag" class="dim-tag"></span>
+        <span id="dimAbout" class="dim-about"></span>
+      </div>
+      <p id="qText" class="question-text"></p>
+
+      <div class="likert">
+        <span id="scaleLeft" class="scale-label">不同意</span>
+        <div id="likertBtns" class="likert-btns" role="radiogroup"></div>
+        <span id="scaleRight" class="scale-label">同意</span>
+      </div>
+
+      <div class="q-nav">
+        <button id="btnPrev" class="btn-ghost">上一题</button>
+        <div class="q-nav-right">
+          <button id="btnSkip" class="link-btn" hidden>跳过此题</button>
+          <button id="btnNext" class="btn-ghost" disabled>下一题</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ 结果页 ============ -->
+  <main id="view-result" class="view" hidden>
+    <!-- 主数字 -->
+    <section class="card result-hero">
+      <div class="hero-age">
+        <div class="hero-num"><span id="heroNum" class="hero-figure">0</span><span class="hero-unit">指数</span></div>
+        <div id="heroBadge" class="hero-badge">—</div>
+      </div>
+      <div class="hero-meta">
+        <div class="chip"><span>主导犯罪风险</span><b id="dominantChip">—</b></div>
+        <div class="chip"><span>你的防火墙</span><b id="firewallChip">—</b></div>
+      </div>
+      <p class="hero-note" id="heroNote"></p>
+    </section>
+
+    <!-- 风险量表 -->
+    <section class="card profile-card">
+      <h2 class="card-title">七维风险量表</h2>
+      <p class="card-sub">七个犯罪风险因子，按你的浓度排序（0–100）。</p>
+      <div class="bar-list" id="barList"></div>
+    </section>
+
+    <!-- 主导犯罪风险 -->
+    <section class="card archetype-card">
+      <h2 class="card-title" id="dominantTitle">—</h2>
+      <p id="dominantText" class="card-body"></p>
+    </section>
+
+    <!-- 七维风险雷达 -->
+    <section class="card duo-card">
+      <h2 class="card-title">七维风险雷达</h2>
+      <p class="card-sub">七个风险因子各占一个轴，越靠外浓度越高（中心 0，外缘 100）。</p>
+      <div class="viz-root">
+        <canvas id="radar" height="340"></canvas>
+        <div id="radarTip" class="radar-tip" hidden></div>
+        <div class="chart-legend">
+          <span class="legend-item"><i class="swatch swatch-accent"></i>你的风险浓度</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 逐维详解 -->
+    <section class="card detail-card">
+      <h2 class="card-title">逐维详解</h2>
+      <p class="card-sub">判定档位：浓度 &lt; 40 为低危 · 40–70 为中危 · ≥ 70 为高危。</p>
+      <div id="detailList" class="detail-list"></div>
+    </section>
+
+    <!-- 如何阅读 -->
+    <section class="card howto-card">
+      <h2 class="card-title">这份结果该怎么读？</h2>
+      <ol id="howToList" class="howto-list"></ol>
+    </section>
+
+    <!-- 心理学依据与参考文献 -->
+    <section class="card ref-card">
+      <h2 class="card-title">心理学依据与参考文献</h2>
+      <p class="card-body" id="basisIntro"></p>
+      <p class="card-sub ref-style-hint">著录格式：GB/T 7714-2015（按引用顺序编号）</p>
+      <ul id="refList" class="ref-list"></ul>
+    </section>
+
+    <!-- 致谢 -->
+    <section class="card ack-card">
+      <h2 class="card-title">致谢<span class="ack-en">ACKNOWLEDGEMENTS</span></h2>
+      <div id="ackBody" class="ack-body"></div>
+    </section>
+
+    <div class="result-actions">
+      <button id="btnRetrySame" class="btn-primary">再测一次（同样设置）</button>
+      <button id="btnRetryShuffle" class="btn-ghost">换顺序重测</button>
+      <button id="btnRestart" class="btn-ghost">返回开始页</button>
+    </div>
+
+    <p class="note" id="disclaimer"></p>
+  </main>
+
+</div>
+<div class="ctr-line">本测试已被浏览 <b id="ctrPv">—</b> 次 · <b id="ctrUv">—</b> 位访客</div>
+<footer class="footer">犯罪潜力测试 · 仅供娱乐与自我探索 · 人格特质不预测实际犯罪</footer>
+<script src="../counter.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
