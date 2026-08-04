@@ -187,9 +187,15 @@
       scores[t.key] = { ...t, pct: toPct(trait), band: bandFor(toPct(trait)) };
     });
 
-    // 变态指数 = 7 个核心平均
-    const corePcts = coreTypes.map((t) => scores[t.key].pct);
-    const index = corePcts.reduce((a, b) => a + b, 0) / corePcts.length;
+    // 变态指数 = 7 个核心加权合成（权重见 D.scoring.weights，缺省等权）
+    const W = SC.weights || {};
+    let index = 0, wsum = 0;
+    coreTypes.forEach((t) => {
+      const w = (W[t.key] != null) ? W[t.key] : (1 / coreTypes.length);
+      index += scores[t.key].pct * w;
+      wsum += w;
+    });
+    index = index / wsum;
 
     // 主导 / 潜伏（浓度最高者，并列取顺序靠前）
     const dominant = coreTypes.reduce((a, b) => (scores[b.key].pct > scores[a.key].pct ? b : a));

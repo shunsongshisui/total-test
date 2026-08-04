@@ -59,7 +59,10 @@ window.DARK_DATA = {
     likertMax: 5,
     neutral: 3,     // 跳过题按中立处理
     bandLow: 40,    // 浓度 < 40 为低危
-    bandHigh: 70    // 浓度 >= 70 为高危
+    bandHigh: 70,   // 浓度 >= 70 为高危
+    // 变态指数 = 七个核心特质的加权合成（合计 1.00）
+    // 对"冷血怪"（反社会类）略作调低，避免单一特质主导总分
+    weights: { anti: 0.12, narc: 0.15, ctrl: 0.15, para: 0.15, lie: 0.14, envy: 0.14, rage: 0.15 }
   },
 
   /* ---------- 57 道题 ----------
@@ -71,7 +74,7 @@ window.DARK_DATA = {
     // ===== 核心暗黑七型 =====
     // 冷血怪
     { id: 'q01', type: 'anti', text: '朋友在我面前情绪崩溃时，我常常心里一片平静，甚至有点想笑。', reverse: false, light: true },
-    { id: 'q02', type: 'anti', text: '听到"共情"这个词，我总觉得它被高估了。', reverse: false, light: true },
+    { id: 'q02', type: 'anti', text: '看到陌生人流泪或受伤，我也会莫名地跟着难受。', reverse: true,  light: true },
     { id: 'q03', type: 'anti', text: '看到有人被欺负，即使与我无关，我也会感到不舒服并想帮忙。', reverse: true,  light: true },
     // 自恋狂
     { id: 'q04', type: 'narc', text: '我发自内心地觉得，我比大多数人更特别、更值得被好好对待。', reverse: false, light: true },
@@ -125,8 +128,8 @@ window.DARK_DATA = {
     { id: 'p05', type: 'schizotypal', text: '我会把一些巧合、数字或梦境解读成特别的征兆，并因此改变自己的行为。', reverse: false, light: false },
     { id: 'p06', type: 'schizotypal', text: '有时我觉得自己的想法能影响到别人，或者身边存在"只有我知道"的隐秘关联。', reverse: false, light: false },
     // 反社会型
-    { id: 'p07', type: 'antisocial', text: '规则对我而言更像"建议"：只要没人抓到我，违反一下也没什么大不了。', reverse: false, light: false },
-    { id: 'p08', type: 'antisocial', text: '做错事后，我很少真心后悔，更多是琢磨"怎么善后、别让人知道"。', reverse: false, light: false },
+    { id: 'p07', type: 'antisocial', text: '如果违反规则能让我得到明显的好处，而且大概率不会被发现，我会毫不犹豫地去做。', reverse: false, light: false },
+    { id: 'p08', type: 'antisocial', text: '做错事伤害到别人之后，即使没人发现，我也常常被愧疚折磨很久。', reverse: true,  light: false },
     // 边缘型
     { id: 'p09', type: 'borderline', text: '我对亲近的人经常在"极度依赖"和"突然想推开"之间剧烈摇摆。', reverse: false, light: false },
     { id: 'p10', type: 'borderline', text: '一旦感觉对方要离开我，我会陷入极端的恐慌，甚至做出过激的挽回行为。', reverse: false, light: false },
@@ -325,7 +328,7 @@ window.DARK_DATA = {
   /* ---------- 结果如何阅读 ---------- */
   howToRead: [
     '本测验把"变态"当作一种玩梗的自嘲视角，测量的是每个人心里都有的"暗面比例"。结果仅供娱乐与自我探索，不是临床诊断——尤其"人格障碍谱"部分，纯属趣味对照，请不要用它给自己或他人贴标签。',
-    '变态指数 = 七个核心暗黑特质的平均，反映你的"暗黑浓度"；主导变态人格是其中浓度最高的那一个，代表你最典型的暗黑模式。',
+    '变态指数 = 七个核心暗黑特质按权重加权合成（对"冷血怪"略作调低，避免单一特质主导），反映你的"暗黑浓度"；主导变态人格是其中浓度最高的那一个，代表你最典型的暗黑模式。',
     '变态指数与各型浓度，是把 1–5 点自评做简单平均后映射到 0–100 的结果，条目经过趣味化改写，并非经过信效度检验的标准化量表。任何单一分数都只是"方向性参考"——请以逐型解析为准，别拿数字给自己或他人下定论。',
     '人格障碍谱（12 型）参照 DSM / CCMD 的分类框架改编为趣味条目，取最高一项为"主导人格障碍谱型"——它只是你某些行为模式的放大镜，不意味着你有任何障碍。',
     '白骑士、主人公、冒充者、快乐面具四个流行综合征不计入主指数，单独立卡——它们更像是你的人际模式与自我保护机制的写照。',
