@@ -304,6 +304,18 @@ input[type="number"]:focus { outline: 2px solid var(--accent); outline-offset: 1
 .ack-body p { margin: 0 0 12px; font-size: 14px; line-height: 2; color: var(--ink-2); }
 .ack-body p:last-child { margin-bottom: 0; color: var(--ink); font-weight: 600; }
 
+/* 作答节律 */
+.rhythm-card { border-left: 4px solid var(--warn); }
+.rhythm-card .card-body { color: var(--ink); }
+.rhythm-card .card-body b { color: var(--accent); }
+.rhythm-grid { display: grid; gap: 8px; margin: 14px 0 10px; }
+.rhythm-row { display: grid; grid-template-columns: 62px 1fr 46px; align-items: center; gap: 10px; font-size: 13px; }
+.rhythm-track { height: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; }
+.rhythm-fill { height: 100%; background: var(--warn); opacity: .75; border-radius: 5px; min-width: 2px; }
+.rhythm-notes { margin: 6px 0 4px; }
+.rhythm-note { margin: 0 0 8px; font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+.rhythm-note b { color: var(--ink); }
+
 .result-actions { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 22px; }
 .result-actions .btn-primary { width: 100%; }
 .result-actions .btn-ghost { width: 100%; }

@@ -19,7 +19,7 @@
   <main id="view-start" class="view">
     <section class="card hero-card">
       <h1>你的心理年龄，是几岁？</h1>
-      <p class="lead">身份证上的年龄叫<strong>生理年龄</strong>，而你的<strong>心理年龄</strong>——认知弹性、情绪状态、时间观与生命力——可能和它相差十岁。本测验基于发展心理学的多维年龄模型（Baltes · Birren），用 <strong>28 道题</strong> 勾勒你的心理年龄画像。</p>
+      <p class="lead">身份证上的年龄叫<strong>生理年龄</strong>，而你的<strong>心理年龄</strong>——认知弹性、情绪状态、时间观与生命力——可能和它相差十岁。本测验基于发展心理学的多维年龄模型（Baltes · Birren），用 <strong>42 道题</strong> 勾勒你的心理年龄画像，并记录你的作答节奏。</p>
 
       <div class="basis-grid">
         <div class="basis-item"><b>7 个维度</b><span>认知 · 情绪 · 审慎 · 时间观 · 社会 · 活力 · 责任</span></div>
@@ -37,10 +37,10 @@
         <div class="field">
           <span class="field-label">测验版本</span>
           <div class="seg" id="versionSeg" role="tablist">
-            <button role="tab" data-version="full" class="active">完整版 · 28 题</button>
-            <button role="tab" data-version="light">轻量版 · 14 题</button>
+            <button role="tab" data-version="full" class="active">完整版 · 42 题</button>
+            <button role="tab" data-version="light">轻量版 · 21 题</button>
           </div>
-          <p class="field-hint">完整版结果更细致；轻量版约 2 分钟。</p>
+          <p class="field-hint">完整版结果更细致；轻量版约 3 分钟。</p>
         </div>
 
         <div class="field">
@@ -51,7 +51,7 @@
       </div>
 
       <button id="btnStart" class="btn-primary">开始测验</button>
-      <p class="note">约需 3–5 分钟 · 结果仅供自我探索，不构成心理诊断</p>
+      <p class="note">完整版约需 5–8 分钟 · 结果仅供自我探索，不构成心理诊断</p>
     </section>
   </main>
 
@@ -134,6 +134,15 @@
     <section class="card felt-card" id="feltCard" hidden>
       <h2 class="card-title">自感年龄 vs 心理年龄</h2>
       <p class="card-body" id="feltText"></p>
+    </section>
+
+    <!-- 作答节律 -->
+    <section class="card rhythm-card" id="rhythmCard" hidden>
+      <h2 class="card-title">作答节律 · 你的犹豫分布</h2>
+      <p class="card-body" id="rhythmText"></p>
+      <div class="rhythm-grid" id="rhythmGrid"></div>
+      <div id="rhythmNotes" class="rhythm-notes"></div>
+      <p class="card-sub" id="rhythmMethod" style="margin-top:12px;"></p>
     </section>
 
     <!-- 逐维度详解 -->

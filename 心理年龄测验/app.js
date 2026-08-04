@@ -21,6 +21,8 @@
     answers: {},        // qid -> 1..5；跳过 -> null
     qi: 0,
     felt: null,         // 主观年龄（可空）
+    dwells: {},         // qid -> 作答用时(ms)
+    dwellStart: null,   // 当前题渲染的时刻
     results: null,
     radarVerts: []
   };
@@ -60,6 +62,8 @@
 
   function begin(forceShuffle) {
     state.answers = {};
+    state.dwells = {};
+    state.dwellStart = null;
     state.felt = null;
     state.results = null;
     state.qi = 0;
@@ -99,6 +103,7 @@
 
     const q = D.questions.find((x) => x.id === qid);
     const dim = D.dimensions.find((x) => x.key === q.dim);
+    state.dwellStart = performance.now();
     $('dimTag').textContent = dim.name;
     $('dimTag').hidden = false;
     $('dimAbout').textContent = dim.about;
@@ -128,6 +133,7 @@
   }
 
   function answer(qid, val) {
+    if (state.dwellStart != null) state.dwells[qid] = performance.now() - state.dwellStart;
     state.answers[qid] = val;
     const box = $('likertBtns');
     Array.from(box.children).forEach((b, idx) => {
@@ -139,6 +145,7 @@
   }
 
   function renderFelt() {
+    state.dwellStart = null;
     const f = D.feltQuestion;
     $('dimTag').hidden = true;
     $('dimAbout').hidden = true;
@@ -175,7 +182,9 @@
   function skip() {
     if (!state.skip) return;
     if (state.order[state.qi] === 'felt') { submit(); return; }
-    state.answers[state.order[state.qi]] = null;
+    const qid = state.order[state.qi];
+    if (state.dwellStart != null) state.dwells[qid] = performance.now() - state.dwellStart;
+    state.answers[qid] = null;
     if (state.qi < state.order.length - 1) { state.qi++; renderQ(state.qi); }
     else submit();
   }
@@ -215,15 +224,23 @@
       return { key: dim.key, name: dim.name, short: dim.short, about: dim.about, role: dim.role, age, band: bandFor(age) };
     });
 
-    const psychAge = dims.reduce((s, d) => s + d.age * D.dimensions.find((x) => x.key === d.key).weight, 0);
-    const sd = Math.sqrt(dims.reduce((s, d) => s + Math.pow(d.age - psychAge, 2), 0) / dims.length);
+    const basePsychAge = dims.reduce((s, d) => s + d.age * D.dimensions.find((x) => x.key === d.key).weight, 0);
+    const sd = Math.sqrt(dims.reduce((s, d) => s + Math.pow(d.age - basePsychAge, 2), 0) / dims.length);
     const youngCount = dims.filter((d) => d.band === 'young').length;
     const oldCount = dims.filter((d) => d.band === 'old').length;
+
+    // 作答节律：以平均每题用时做温和的收敛修正（犹豫越多越向中间值靠拢，上限 ±2 岁）
+    const rhythm = computeRhythm();
+    const delta = rhythm ? hesitationDelta(basePsychAge, rhythm.mean) : 0;
+    const psychAge = basePsychAge + delta;
 
     return {
       dims,
       ages: Object.fromEntries(dims.map((d) => [d.key, d.age])),
+      basePsychAge,
       psychAge,
+      delta,
+      rhythm,
       sd,
       youngCount,
       oldCount,
@@ -233,6 +250,36 @@
       diff: chrono != null ? psychAge - chrono : null,
       chrono
     };
+  }
+
+  // 统计每题作答用时（排除热身首题、主观年龄题与超长/极短异常值）
+  function computeRhythm() {
+    const firstId = state.order[0];
+    const all = [];
+    const byDim = {};
+    D.dimensions.forEach((d) => { byDim[d.key] = []; });
+    Object.keys(state.dwells).forEach((qid) => {
+      if (qid === 'felt' || qid === firstId) return;
+      const v = state.dwells[qid];
+      if (typeof v !== 'number' || v < 300 || v > 120000) return;
+      all.push(v);
+      const q = D.questions.find((x) => x.id === qid);
+      if (q) byDim[q.dim].push(v);
+    });
+    if (!all.length) return null;
+    const mean = all.reduce((a, b) => a + b, 0) / all.length;
+    const dimMean = {};
+    D.dimensions.forEach((d) => {
+      if (byDim[d.key].length) dimMean[d.key] = byDim[d.key].reduce((a, b) => a + b, 0) / byDim[d.key].length;
+    });
+    return { mean, dimMean };
+  }
+
+  // 全部中立时的合成结果，作为"典型平衡成年"的收敛锚点
+  const NEUTRAL_ANCHOR = 38;
+  function hesitationDelta(baseAge, meanMs) {
+    const factor = Math.min(1, meanMs / 8000);
+    return clamp((NEUTRAL_ANCHOR - baseAge) * factor * 0.6, -2, 2);
   }
 
   function pickArchetype(dims, y, o) {
@@ -404,6 +451,53 @@
       p.textContent = para;
       ab.appendChild(p);
     });
+
+    // 作答节律
+    const rc = $('rhythmCard');
+    if (r.rhythm) {
+      rc.hidden = false;
+      const meanS = (r.rhythm.mean / 1000).toFixed(1);
+      let pace = '平稳';
+      if (r.rhythm.mean < 3000) pace = '快速果断';
+      else if (r.rhythm.mean < 6000) pace = '平稳从容';
+      else if (r.rhythm.mean < 10000) pace = '偏慢慎重';
+      else pace = '非常谨慎';
+      const deltaTxt = Math.abs(r.delta) < 0.05
+        ? '（内容得分即为最终结果，犹豫修正为 0）'
+        : '（内容得分已向中间值收敛 ' + (r.delta > 0 ? '+' : '') + r.delta.toFixed(1) + ' 岁）';
+      $('rhythmText').innerHTML = '你平均每题用时 <b>' + meanS + ' 秒</b>，作答节奏整体<b>' + pace + '</b>。' +
+        '由内容计算的心理年龄为 <b>' + Math.round(r.basePsychAge) + ' 岁</b>，经犹豫度修正后为 <b>' + Math.round(r.psychAge) + ' 岁</b> ' + deltaTxt;
+
+      const dimRows = D.dimensions
+        .filter((d) => r.rhythm.dimMean[d.key] != null)
+        .map((d) => ({ key: d.key, name: d.name, ms: r.rhythm.dimMean[d.key] }))
+        .sort((a, b) => b.ms - a.ms);
+      const maxMs = dimRows.length ? dimRows[0].ms : 1;
+      const grid = $('rhythmGrid');
+      grid.innerHTML = '';
+      dimRows.forEach((row) => {
+        const pct = clamp(row.ms / maxMs * 100, 4, 100);
+        const el = document.createElement('div');
+        el.className = 'rhythm-row';
+        el.innerHTML = '<span class="bar-name">' + row.name + '</span>' +
+          '<div class="rhythm-track"><div class="rhythm-fill" style="width:' + pct + '%"></div></div>' +
+          '<span class="bar-val">' + (row.ms / 1000).toFixed(1) + 's</span>';
+        grid.appendChild(el);
+      });
+
+      const notesEl = $('rhythmNotes');
+      notesEl.innerHTML = '';
+      dimRows.slice(0, 2).forEach((row) => {
+        const p = document.createElement('p');
+        p.className = 'rhythm-note';
+        p.innerHTML = '<b>' + row.name + '：</b>' + (D.rhythmNotes[row.key] || '');
+        notesEl.appendChild(p);
+      });
+
+      $('rhythmMethod').textContent = '方法说明：作答用时（反应时）是真实的心理学信号，但受设备、阅读速度与外界干扰影响较大，因此这里只作为"温和修正"而非硬性计分——整体越犹豫，结果越向典型平衡值（38 岁）收敛，幅度上限 ±2 岁。第一题热身、主观年龄题与超长停顿（>2 分钟）不计入统计。';
+    } else {
+      rc.hidden = true;
+    }
 
     $('disclaimer').textContent = D.disclaimer;
   }

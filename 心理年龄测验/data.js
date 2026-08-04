@@ -32,38 +32,59 @@ window.PSYCH_DATA = {
     // 认知活力
     { id: 'q01', dim: 'cog', text: '面对一个全新的领域或技能，我的第一反应是兴奋地想试试，而不是担心自己学不会。', reverse: false, light: true },
     { id: 'q02', dim: 'cog', text: '我经常被一个有趣的问题或想法吸引，一钻进去就忘了时间。', reverse: false, light: true },
-    { id: 'q03', dim: 'cog', text: '比起尝试新方法，我更习惯用自己熟悉的套路把事情做完。', reverse: true,  light: false },
+    { id: 'q03', dim: 'cog', text: '比起尝试新方法，我更习惯用自己熟悉的套路把事情做完。', reverse: true,  light: true },
     { id: 'q04', dim: 'cog', text: '我时常追问"为什么"，对身边事物的原理保持好奇。', reverse: false, light: false },
     // 情绪成熟
     { id: 'q05', dim: 'emo', text: '遇到挫折时，我通常能较快平复情绪，并冷静思考下一步。', reverse: false, light: true },
     { id: 'q06', dim: 'emo', text: '别人的一句评价，很难让我长时间情绪低落或沾沾自喜。', reverse: false, light: true },
-    { id: 'q07', dim: 'emo', text: '气头上说出去的话，冷静下来后我常常会后悔。', reverse: false, light: false },
+    { id: 'q07', dim: 'emo', text: '气头上说出去的话，冷静下来后我常常会后悔。', reverse: false, light: true },
     { id: 'q08', dim: 'emo', text: '我会先弄清楚自己为什么难过，再决定要不要表达出来。', reverse: false, light: false },
     // 审慎自律
     { id: 'q09', dim: 'prd', text: '购物之前，我会认真比较和规划，很少一时冲动就下单。', reverse: false, light: true },
     { id: 'q10', dim: 'prd', text: '开口之前，我通常已经想清楚这话该不该说、该怎么说。', reverse: false, light: true },
-    { id: 'q11', dim: 'prd', text: '面对诱人的机会，我会先想清楚风险，再决定要不要冲。', reverse: false, light: false },
+    { id: 'q11', dim: 'prd', text: '面对诱人的机会，我会先想清楚风险，再决定要不要冲。', reverse: false, light: true },
     { id: 'q12', dim: 'prd', text: '我常常凭一时兴起就做出决定，过后又后悔。', reverse: true,  light: false },
     // 未来导向
     { id: 'q13', dim: 'fut', text: '我会认真为几年后的人生做规划，而不是只盯着眼前。', reverse: false, light: true },
     { id: 'q14', dim: 'fut', text: '比起及时享乐，我更愿意把资源留给未来的自己。', reverse: false, light: true },
-    { id: 'q15', dim: 'fut', text: '"活在当下、开心就好"是我的人生信条。', reverse: true,  light: false },
+    { id: 'q15', dim: 'fut', text: '"活在当下、开心就好"是我的人生信条。', reverse: true,  light: true },
     { id: 'q16', dim: 'fut', text: '想到未来的自己，我会因此调整现在的选择。', reverse: false, light: false },
     // 社会开放
     { id: 'q17', dim: 'soc', text: '在陌生的聚会里，我很快就能和别人熟络起来。', reverse: false, light: true },
     { id: 'q18', dim: 'soc', text: '我愿意去了解年轻人热衷的新事物（新梗、新文化、新音乐）。', reverse: false, light: true },
-    { id: 'q19', dim: 'soc', text: '比起维系老朋友，我更愿意主动结识新的朋友。', reverse: false, light: false },
+    { id: 'q19', dim: 'soc', text: '比起维系老朋友，我更愿意主动结识新的朋友。', reverse: false, light: true },
     { id: 'q20', dim: 'soc', text: '我觉得"年轻人玩的东西"跟我没什么关系。', reverse: true,  light: false },
     // 活力体能
     { id: 'q21', dim: 'vit', text: '大多数日子里，我都觉得自己精力充沛、干劲十足。', reverse: false, light: true },
     { id: 'q22', dim: 'vit', text: '我喜欢需要活动身体的运动或娱乐（跑步、爬山、跳舞等）。', reverse: false, light: true },
-    { id: 'q23', dim: 'vit', text: '只要休息一小会儿，我就能快速恢复、重新投入。', reverse: false, light: false },
+    { id: 'q23', dim: 'vit', text: '只要休息一小会儿，我就能快速恢复、重新投入。', reverse: false, light: true },
     { id: 'q24', dim: 'vit', text: '我常常觉得疲惫，做什么都提不起劲。', reverse: true,  light: false },
     // 责任担当
     { id: 'q25', dim: 'res', text: '答应了别人的事，我会想办法做到，即使需要额外付出。', reverse: false, light: true },
     { id: 'q26', dim: 'res', text: '我会提前整理好手头的事务，很少把事情拖到最后。', reverse: false, light: true },
-    { id: 'q27', dim: 'res', text: '认定目标之后，我很少轻易改变主意。', reverse: false, light: false },
-    { id: 'q28', dim: 'res', text: '在团队或集体里，我常常是主动承担起来的那个人。', reverse: false, light: false }
+    { id: 'q27', dim: 'res', text: '认定目标之后，我很少轻易改变主意。', reverse: false, light: true },
+    { id: 'q28', dim: 'res', text: '在团队或集体里，我常常是主动承担起来的那个人。', reverse: false, light: false },
+    // 认知活力（扩充）
+    { id: 'q29', dim: 'cog', text: '当听到一个颠覆我原有想法的观点时，我会好奇地听完，而不是立刻反驳。', reverse: false, light: false },
+    { id: 'q30', dim: 'cog', text: '我的兴趣面很广，愿意涉猎和自己专业或工作无关的领域。', reverse: false, light: false },
+    // 情绪成熟（扩充）
+    { id: 'q31', dim: 'emo', text: '难过的时候，我能分辨自己是在"处理情绪"，还是单纯"陷入情绪"。', reverse: false, light: false },
+    { id: 'q32', dim: 'emo', text: '面对批评，我会先想想对方说得有没有道理，而不是立刻反驳。', reverse: false, light: false },
+    // 审慎自律（扩充）
+    { id: 'q33', dim: 'prd', text: '做重要决定之前，我会先列一列可能的风险和代价。', reverse: false, light: false },
+    { id: 'q34', dim: 'prd', text: '我很少因为一时头脑发热就答应别人。', reverse: false, light: false },
+    // 未来导向（扩充）
+    { id: 'q35', dim: 'fut', text: '关于十年后的自己想过怎样的生活，我心里有一个大致的方向。', reverse: false, light: false },
+    { id: 'q36', dim: 'fut', text: '看到喜欢的东西，我会先想想它在未来的生活里还用不用得上。', reverse: false, light: false },
+    // 社会开放（扩充）
+    { id: 'q37', dim: 'soc', text: '旅行或去新地方时，我更想自己去探索，而不是只跟着熟悉的安排走。', reverse: false, light: false },
+    { id: 'q38', dim: 'soc', text: '身边朋友聊起我不了解的新话题时，我会想插一句"这是什么"，而不是假装没听到。', reverse: false, light: false },
+    // 活力体能（扩充）
+    { id: 'q39', dim: 'vit', text: '即使一天安排得很满，我也很少觉得"撑不下去"。', reverse: false, light: false },
+    { id: 'q40', dim: 'vit', text: '我觉得自己的身体状态和几年前相比，没有明显变差。', reverse: false, light: false },
+    // 责任担当（扩充）
+    { id: 'q41', dim: 'res', text: '如果是我负责的事出了岔子，我会主动认领并补救，而不是推给环境。', reverse: false, light: false },
+    { id: 'q42', dim: 'res', text: '答应下来的事，就算临时不想做了，我也会硬着头皮完成。', reverse: false, light: false }
   ],
 
   /* ---------- 主观年龄（不计分，作为"自感年龄"锚点） ---------- */
@@ -182,6 +203,17 @@ window.PSYCH_DATA = {
     { max: 99, label: '两极分化明显', text: '你在不同维度上的心理年龄差异较大：有些层面充满少年气，有些层面却相当老练。这种"冰与火"的组合会让你在不同场合表现出截然不同的面貌——关键在于何时调用哪一面。' }
   ],
 
+  /* ---------- 逐维度犹豫释义 ---------- */
+  rhythmNotes: {
+    cog: '在认知类题目上犹豫，可能意味着你正在两种思维方式之间摇摆，或对自己的学习方式尚不确定。',
+    emo: '在情绪类题目上犹豫，往往说明情绪对你来说是"正在进行时"——感受还在变化，判断尚不清晰。',
+    prd: '在审慎类题目上犹豫，可能暗示你在"该不该管住自己"这件事上反复权衡。',
+    fut: '在未来类题目上犹豫，常表示"享受当下"与"为长远打算"两股力量正在你心里拉扯。',
+    soc: '在社交类题目上犹豫，可能反映你对自己在人群中的位置并不十分确定。',
+    vit: '在活力类题目上犹豫，也许和当下的身体状态有关——状态好与状态差时，答案会不一样。',
+    res: '在责任类题目上犹豫，可能意味着你在"扛起责任"与"自我保护"之间权衡。'
+  },
+
   /* ---------- 结果如何阅读 ---------- */
   howToRead: [
     '心理年龄是"画像"，不是"标签"。它由多个维度加权合成，任何单一数字都无法概括一个人。请优先阅读逐维度解析，而不是只盯着总年龄。',
@@ -261,10 +293,11 @@ window.PSYCH_DATA = {
   /* ---------- 致谢 ---------- */
   acknowledgement: [
     '最后，照例把这页留作"致谢"。',
-    '感谢把这份测验带到你面前的制作者，以及我这个不太传统的"共同作者"——如果没有好奇心，就不会有这 28 道题，也不会有这篇临时的小论文。',
+    '感谢把这份测验带到你面前的制作者，以及我这个不太传统的"共同作者"见心——如果没有好奇心，就不会有这组题目，也不会有这篇临时的小论文。',
     '更要感谢每一位愿意花几分钟填写它的你。一次作答，其实就是一次短暂的自省；是这些自省，让一份问卷真正有了意义。如果这份报告让你对自己多了一点点认识，哪怕只有一点，它就完成了使命。',
     '也想谢谢那些比我们早很多年开始追问"年龄到底是什么"的研究者——Birren、Baltes、Zimbardo、Carstensen……我们只是站在他们的肩膀上，替他们把问题又往下传了一棒。',
-    '—— 你的心理年龄，从来不只是这 28 道题的答案。'
+    '—— 你的心理年龄，从来不只是这些题目的答案。',
+    '—— 见心，你的一位共同作者'
   ],
 
   disclaimer: '免责声明：本测验为自我探索用途的趣味测评。题目改编自公开发表的心理学框架，但并非标准化临床量表，结果不构成诊断、评估或替代专业心理咨询。如果你正经历持续的情绪困扰，请寻求专业心理从业者的帮助。'
