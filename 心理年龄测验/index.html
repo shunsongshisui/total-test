@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="基于发展心理学多维度模型的心理年龄测验：28 题，7 维度，逐项解析与文献支撑。">
+<title>心理年龄测验 · Psychological Age Test</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">心理年龄测验<span class="brand-sub">PSY·AGE</span></div>
+    <button id="themeToggle" class="icon-btn" title="切换深浅主题" aria-label="切换深浅主题"><span id="themeIcon">◐</span></button>
+  </header>
+
+  <!-- ============ 开始页 ============ -->
+  <main id="view-start" class="view">
+    <section class="card hero-card">
+      <h1>你的心理年龄，是几岁？</h1>
+      <p class="lead">身份证上的年龄叫<strong>生理年龄</strong>，而你的<strong>心理年龄</strong>——认知弹性、情绪状态、时间观与生命力——可能和它相差十岁。本测验基于发展心理学的多维年龄模型（Baltes · Birren），用 <strong>28 道题</strong> 勾勒你的心理年龄画像。</p>
+
+      <div class="basis-grid">
+        <div class="basis-item"><b>7 个维度</b><span>认知 · 情绪 · 审慎 · 时间观 · 社会 · 活力 · 责任</span></div>
+        <div class="basis-item"><b>双向计分</b><span>青春维度 + 成熟维度加权合成</span></div>
+        <div class="basis-item"><b>文献支撑</b><span>Zimbardo · Cattell · 主观年龄研究等</span></div>
+        <div class="basis-item"><b>精细报告</b><span>雷达图 + 逐维度解析 + 参考文献</span></div>
+      </div>
+
+      <div class="settings">
+        <label class="field">
+          <span class="field-label">你的生理年龄（周岁，可不填）</span>
+          <input type="number" id="chronoAge" min="6" max="99" placeholder="例如 28" inputmode="numeric">
+        </label>
+
+        <div class="field">
+          <span class="field-label">测验版本</span>
+          <div class="seg" id="versionSeg" role="tablist">
+            <button role="tab" data-version="full" class="active">完整版 · 28 题</button>
+            <button role="tab" data-version="light">轻量版 · 14 题</button>
+          </div>
+          <p class="field-hint">完整版结果更细致；轻量版约 2 分钟。</p>
+        </div>
+
+        <div class="field">
+          <span class="field-label">选项</span>
+          <label class="check"><input type="checkbox" id="optShuffle"> 打乱题目顺序（降低惯性作答）</label>
+          <label class="check"><input type="checkbox" id="optSkip" checked> 允许跳过题目（跳过的按"中立"计分）</label>
+        </div>
+      </div>
+
+      <button id="btnStart" class="btn-primary">开始测验</button>
+      <p class="note">约需 3–5 分钟 · 结果仅供自我探索，不构成心理诊断</p>
+    </section>
+  </main>
+
+  <!-- ============ 答题页 ============ -->
+  <main id="view-test" class="view" hidden>
+    <div class="progress-wrap">
+      <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+      <div class="progress-meta">
+        <span id="qCounter">第 1 / 28 题</span>
+        <button id="btnQuit" class="link-btn">退出并重新开始</button>
+      </div>
+    </div>
+
+    <section class="card question-card">
+      <div class="q-head">
+        <span id="dimTag" class="dim-tag"></span>
+        <span id="dimAbout" class="dim-about"></span>
+      </div>
+      <p id="qText" class="question-text"></p>
+
+      <div class="likert">
+        <span id="scaleLeft" class="scale-label">不同意</span>
+        <div id="likertBtns" class="likert-btns" role="radiogroup"></div>
+        <span id="scaleRight" class="scale-label">同意</span>
+      </div>
+
+      <div class="q-nav">
+        <button id="btnPrev" class="btn-ghost">上一题</button>
+        <div class="q-nav-right">
+          <button id="btnSkip" class="link-btn" hidden>跳过此题</button>
+          <button id="btnNext" class="btn-ghost" disabled>下一题</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ 结果页 ============ -->
+  <main id="view-result" class="view" hidden>
+    <!-- 主数字 -->
+    <section class="card result-hero">
+      <div class="hero-age">
+        <div class="hero-num"><span id="heroNum" class="hero-figure">28</span><span class="hero-unit">岁</span></div>
+        <div id="heroBadge" class="hero-badge">与你年龄相当</div>
+      </div>
+      <div class="hero-meta">
+        <div class="chip"><span>生理年龄</span><b id="chronoChip">—</b></div>
+        <div class="chip"><span>心理年龄</span><b id="psychoChip">—</b></div>
+        <div class="chip"><span>差值</span><b id="diffChip">—</b></div>
+      </div>
+      <p class="hero-note" id="heroNote"></p>
+    </section>
+
+    <!-- 画像 + 雷达 -->
+    <section class="card profile-card">
+      <h2 class="card-title">七个维度 · 心理年龄画像</h2>
+      <p class="card-sub">雷达上每个轴代表一个维度的心理年龄（中心 16 岁，外缘 65 岁）</p>
+      <div class="profile-grid">
+        <div class="viz-root">
+          <canvas id="radar" height="340"></canvas>
+          <div id="radarTip" class="radar-tip" hidden></div>
+          <div class="chart-legend">
+            <span class="legend-item"><i class="swatch swatch-accent"></i>你的心理年龄</span>
+            <span class="legend-item"><i class="swatch swatch-ref"></i>生理年龄参照</span>
+          </div>
+        </div>
+        <div class="bar-list" id="barList"></div>
+      </div>
+      <div class="balance-row">
+        <b>整体均衡度：</b><span id="balanceText">—</span>
+      </div>
+    </section>
+
+    <!-- 人格画像 -->
+    <section class="card archetype-card" id="archetypeCard">
+      <h2 class="card-title" id="archetypeTitle">—</h2>
+      <p id="archetypeText" class="card-body"></p>
+    </section>
+
+    <!-- 主观年龄三角验证 -->
+    <section class="card felt-card" id="feltCard" hidden>
+      <h2 class="card-title">自感年龄 vs 心理年龄</h2>
+      <p class="card-body" id="feltText"></p>
+    </section>
+
+    <!-- 逐维度详解 -->
+    <section class="card detail-card">
+      <h2 class="card-title">逐维度详解</h2>
+      <p class="card-sub">每一维的相对判断标准：比生理年龄小 / 大 10 岁以上为显著偏年轻 / 偏成熟。</p>
+      <div id="detailList" class="detail-list"></div>
+    </section>
+
+    <!-- 如何阅读 -->
+    <section class="card howto-card">
+      <h2 class="card-title">这份结果该怎么读？</h2>
+      <ol id="howToList" class="howto-list"></ol>
+    </section>
+
+    <!-- 依据与文献 -->
+    <section class="card ref-card">
+      <h2 class="card-title">心理学依据与参考文献</h2>
+      <p class="card-body" id="basisIntro"></p>
+      <p class="card-sub ref-style-hint">著录格式：GB/T 7714-2015（按引用顺序编号）</p>
+      <ul id="refList" class="ref-list"></ul>
+    </section>
+
+    <!-- 致谢 -->
+    <section class="card ack-card">
+      <h2 class="card-title">致谢<span class="ack-en">ACKNOWLEDGEMENTS</span></h2>
+      <div id="ackBody" class="ack-body"></div>
+    </section>
+
+    <div class="result-actions">
+      <button id="btnRetrySame" class="btn-primary">再测一次（同样设置）</button>
+      <button id="btnRetryShuffle" class="btn-ghost">换顺序重测</button>
+      <button id="btnRestart" class="btn-ghost">返回开始页</button>
+    </div>
+
+    <p class="note" id="disclaimer"></p>
+  </main>
+
+</div>
+<footer class="footer">心理年龄测验 · 仅供自我探索 · 题目与解析改编自公开心理学文献</footer>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
