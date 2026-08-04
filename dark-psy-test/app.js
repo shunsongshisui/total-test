@@ -90,10 +90,9 @@
     $('btnSkip').hidden = !state.skip;
 
     const q = D.questions.find((x) => x.id === qid);
-    const t = typeOf(q.type);
-    $('dimTag').textContent = t.icon + ' ' + t.name;
-    $('dimTag').hidden = false;
-    $('dimAbout').textContent = t.tag;
+    // 不在作答页标注每题的测量方向，避免"迎合性作答"偏差（需求特征效应）
+    $('dimTag').hidden = true;
+    $('dimAbout').textContent = '凭第一直觉作答，无需反复权衡';
     $('dimAbout').hidden = false;
     $('qText').textContent = q.text;
     $('scaleLeft').hidden = false;
@@ -294,6 +293,36 @@
       ht.appendChild(li);
     });
 
+    // 心理学依据与参考文献（GB/T 7714-2015）
+    $('basisIntro').textContent = D.basisIntro;
+    const rf = $('refList');
+    rf.innerHTML = '';
+    D.references.forEach((ref, i) => {
+      const li = document.createElement('li');
+      const num = document.createElement('span');
+      num.className = 'ref-num';
+      num.textContent = '[' + (i + 1) + ']';
+      const cite = document.createElement('span');
+      cite.className = 'ref-cite';
+      cite.textContent = formatRef(ref);
+      const note = document.createElement('span');
+      note.className = 'ref-note';
+      note.textContent = '引用说明：' + ref.note;
+      li.appendChild(num);
+      li.appendChild(cite);
+      li.appendChild(note);
+      rf.appendChild(li);
+    });
+
+    // 致谢
+    const ab = $('ackBody');
+    ab.innerHTML = '';
+    D.acknowledgement.forEach((para) => {
+      const p = document.createElement('p');
+      p.textContent = para;
+      ab.appendChild(p);
+    });
+
     $('disclaimer').textContent = D.disclaimer;
   }
 
@@ -417,6 +446,20 @@
 
   /* ---------------- 工具 ---------------- */
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  // 按 GB/T 7714-2015 著录格式拼装文献条目
+  function formatRef(ref) {
+    let s = ref.authors + '. ' + ref.title;
+    if (ref.type === 'J') {
+      s += '[J]. ' + ref.journal + ', ' + ref.year + ', ' + ref.volume + '(' + ref.issue + '): ' + ref.pages + '.';
+      if (ref.doi) s += ' DOI: ' + ref.doi + '.';
+    } else if (ref.container) {
+      s += '[M]//' + ref.container + '. ' + ref.publisher + ', ' + ref.year + '.';
+    } else {
+      s += '[M]. ' + (ref.edition ? ref.edition + '. ' : '') + ref.publisher + ', ' + ref.year + '.';
+    }
+    return s;
+  }
 
   function hexToRgba(hex, alpha) {
     const m = /^#([0-9a-f]{6})$/i.exec(hex);

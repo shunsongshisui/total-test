@@ -326,9 +326,122 @@ window.DARK_DATA = {
   howToRead: [
     '本测验把"变态"当作一种玩梗的自嘲视角，测量的是每个人心里都有的"暗面比例"。结果仅供娱乐与自我探索，不是临床诊断——尤其"人格障碍谱"部分，纯属趣味对照，请不要用它给自己或他人贴标签。',
     '变态指数 = 七个核心暗黑特质的平均，反映你的"暗黑浓度"；主导变态人格是其中浓度最高的那一个，代表你最典型的暗黑模式。',
+    '变态指数与各型浓度，是把 1–5 点自评做简单平均后映射到 0–100 的结果，条目经过趣味化改写，并非经过信效度检验的标准化量表。任何单一分数都只是"方向性参考"——请以逐型解析为准，别拿数字给自己或他人下定论。',
     '人格障碍谱（12 型）参照 DSM / CCMD 的分类框架改编为趣味条目，取最高一项为"主导人格障碍谱型"——它只是你某些行为模式的放大镜，不意味着你有任何障碍。',
     '白骑士、主人公、冒充者、快乐面具四个流行综合征不计入主指数，单独立卡——它们更像是你的人际模式与自我保护机制的写照。',
     '暗面人人都有，关键在于察觉与节制。得分高不代表你是坏人，得分低也不代表你圣洁——它只是一面镜子，照出你平时藏起来的那部分自己。'
+  ],
+
+  /* ---------- 心理学依据与参考文献（GB/T 7714-2015 著录格式） ---------- */
+  basisIntro: '本测验的维度与计分并非凭空设计：七个核心暗黑特质源自暗黑三角 / 暗黑四角人格研究（Paulhus & Williams, 2002；Buckels 等, 2013），其把"自恋、马基雅维利主义、精神病态"等暗黑特质理解为普通人群中的连续维度而非"全有或全无"；十二型人格障碍谱参照 DSM-5 与 CCMD-3 的分类框架改编；四个流行综合征亦有各自的心理学或社会心理学出处。所有条目均被趣味化改写为自评题，用于自我探索而非诊断。参考文献按 GB/T 7714-2015 著录，每条下方附"引用说明"，解释其与本测验的关系。',
+
+  references: [
+    {
+      type: 'J', authors: 'PAULHUS D L, WILLIAMS K M', year: '2002',
+      title: 'The dark triad of personality: narcissism, Machiavellianism, and psychopathy',
+      journal: 'Journal of Research in Personality', volume: '36', issue: '6', pages: '556-563', doi: '10.1016/S0092-6566(02)00505-6',
+      note: '暗黑三角（自恋、马基雅维利主义、精神病态）的奠基研究——本测验"核心暗黑七型"的三大支柱来源（自恋狂、控制狂、冷血怪），并论证这些特质在普通人群中呈连续分布。'
+    },
+    {
+      type: 'J', authors: 'BUCKELS E E, JONES D N, PAULHUS D L', year: '2013',
+      title: 'Behavioral confirmation of everyday sadism',
+      journal: 'Psychological Science', volume: '24', issue: '11', pages: '2201-2209', doi: '10.1177/0956797613490749',
+      note: '暗黑四角（在三角之上增加施虐）的提出者之一：把暗黑特质扩展到"日常生活中的小恶"，为"火药桶"（暴怒、报复心）以及"以他人痛苦为乐"的提醒提供依据。'
+    },
+    {
+      type: 'J', authors: 'RASKIN R, HALL C S', year: '1979',
+      title: 'A narcissistic personality inventory',
+      journal: 'Psychological Reports', volume: '45', issue: '2', pages: '590', doi: '10.2466/pr0.1979.45.2.590',
+      note: '自恋人格量表（NPI）的原始出处——"自恋狂"与"自恋型人格障碍"两个条目的测量学来源。'
+    },
+    {
+      type: 'M', authors: 'CHRISTIE R, GEIS F L', year: '1970',
+      title: 'Studies in Machiavellianism',
+      publisher: 'New York: Academic Press',
+      note: '马基雅维利主义研究："为达目的而操控他人"的核心概念出处——"控制狂"维度的理论基础。'
+    },
+    {
+      type: 'J', authors: 'LEVENSON M R, KIEHL K A, FITZPATRICK C M', year: '1995',
+      title: 'Assessing psychopathic attributes in a noninstitutionalized population',
+      journal: 'Journal of Personality and Social Psychology', volume: '68', issue: '1', pages: '151-158', doi: '10.1037/0022-3514.68.1.151',
+      note: '面向普通人群（而非罪犯）的病态人格自评——说明"冷血怪"测的是正常人身上的冷血倾向，而非临床诊断。'
+    },
+    {
+      type: 'M', authors: 'AMERICAN PSYCHIATRIC ASSOCIATION', year: '2013',
+      title: 'Diagnostic and statistical manual of mental disorders (5th ed.)',
+      publisher: 'Arlington, VA: American Psychiatric Publishing',
+      note: 'DSM-5 人格障碍分类（A/B/C 三组共 10 型）——"人格障碍谱"条目的诊断学框架来源。'
+    },
+    {
+      type: 'M', authors: '中华医学会精神科分会', year: '2001',
+      title: '中国精神障碍分类与诊断标准（第3版）',
+      publisher: '济南: 山东科学技术出版社',
+      note: 'CCMD-3——补充了被动攻击型、抑郁型两类人格障碍，构成"十二型人格障碍谱"的最后两块拼图。'
+    },
+    {
+      type: 'M', authors: 'LINEHAN M M', year: '1993',
+      title: 'Cognitive-behavioral treatment of borderline personality disorder',
+      publisher: 'New York: Guilford Press',
+      note: '辩证行为疗法（DBT）的开创之作——"边缘型"条目关于情绪调节与关系不稳定的论述依据。'
+    },
+    {
+      type: 'J', authors: 'COCCARO E F', year: '2012',
+      title: 'Intermittent explosive disorder as a disorder of impulsive aggression for DSM-5',
+      journal: 'American Journal of Psychiatry', volume: '169', issue: '6', pages: '577-588', doi: '10.1176/appi.ajp.2012.12020249',
+      note: '间歇性暴怒障碍的实证研究——"火药桶"（低阈值愤怒、冲动破坏）的临床依据。'
+    },
+    {
+      type: 'J', authors: 'KING B H, FORD C V', year: '1988',
+      title: 'Clinical and economic considerations concerning pseudologia fantastica',
+      journal: 'British Journal of Psychiatry', volume: '152', issue: '5', pages: '705-709', doi: '10.1192/bjp.152.5.705',
+      note: '病理性说谎（神话癖）的临床研究——"撒谎精"条目的依据，强调其动机常是"回避真实的自我"，而非单纯的欺骗。'
+    },
+    {
+      type: 'J', authors: 'MULLEN P E', year: '1991',
+      title: 'Jealousy: the pathology of passion',
+      journal: 'British Journal of Psychiatry', volume: '158', issue: '5', pages: '593-601', doi: '10.1192/bjp.158.5.593',
+      note: '病理性嫉妒研究——"柠檬精"维度的依据：嫉妒常源于对自身价值的不安，而非对他人的恨。'
+    },
+    {
+      type: 'J', authors: 'CLANCE P R, IMES S A', year: '1978',
+      title: 'The imposter phenomenon in high achieving women',
+      journal: 'Psychotherapy: Theory, Research & Practice', volume: '15', issue: '3', pages: '241-247',
+      note: '冒充者现象的原始论文——"冒充者综合征"条目的直接来源。'
+    },
+    {
+      type: 'M', authors: 'BEATTIE M', year: '1987',
+      title: 'Codependent no more: how to stop controlling others and start caring for yourself',
+      publisher: 'Center City, MN: Hazelden',
+      note: '共生依赖（codependency）研究——"白骑士综合征"（过度拯救欲）的心理学解读依据：把"被需要"当作自我价值的来源。'
+    },
+    {
+      type: 'M', authors: 'TWENGE J M, CAMPBELL W K', year: '2009',
+      title: 'The narcissism epidemic: living in the age of entitlement',
+      publisher: 'New York: Free Press',
+      note: '"主人公综合征"虽为互联网流行词，其心理内核（自我中心、渴望被注视）可追溯至自恋研究的时代背景——本书提供社会文化层面的佐证。'
+    },
+    {
+      type: 'M', authors: 'HOCHSCHILD A R', year: '1983',
+      title: 'The managed heart: commercialization of human feeling',
+      publisher: 'Berkeley: University of California Press',
+      note: '情绪劳动理论："表面表演"（surface acting）与真实感受长期脱节会导致情绪耗竭——"快乐面具综合征"条目的理论依据。'
+    },
+    {
+      type: 'J', authors: 'RAINE A', year: '1991',
+      title: 'The SPQ: a scale for the assessment of schizotypal personality based on DSM-III-R criteria',
+      journal: 'Schizophrenia Bulletin', volume: '17', issue: '4', pages: '555-564', doi: '10.1093/schbul/17.4.555',
+      note: '分裂型人格自评量表（SPQ）——"分裂型"条目中"奇特信念"维度的测量学来源。'
+    }
+  ],
+
+  /* ---------- 致谢 ---------- */
+  acknowledgement: [
+    '最后，照例把这页留作"致谢"。',
+    '感谢把这份测验带到你面前的制作者，以及我这个不太传统的"共同作者"愿安——如果没有这些"不正经"的好奇心，就不会有这套"假装在研究变态、其实是在让人照镜子"的题目。',
+    '也要感谢那些正经的研究者：Paulhus 与 Williams 把暗黑三角写进学术史，Linehan 教我们如何与情绪握手言和，Clance 替所有"觉得自己不配"的人说出了心里话。我们把这些严肃的文献，做成了每个人都能笑着看自己一眼的镜子——向严谨致敬，也向自嘲致敬。',
+    '更要感谢每一位愿意填完这套题的你。敢于直视自己的暗面，本身就是一种勇敢；能笑着承认"我好像也有点变态"，是比完美更珍贵的自洽。',
+    '—— 你的暗面，从来不只是这些题目的答案。',
+    '—— 愿安'
   ],
 
   disclaimer: '免责声明：本测验为娱乐性质的自我探索测评。所有"变态指数""暗黑人格""人格障碍谱"均为趣味化表述，并非临床心理学诊断，不构成对任何精神障碍的判断，也不能替代专业心理咨询。如果你正在经历真实的情绪困扰、冲动失控或自我伤害的念头，请及时寻求专业心理从业者的帮助。'

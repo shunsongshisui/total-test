@@ -272,6 +272,30 @@ html, body {
 .howto-list { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
 .howto-list li { font-size: 14px; color: var(--ink-2); }
 
+/* 参考文献（GB/T 7714-2015） */
+.ref-style-hint { margin: 0 0 4px; }
+.ref-list { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 15px; }
+.ref-list li {
+  position: relative; padding-left: 3.6em;
+  font-size: 13px; line-height: 1.7; color: var(--ink-2);
+  font-family: Georgia, "Times New Roman", "Times", "Songti SC", SimSun, serif;
+}
+.ref-num { position: absolute; left: 0; top: 0.1em; font-weight: 700; color: var(--ink); font-family: system-ui, sans-serif; }
+.ref-cite { display: block; text-align: justify; }
+.ref-note {
+  display: block; font-size: 12px; color: var(--muted); margin-top: 4px;
+  font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 致谢 */
+.ack-card { border-left: 4px solid var(--muted); }
+.ack-en {
+  font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: .12em;
+  margin-left: 8px; font-family: Georgia, "Times New Roman", serif;
+}
+.ack-body p { margin: 0 0 12px; font-size: 14px; line-height: 2; color: var(--ink-2); }
+.ack-body p:last-child { margin-bottom: 0; color: var(--ink); font-weight: 600; }
+
 .result-actions { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 22px; }
 .result-actions .btn-primary { width: 100%; }
 .result-actions .btn-ghost { width: 100%; }
