@@ -40,7 +40,7 @@
     if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
     else document.documentElement.setAttribute('data-theme', 'light');
     if (!state.results) return;
-    drawRadar();
+    drawRadar(); drawQuadrant();
   });
 
   /* ---------------- 开始页 ---------------- */
@@ -219,15 +219,37 @@
         return q.reverse ? SC.likertMax + SC.likertMin - v : v;
       });
       const trait = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : SC.neutral;
-      const M = dim.role === 'mature' ? trait : SC.likertMax + SC.likertMin - trait;
-      const age = dim.minAge + (M - SC.likertMin) / (SC.likertMax - SC.likertMin) * (dim.maxAge - dim.minAge);
-      return { key: dim.key, name: dim.name, short: dim.short, about: dim.about, role: dim.role, age, band: bandFor(age) };
+      return { key: dim.key, name: dim.name, short: dim.short, about: dim.about, role: dim.role, cluster: dim.cluster, trait };
     });
 
-    const basePsychAge = dims.reduce((s, d) => s + d.age * D.dimensions.find((x) => x.key === d.key).weight, 0);
-    const sd = Math.sqrt(dims.reduce((s, d) => s + Math.pow(d.age - basePsychAge, 2), 0) / dims.length);
-    const youngCount = dims.filter((d) => d.band === 'young').length;
-    const oldCount = dims.filter((d) => d.band === 'old').length;
+    // 年龄相关维度（排除责任担当）：责任是担当，不是年龄
+    const ageDims = D.dimensions.filter((d) => d.cluster !== 'none');
+    const ages = {};
+    dims.forEach((d) => {
+      if (d.cluster === 'none') { ages[d.key] = null; return; }
+      const dim = D.dimensions.find((x) => x.key === d.key);
+      const M = dim.role === 'mature' ? d.trait : SC.likertMax + SC.likertMin - d.trait;
+      ages[d.key] = dim.minAge + (M - SC.likertMin) / (SC.likertMax - SC.likertMin) * (dim.maxAge - dim.minAge);
+    });
+    const withAge = ageDims.map((d) => ({ ...d, age: ages[d.key], band: bandFor(ages[d.key]) }));
+
+    // 概括值 = 6 个年龄维度加权（权重在年龄维度内重归一化）
+    const totalW = ageDims.reduce((s, d) => s + d.weight, 0);
+    const basePsychAge = ageDims.reduce((s, d) => s + ages[d.key] * d.weight / totalW, 0);
+    const sd = Math.sqrt(withAge.reduce((s, d) => s + Math.pow(d.age - basePsychAge, 2), 0) / withAge.length);
+
+    // 双轴：成熟度（认清世事）× 少年感（永葆童心），互相独立
+    const maturity = toPct(meanScore(dims, D.duoAxes.maturity.dims));
+    const youth = toPct(meanScore(dims, D.duoAxes.youth.dims));
+    const mHi = maturity >= SC.duoThreshold;
+    const yHi = youth >= SC.duoThreshold;
+    const archetype = D.archetypes.find((a) => a.m === (mHi ? 1 : 0) && a.y === (yHi ? 1 : 0)) || D.archetypes[D.archetypes.length - 1];
+
+    // 责任担当（不计入年龄）
+    const resDim = dims.find((d) => d.cluster === 'none');
+    const resTrait = resDim ? resDim.trait : SC.neutral;
+    const resLevel = responsibilityLevel(resTrait, false);
+    const resBandKey = responsibilityLevel(resTrait, true);
 
     // 作答节律：以平均每题用时做温和的收敛修正（犹豫越多越向中间值靠拢，上限 ±2 岁）
     const rhythm = computeRhythm();
@@ -235,18 +257,18 @@
     const psychAge = basePsychAge + delta;
 
     return {
-      dims,
-      ages: Object.fromEntries(dims.map((d) => [d.key, d.age])),
+      dims: withAge,
+      ages,
       basePsychAge,
       psychAge,
       delta,
       rhythm,
       sd,
-      youngCount,
-      oldCount,
-      archetype: pickArchetype(dims, youngCount, oldCount),
+      maturity, youth, mHi, yHi,
+      archetype,
+      resTrait, resLevel, resBandKey,
       balance: balanceFor(sd),
-      descriptor: describe(psychAge, chrono),
+      descriptor: archetype.short,
       diff: chrono != null ? psychAge - chrono : null,
       chrono
     };
@@ -282,26 +304,24 @@
     return clamp((NEUTRAL_ANCHOR - baseAge) * factor * 0.6, -2, 2);
   }
 
-  function pickArchetype(dims, y, o) {
-    const band = (k) => dims.find((d) => d.key === k).band;
-    // 先匹配特征组合型（更具体）
-    for (const a of D.archetypes) {
-      const m = a.match || {};
-      if (!m.sig) continue;
-      if (m.sig.every((entry) => {
-        const i = entry.lastIndexOf('_');
-        return band(entry.slice(0, i)) === entry.slice(i + 1);
-      })) return a;
-    }
-    // 再匹配计数型
-    for (const a of D.archetypes) {
-      const m = a.match || {};
-      if (m.sig) continue;
-      const yOk = (m.youngMin == null || y >= m.youngMin) && (m.youngMax == null || y <= m.youngMax);
-      const oOk = (m.oldMin == null || o >= m.oldMin) && (m.oldMax == null || o <= m.oldMax);
-      if (yOk && oOk) return a;
-    }
-    return D.archetypes[D.archetypes.length - 1];
+  // 取若干维度的平均特质分
+  function meanScore(dims, keys) {
+    const vals = keys.map((k) => {
+      const d = dims.find((x) => x.key === k);
+      return d ? d.trait : SC.neutral;
+    });
+    return vals.reduce((a, b) => a + b, 0) / vals.length;
+  }
+
+  // 特质分 1-5 转 0-100
+  function toPct(v) {
+    return (v - SC.likertMin) / (SC.likertMax - SC.likertMin) * 100;
+  }
+
+  // 责任担当的"担当力"等级（不计入年龄）
+  function responsibilityLevel(trait, getBandKey) {
+    const lv = D.responsibility.levels.find((l) => trait <= l.max) || D.responsibility.levels[D.responsibility.levels.length - 1];
+    return getBandKey ? lv.bandKey : lv.label;
   }
 
   function balanceFor(sd) {
@@ -329,7 +349,7 @@
     state.results = computeResults();
     renderResult(state.results);
     show('view-result');
-    requestAnimationFrame(drawRadar);
+    requestAnimationFrame(() => { drawRadar(); drawQuadrant(); });
   }
 
   /* ---------------- 结果渲染 ---------------- */
@@ -346,10 +366,10 @@
       const d = Math.round(r.diff);
       $('diffChip').textContent = d === 0 ? '相当' : (d < 0 ? '小 ' + (-d) + ' 岁' : '大 ' + d + ' 岁');
       $('heroNote').textContent = '你的心理年龄比生理年龄' + (d === 0 ? '相当' : (d < 0 ? '年轻 ' + (-d) + ' 岁' : '成熟 ' + d + ' 岁')) +
-        '。综合 7 个维度加权计算，维度差异越大，单一数字的意义越小，请结合下方画像解读。';
+        '。这个概括值由 6 个年龄相关维度（不含责任担当）加权合成，只是一个参考——请以"成熟度 × 少年感"双轴画像为准。';
     } else {
       $('diffChip').textContent = '—';
-      $('heroNote').textContent = '综合 7 个维度加权计算。若想知道与生理年龄的差距，可回到开始页填写年龄再测一次。';
+      $('heroNote').textContent = '这是由 6 个年龄相关维度加权合成的概括值，只是一个参考——请以"成熟度 × 少年感"双轴画像为准。';
     }
 
     // 条形列表
@@ -374,6 +394,18 @@
     // 人格画像
     $('archetypeTitle').textContent = r.archetype.title;
     $('archetypeText').textContent = r.archetype.text;
+
+    // 双轴画像
+    $('duoSub').textContent = '横轴 = 少年感（永葆童心）· 纵轴 = 成熟度（认清世事）。两条轴彼此独立，可以同时很高。';
+    $('duoText').textContent = '你的成熟度 ' + Math.round(r.maturity) + ' / 100，少年感 ' + Math.round(r.youth) + ' / 100。' +
+      (r.mHi && r.yHi ? '两条轴都偏高——这正是"认清世事又永葆童心"的理想状态。'
+        : r.mHi ? '成熟度明显高于少年感——你看得通透，但别忘了给童心留点位置。'
+        : r.yHi ? '少年感明显高于成熟度——你有满格的活力，世界还欠你一些经历。'
+        : '两条轴目前都不算高——可能是阶段性的低谷，先照顾好自己的状态。');
+
+    // 担当力（不计入年龄）
+    $('resText').innerHTML = '你的担当力属于 <b>' + r.resLevel + '</b>：' + D.bands.res[r.resBandKey] +
+      '<br><span style="color:var(--muted);font-size:12.5px;">' + D.responsibility.note + '</span>';
 
     // 均衡度
     $('balanceText').textContent = r.balance.label + '。' + r.balance.text;
@@ -607,6 +639,98 @@
     state.radarVerts = verts;
   }
 
+  /* ---------------- 双轴四象限图 ---------------- */
+  function drawQuadrant() {
+    const canvas = $('duo');
+    if (!canvas || !state.results) return;
+    const rect = canvas.getBoundingClientRect();
+    const W = rect.width, H = rect.height;
+    if (W < 10) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const css = getComputedStyle(document.documentElement);
+    const C = {
+      accent: css.getPropertyValue('--accent').trim() || '#2a78d6',
+      grid: css.getPropertyValue('--grid').trim(),
+      muted: css.getPropertyValue('--muted').trim(),
+      ink2: css.getPropertyValue('--ink-2').trim(),
+      card: css.getPropertyValue('--card').trim()
+    };
+
+    const pad = { left: 44, right: 22, top: 26, bottom: 46 };
+    const pw = W - pad.left - pad.right;
+    const ph = H - pad.top - pad.bottom;
+    const X = (v) => pad.left + clamp(v, 0, 100) / 100 * pw;
+    const Y = (v) => pad.top + (100 - clamp(v, 0, 100)) / 100 * ph;
+
+    // 网格与刻度
+    ctx.font = '10px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
+    [0, 20, 40, 60, 80, 100].forEach((v) => {
+      ctx.strokeStyle = C.grid;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X(v), pad.top); ctx.lineTo(X(v), pad.top + ph); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(pad.left, Y(v)); ctx.lineTo(pad.left + pw, Y(v)); ctx.stroke();
+      ctx.fillStyle = C.muted;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillText(v, X(v), pad.top + ph + 6);
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText(v, pad.left - 6, Y(v));
+    });
+
+    // 象限分界线（duoThreshold）
+    ctx.save();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = C.ink2;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(X(SC.duoThreshold), pad.top); ctx.lineTo(X(SC.duoThreshold), pad.top + ph); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad.left, Y(SC.duoThreshold)); ctx.lineTo(pad.left + pw, Y(SC.duoThreshold)); ctx.stroke();
+    ctx.restore();
+
+    // 象限标注（高亮当前所在象限）
+    const r = state.results;
+    const curY = r.yHi ? 1 : 0;
+    const curM = r.mHi ? 1 : 0;
+    D.quadrants.forEach((q) => {
+      const isCur = q.x === curY && q.y === curM;
+      const cxq = q.x ? X(80) : X(20);
+      const cyq = q.y ? Y(80) : Y(20);
+      ctx.fillStyle = C.accent;
+      ctx.globalAlpha = isCur ? 0.95 : 0.38;
+      ctx.font = 'bold 13px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(q.label, cxq, cyq - 8);
+      ctx.globalAlpha = isCur ? 0.8 : 0.32;
+      ctx.font = '10px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
+      ctx.fillText(q.note, cxq, cyq + 10);
+      ctx.globalAlpha = 1;
+    });
+
+    // 轴标题
+    ctx.fillStyle = C.ink2;
+    ctx.font = '11px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText('少年感 · 永葆童心  →', pad.left + pw / 2, pad.top + ph + 20);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText('成熟度 · 认清世事  ↑', 8, pad.top + 6);
+
+    // 你的位置
+    const px = X(r.youth), py = Y(r.maturity);
+    ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2);
+    ctx.fillStyle = C.accent;
+    ctx.fill();
+    ctx.strokeStyle = C.card;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    ctx.fillStyle = C.ink2;
+    ctx.font = 'bold 12px system-ui, sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText('你', px + 10, py - 4);
+  }
+
   // 雷达图悬停提示
   const radar = $('radar');
   radar.addEventListener('mousemove', (e) => {
@@ -630,7 +754,7 @@
   radar.addEventListener('mouseleave', () => { $('radarTip').hidden = true; });
 
   window.addEventListener('resize', () => {
-    if (state.results) drawRadar();
+    if (state.results) { drawRadar(); drawQuadrant(); }
   });
 
   /* ---------------- 工具 ---------------- */

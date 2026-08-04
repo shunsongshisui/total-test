@@ -106,8 +106,8 @@
 
     <!-- 画像 + 雷达 -->
     <section class="card profile-card">
-      <h2 class="card-title">七个维度 · 心理年龄画像</h2>
-      <p class="card-sub">雷达上每个轴代表一个维度的心理年龄（中心 16 岁，外缘 65 岁）</p>
+      <h2 class="card-title">六个年龄维度 · 逐维画像</h2>
+      <p class="card-sub">雷达上每个轴代表一个维度的心理年龄（中心 16 岁，外缘 65 岁）；责任担当不计入年龄，单独立卡。</p>
       <div class="profile-grid">
         <div class="viz-root">
           <canvas id="radar" height="340"></canvas>
@@ -124,10 +124,26 @@
       </div>
     </section>
 
+    <!-- 双轴画像 -->
+    <section class="card duo-card">
+      <h2 class="card-title">成熟度 × 少年感 · 双轴画像</h2>
+      <p class="card-sub" id="duoSub"></p>
+      <div class="viz-root duo-viz">
+        <canvas id="duo" height="340"></canvas>
+      </div>
+      <p class="card-body" id="duoText" style="margin-top:12px;"></p>
+    </section>
+
     <!-- 人格画像 -->
     <section class="card archetype-card" id="archetypeCard">
       <h2 class="card-title" id="archetypeTitle">—</h2>
       <p id="archetypeText" class="card-body"></p>
+    </section>
+
+    <!-- 担当力（不计入年龄） -->
+    <section class="card res-card">
+      <h2 class="card-title">担当力<span class="ack-en">不计入心理年龄</span></h2>
+      <p class="card-body" id="resText"></p>
     </section>
 
     <!-- 主观年龄三角验证 -->
@@ -182,7 +198,9 @@
   </main>
 
 </div>
+<div class="ctr-line">本测试已被浏览 <b id="ctrPv">—</b> 次 · <b id="ctrUv">—</b> 位访客</div>
 <footer class="footer">心理年龄测验 · 仅供自我探索 · 题目与解析改编自公开心理学文献</footer>
+<script src="../counter.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 </body>
