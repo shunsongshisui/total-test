@@ -19,13 +19,13 @@
   <main id="view-start" class="view">
     <section class="card hero-card">
       <h1>你心里，住着哪几宗罪？</h1>
-      <p class="lead">傲慢、贪婪、色欲、嫉妒、暴食、暴怒、懒惰——这七宗罪最早是写给修道院里所有凡人的，几百年后依然精准命中每一个现代人。本测验用 <strong>53 道题</strong>（49 计分 + 4 缓冲）测量 <strong>7 条"罪—美德"双极轴</strong>：每一条轴 7 题（4 正向 + 3 反向），反向题比重更高，能抵消"默认都同意"的迎合性作答，让结果更接近真实。所有题目都做了隐晦化处理，只描述具体情境，看不出在测什么——请凭第一直觉作答。结果给你两样东西：你的<strong>主导之罪</strong>，和你的<strong>守护美德</strong>。</p>
+      <p class="lead">傲慢、贪婪、色欲、嫉妒、暴食、暴怒、懒惰——这七宗罪最早是写给修道院里所有凡人的，几百年后依然精准命中每一个现代人。本测验用 <strong>60 道题</strong>（56 计分 + 4 缓冲）<strong>分别测量 7 宗罪与 7 美德</strong>——它们不是一体两面，而是两条独立的指标：你可以同时贪财又慷慨、要强又谦卑。所有题目都做了隐晦化处理，只描述具体情境，看不出在测什么——请凭第一直觉作答。结果同时给你<strong>罪孽指数</strong>与<strong>美德指数</strong>两个独立分数，并标出"罪德共存"的组合。</p>
 
       <div class="basis-grid">
-        <div class="basis-item"><b>7 条罪—美德双极轴</b><span>傲慢↔谦卑 · 贪婪↔慷慨 · 暴怒↔忍耐 ……</span></div>
+        <div class="basis-item"><b>7 宗罪 + 7 美德独立测量</b><span>14 条维度，分开计分，互不抵消</span></div>
+        <div class="basis-item"><b>双指数报告</b><span>罪孽指数 + 美德指数，各自分档</span></div>
+        <div class="basis-item"><b>罪德共存分析</b><span>标出罪与德同时高涨的组合</span></div>
         <div class="basis-item"><b>文化原型 + 实证研究</b><span>Evagrius · 阿奎那 · 现代心理学</span></div>
-        <div class="basis-item"><b>隐晦化题面</b><span>情境式描述 + 缓冲题，看不出方向</span></div>
-        <div class="basis-item"><b>精细报告</b><span>罪孽指数 + 主导之罪 + 守护美德 + 雷达图</span></div>
       </div>
 
       <div class="settings">
@@ -37,7 +37,7 @@
       </div>
 
       <button id="btnStart" class="btn-primary">开始测验</button>
-      <p class="note">53 道题约需 9 分钟 · 每轴 7 题提升测量信度 · 结果仅供自省与娱乐，非道德审判，非心理诊断</p>
+      <p class="note">60 道题约需 10 分钟 · 罪与德独立测量 · 结果仅供自省与娱乐，非道德审判，非心理诊断</p>
     </section>
   </main>
 
@@ -46,7 +46,7 @@
     <div class="progress-wrap">
       <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
       <div class="progress-meta">
-        <span id="qCounter">第 1 / 53 题</span>
+        <span id="qCounter">第 1 / 60 题</span>
         <button id="btnQuit" class="link-btn">退出并重新开始</button>
       </div>
     </div>
@@ -76,11 +76,22 @@
 
   <!-- ============ 结果页 ============ -->
   <main id="view-result" class="view" hidden>
-    <!-- 主数字 -->
+    <!-- 双指数 -->
     <section class="card result-hero">
-      <div class="hero-age">
-        <div class="hero-num"><span id="heroNum" class="hero-figure">0</span><span class="hero-unit">指数</span></div>
-        <div id="heroBadge" class="hero-badge">—</div>
+      <div class="hero-duo">
+        <div class="hero-side">
+          <div class="hero-age">
+            <div class="hero-num"><span id="heroNum" class="hero-figure hero-sin">0</span><span class="hero-unit">罪孽指数</span></div>
+            <div id="heroBadge" class="hero-badge">—</div>
+          </div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-side">
+          <div class="hero-age">
+            <div class="hero-num"><span id="virtueNum" class="hero-figure hero-virtue">0</span><span class="hero-unit">美德指数</span></div>
+            <div id="virtueBadge" class="hero-badge hero-badge-virtue">—</div>
+          </div>
+        </div>
       </div>
       <div class="hero-meta">
         <div class="chip"><span>主导之罪</span><b id="dominantChip">—</b></div>
@@ -89,11 +100,21 @@
       <p class="hero-note" id="heroNote"></p>
     </section>
 
-    <!-- 罪量表 -->
+    <!-- 罪德共存 -->
+    <section class="card coexist-card">
+      <h2 class="card-title">罪与德，可以共存</h2>
+      <p class="card-sub">罪与德是独立的指标：同一个你，可以同时贪财又慷慨、要强又谦卑。下面标出你身上罪与德同时高涨的组合。</p>
+      <div id="coexistText" class="coexist-body"></div>
+    </section>
+
+    <!-- 双量表 -->
     <section class="card profile-card">
-      <h2 class="card-title">七宗罪量表</h2>
-      <p class="card-sub">七条轴按你的"罪端浓度"排序（0–100）；浓度越低，越接近对应的美德端。</p>
-      <div class="bar-list" id="barList"></div>
+      <h2 class="card-title">双量表 · 罪与德独立显示</h2>
+      <p class="card-sub">七宗罪与七美德分开测量（0–100），各自排序，互不抵消。</p>
+      <div class="group-label"><span>七宗罪</span><small>罪端浓度</small></div>
+      <div class="bar-list" id="sinList"></div>
+      <div class="group-label"><span>七美德</span><small>美德浓度</small></div>
+      <div class="bar-list" id="virtueList"></div>
     </section>
 
     <!-- 主导之罪 -->
@@ -111,7 +132,7 @@
     <!-- 罪与德 · 上下对照雷达 -->
     <section class="card duo-card">
       <h2 class="card-title">罪与德 · 上下对照雷达</h2>
-      <p class="card-sub">上半圆为七宗罪，下半圆为七美德：同一条轴上下镜像，越靠外浓度越高（中心 0，外缘 100）。美德浓度 = 100 − 罪浓度——两片影子此消彼长。</p>
+      <p class="card-sub">上半圆为七宗罪，下半圆为七美德：两半各自独立测量，可以同高同低（中心 0，外缘 100）。</p>
       <div class="viz-root">
         <canvas id="radar" height="340"></canvas>
         <div id="radarTip" class="radar-tip" hidden></div>
@@ -122,10 +143,10 @@
       </div>
     </section>
 
-    <!-- 逐罪详解 -->
+    <!-- 逐维详解 -->
     <section class="card detail-card">
-      <h2 class="card-title">逐罪详解</h2>
-      <p class="card-sub">档位：罪端浓度 &lt; 40 为美德主导 · 40–70 为凡常 · ≥ 70 为罪端突出。</p>
+      <h2 class="card-title">逐维详解</h2>
+      <p class="card-sub">14 项独立维度（7 罪 + 7 德）· 档位：浓度 &lt; 40 低 · 40–70 中 · ≥ 70 高。</p>
       <div id="detailList" class="detail-list"></div>
     </section>
 

@@ -1,11 +1,9 @@
 /* =====================================================================
    七美德与七宗罪测试 · 逻辑层
-   计分模型：
-     每条"罪—美德"双极轴求罪端特质分（反向题先转换），映射到 0-100
-     的"罪端浓度"（0 = 纯美德端，100 = 罪端满格）；
-     罪孽指数   = 7 条轴的罪端浓度平均；
-     主导之罪   = 罪端浓度最高的轴；
-     守护美德   = 美德端浓度最高的轴（即罪端浓度最低的那条）。
+   模型：7 宗罪与 7 美德是【独立】维度，分开计分、互不抵消。
+     罪孽指数 = 7 宗罪浓度平均；美德指数 = 7 美德浓度平均。
+     主导之罪 = 罪端最高；守护美德 = 美德最高。
+     罪德共存 = 同一对照组合里，罪与德浓度都 ≥ 阈值的组合。
      跳过题按"中立"计分。
    ===================================================================== */
 (function () {
@@ -15,7 +13,8 @@
   const D = window.SEVEN_DATA;
   const SC = D.scoring;
   const LIKERT_LABELS = ['非常不同意', '不同意', '中立', '同意', '非常同意'];
-  const BAND_LABEL = { low: '美德主导', mid: '凡常', high: '罪端突出' };
+  const SIN_BAND_LABEL = { low: '较轻', mid: '中等', high: '较重' };
+  const VIRTUE_BAND_LABEL = { low: '尚浅', mid: '中等', high: '丰沛' };
 
   const state = {
     shuffle: false,
@@ -80,7 +79,6 @@
     $('btnSkip').hidden = !state.skip;
 
     const q = D.questions.find((x) => x.id === qid);
-    // 不在作答页标注测量方向，避免"迎合性作答"偏差
     $('dimTag').hidden = true;
     $('dimAbout').textContent = '凭第一直觉作答，无需反复权衡';
     $('dimAbout').hidden = false;
@@ -152,30 +150,41 @@
     return (v - SC.likertMin) / (SC.likertMax - SC.likertMin) * 100;
   }
 
-  function computeResults() {
-    const sins = D.sins;
-    const scores = {};
-    sins.forEach((s) => {
-      const qs = D.questions.filter((q) => q.type === s.key);
-      const vals = qs.map((q) => {
-        const raw = state.answers[q.id];
-        const v = (raw == null) ? SC.neutral : raw;
-        return q.reverse ? SC.likertMax + SC.likertMin - v : v;
-      });
-      const trait = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : SC.neutral;
-      scores[s.key] = { ...s, pct: toPct(trait), band: bandFor(toPct(trait)) };
+  function scoreType(key) {
+    const qs = D.questions.filter((q) => q.type === key);
+    const vals = qs.map((q) => {
+      const raw = state.answers[q.id];
+      return (raw == null) ? SC.neutral : raw;
     });
+    const trait = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : SC.neutral;
+    return toPct(trait);
+  }
 
-    // 罪孽指数 = 7 条轴罪端浓度平均
-    const index = sins.reduce((sum, s) => sum + scores[s.key].pct, 0) / sins.length;
+  function computeResults() {
+    // 7 宗罪
+    const sinScores = {};
+    D.sins.forEach((s) => { sinScores[s.key] = { ...s, pct: scoreType(s.key), band: bandFor(scoreType(s.key)) }; });
+    // 7 美德
+    const virtueScores = {};
+    D.virtues.forEach((v) => { virtueScores[v.key] = { ...v, pct: scoreType(v.key), band: bandFor(scoreType(v.key)) }; });
 
-    // 主导之罪 / 守护美德（并列取顺序靠前）
-    const dominant = sins.reduce((a, b) => (scores[b.key].pct > scores[a.key].pct ? b : a));
-    const guardian = sins.reduce((a, b) => (scores[b.key].pct < scores[a.key].pct ? b : a));
+    // 两个独立指数
+    const sinIndex = D.sins.reduce((sum, s) => sum + sinScores[s.key].pct, 0) / D.sins.length;
+    const virtueIndex = D.virtues.reduce((sum, v) => sum + virtueScores[v.key].pct, 0) / D.virtues.length;
 
-    const tier = D.indexTiers.find((t) => index <= t.max) || D.indexTiers[D.indexTiers.length - 1];
+    // 主导之罪 / 守护美德
+    const dominant = D.sins.reduce((a, b) => (sinScores[b.key].pct > sinScores[a.key].pct ? b : a));
+    const guardian = D.virtues.reduce((a, b) => (virtueScores[b.key].pct > virtueScores[a.key].pct ? b : a));
 
-    return { index, tier, dominant, guardian, scores, sins };
+    // 罪德共存：同一对照组合里罪、德都 >= 阈值
+    const coexist = D.pairs.filter((p) =>
+      sinScores[p.sin].pct >= SC.coexistThreshold && virtueScores[p.virtue].pct >= SC.coexistThreshold
+    );
+
+    const sinTier = D.sinTiers.find((t) => sinIndex <= t.max) || D.sinTiers[D.sinTiers.length - 1];
+    const virtueTier = D.virtueTiers.find((t) => virtueIndex <= t.max) || D.virtueTiers[D.virtueTiers.length - 1];
+
+    return { sinIndex, virtueIndex, sinTier, virtueTier, dominant, guardian, coexist, sinScores, virtueScores };
   }
 
   function submit() {
@@ -186,56 +195,96 @@
   }
 
   /* ---------------- 结果渲染 ---------------- */
-  function renderResult(r) {
-    const p = Math.round(r.index);
-    $('heroNum').textContent = p;
-    $('heroBadge').textContent = r.tier.label;
-    $('dominantChip').textContent = r.dominant.icon + ' ' + r.dominant.name;
-    $('virtueChip').textContent = r.guardian.virtue;
-    $('heroNote').textContent = '你的罪孽指数为 ' + p + ' / 100（' + r.tier.label + '）。' + r.tier.text;
-
-    // 罪量表
-    const list = $('barList');
+  function renderBarList(container, scores, keys) {
+    const list = $(container);
     list.innerHTML = '';
-    r.sins.slice().sort((a, b) => r.scores[b.key].pct - r.scores[a.key].pct).forEach((s) => {
-      const sc = r.scores[s.key];
+    keys.slice().sort((a, b) => scores[b.key].pct - scores[a.key].pct).forEach((d) => {
+      const s = scores[d.key];
       const row = document.createElement('div');
       row.className = 'bar-row';
       row.innerHTML =
-        '<span class="bar-name">' + s.icon + ' ' + s.name + '</span>' +
-        '<div class="bar-track"><div class="bar-fill ' + (sc.band === 'high' ? 'high' : '') + '" style="width:' + Math.round(sc.pct) + '%"></div></div>' +
-        '<span class="bar-val">' + Math.round(sc.pct) + '<span class="bar-band band-' + sc.band + '">' + BAND_LABEL[sc.band] + '</span></span>';
+        '<span class="bar-name">' + d.icon + ' ' + d.name + '</span>' +
+        '<div class="bar-track"><div class="bar-fill ' + (s.band === 'high' ? 'high' : '') + '" style="width:' + Math.round(s.pct) + '%"></div></div>' +
+        '<span class="bar-val">' + Math.round(s.pct) + '<span class="bar-band band-' + s.band + '">' + (isSin(d.key) ? SIN_BAND_LABEL[s.band] : VIRTUE_BAND_LABEL[s.band]) + '</span></span>';
       list.appendChild(row);
     });
+  }
+
+  function isSin(key) { return D.sins.some((s) => s.key === key); }
+
+  function renderResult(r) {
+    const ps = Math.round(r.sinIndex), pv = Math.round(r.virtueIndex);
+    $('heroNum').textContent = ps;
+    $('heroBadge').textContent = r.sinTier.label;
+    $('virtueNum').textContent = pv;
+    $('virtueBadge').textContent = r.virtueTier.label;
+    $('dominantChip').textContent = r.dominant.icon + ' ' + r.dominant.name;
+    $('virtueChip').textContent = r.guardian.name;
+    $('heroNote').innerHTML = '你的<b style="color:var(--danger)">罪孽指数 ' + ps + '</b>（' + r.sinTier.label + '）· <b style="color:var(--aqua-strong)">美德指数 ' + pv + '</b>（' + r.virtueTier.label + '）。两个分数相互独立——罪高不妨碍德高，德高也不抵消罪高。' +
+      (r.coexist.length ? '下面"罪德共存"列出了你身上同时高涨的组合。' : '');
+
+    // 罪德共存
+    const ce = $('coexistText');
+    if (r.coexist.length) {
+      const html = r.coexist.map((p) => {
+        const sin = D.sins.find((s) => s.key === p.sin);
+        const vir = D.virtues.find((v) => v.key === p.virtue);
+        return '<div class="coexist-item"><b>' + sin.icon + ' ' + sin.name + ' × ' + vir.icon + ' ' + vir.name + '</b><span>「' + sin.name + '」' + Math.round(r.sinScores[p.sin].pct) + ' 与「' + vir.name + '」' + Math.round(r.virtueScores[p.virtue].pct) + ' 同时在线——它们不冲突，反而组成了完整的你。</span></div>';
+      }).join('');
+      ce.innerHTML = '这些组合里，罪与德并非此消彼长，而是<b>同时高涨</b>：' + html;
+    } else {
+      ce.innerHTML = '目前你的罪与德大多此消彼长，没有同时高涨的组合。但这不代表它们不能共存——只是眼下还没遇到让两股力量一起发力的时刻。';
+    }
+
+    // 双量表
+    renderBarList('sinList', r.sinScores, D.sins);
+    renderBarList('virtueList', r.virtueScores, D.virtues);
 
     // 主导之罪
     $('dominantTitle').textContent = r.dominant.icon + ' ' + r.dominant.name + ' · 主导之罪';
     $('dominantText').innerHTML = '<b>' + D.sinNotes[r.dominant.key] + '</b><br><br>' +
-      D.bands[r.dominant.key][r.scores[r.dominant.key].band] +
-      '<br><span style="color:var(--muted);font-size:12.5px;">罪端浓度 ' + Math.round(r.scores[r.dominant.key].pct) + ' / 100 · ' + BAND_LABEL[r.scores[r.dominant.key].band] + ' · 相对美德：' + r.dominant.virtue + '</span>';
+      D.sinBands[r.dominant.key][r.sinScores[r.dominant.key].band] +
+      '<br><span style="color:var(--muted);font-size:12.5px;">罪端浓度 ' + Math.round(r.sinScores[r.dominant.key].pct) + ' / 100 · ' + SIN_BAND_LABEL[r.sinScores[r.dominant.key].band] + '</span>';
 
     // 守护美德
-    $('virtueTitle').textContent = r.guardian.virtue + ' · 守护美德';
+    $('virtueTitle').textContent = r.guardian.icon + ' ' + r.guardian.name + ' · 守护美德';
     $('virtueText').innerHTML = '<b>' + D.virtueNotes[r.guardian.key] + '</b><br><br>' +
-      D.bands[r.guardian.key][r.scores[r.guardian.key].band] +
-      '<br><span style="color:var(--muted);font-size:12.5px;">罪端浓度 ' + Math.round(r.scores[r.guardian.key].pct) + ' / 100 · 这一条上你离美德端最近</span>';
+      D.virtueBands[r.guardian.key][r.virtueScores[r.guardian.key].band] +
+      '<br><span style="color:var(--muted);font-size:12.5px;">美德浓度 ' + Math.round(r.virtueScores[r.guardian.key].pct) + ' / 100 · ' + VIRTUE_BAND_LABEL[r.virtueScores[r.guardian.key].band] + '</span>';
 
-    // 逐罪详解
+    // 逐维详解（7 罪 + 7 德）
     const dl = $('detailList');
     dl.innerHTML = '';
-    r.sins.forEach((s) => {
-      const sc = r.scores[s.key];
+    D.sins.forEach((s) => {
+      const sc = r.sinScores[s.key];
+      const vir = D.virtues.find((v) => v.key === D.pairs.find((p) => p.sin === s.key).virtue);
       const div = document.createElement('div');
       div.className = 'detail-item';
       div.innerHTML =
         '<div class="detail-head">' +
-        '<span class="detail-name">' + s.icon + ' ' + s.name + '</span>' +
+        '<span class="detail-name">' + s.icon + ' ' + s.name + ' <small style="color:var(--muted);font-weight:400;">罪</small></span>' +
         '<span class="detail-age">' + Math.round(sc.pct) + ' / 100</span>' +
-        '<span class="detail-band band-' + sc.band + '">' + BAND_LABEL[sc.band] + '</span>' +
-        '<span class="detail-age" style="color:var(--muted)">· 对立美德：' + s.virtue + '</span>' +
+        '<span class="detail-band band-' + sc.band + '">' + SIN_BAND_LABEL[sc.band] + '</span>' +
+        '<span class="detail-age" style="color:var(--muted)">· 对照：' + vir.name + '</span>' +
         '</div>' +
-        '<p class="detail-text">' + D.bands[s.key][sc.band] + '</p>' +
-        (s.basis ? '<p class="detail-basis">' + s.basis + '</p>' : '');
+        '<p class="detail-text">' + D.sinBands[s.key][sc.band] + '</p>' +
+        '<p class="detail-basis">' + s.basis + '</p>';
+      dl.appendChild(div);
+    });
+    D.virtues.forEach((v) => {
+      const sc = r.virtueScores[v.key];
+      const sin = D.sins.find((s) => s.key === v.paired);
+      const div = document.createElement('div');
+      div.className = 'detail-item virtue-detail';
+      div.innerHTML =
+        '<div class="detail-head">' +
+        '<span class="detail-name">' + v.icon + ' ' + v.name + ' <small style="color:var(--muted);font-weight:400;">德</small></span>' +
+        '<span class="detail-age">' + Math.round(sc.pct) + ' / 100</span>' +
+        '<span class="detail-band band-' + sc.band + '">' + VIRTUE_BAND_LABEL[sc.band] + '</span>' +
+        '<span class="detail-age" style="color:var(--muted)">· 对照：' + sin.name + '</span>' +
+        '</div>' +
+        '<p class="detail-text">' + D.virtueBands[v.key][sc.band] + '</p>' +
+        '<p class="detail-basis">' + v.basis + '</p>';
       dl.appendChild(div);
     });
 
@@ -281,9 +330,7 @@
     $('disclaimer').textContent = D.disclaimer;
   }
 
-  /* ---------------- 罪与德 · 上下对照雷达 ----------------
-     上半圆 = 七宗罪（罪端浓度，红）；下半圆 = 七美德（美德浓度 = 100 − 罪端浓度，绿）。
-     同一条轴上下镜像对称：上半画罪，下半画它的对立美德。 */
+  /* ---------------- 罪与德 · 上下对照雷达（两半独立） ---------------- */
   function drawRadar() {
     const canvas = $('radar');
     if (!canvas || !state.results) return;
@@ -306,11 +353,10 @@
     };
 
     const r = state.results;
-    const sins = D.sins;
-    const N = sins.length;
+    const pairs = D.pairs;
+    const N = pairs.length;
     const cx = W / 2, cy = H / 2;
     const R = Math.min(W, H) / 2 - 60;
-    // 罪在上半圆（角度 π→2π），美德在下半圆（角度 0→π），上下镜像
     const angUp = (i) => Math.PI + (i + 0.5) * Math.PI / N;
     const angDn = (i) => (i + 0.5) * Math.PI / N;
     const pt = (a, v) => {
@@ -323,7 +369,6 @@
       ctx.closePath();
     };
 
-    // 网格环
     [20, 40, 60, 80].forEach((v) => {
       ctx.beginPath();
       ctx.arc(cx, cy, R * v / 100, 0, Math.PI * 2);
@@ -332,13 +377,15 @@
       ctx.stroke();
     });
 
-    // 辐条 + 标签（罪上、美德下）
     const verts = [];
     ctx.font = '12px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    sins.forEach((s, i) => {
+    pairs.forEach((p, i) => {
+      const sin = D.sins.find((s) => s.key === p.sin);
+      const vir = D.virtues.find((v) => v.key === p.virtue);
       const aUp = angUp(i), aDn = angDn(i);
+
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(cx + R * Math.cos(aUp), cy + R * Math.sin(aUp));
@@ -346,7 +393,7 @@
       ctx.lineWidth = 1;
       ctx.stroke();
       ctx.fillStyle = C.ink2;
-      ctx.fillText(s.short, cx + (R + 18) * Math.cos(aUp), cy + (R + 18) * Math.sin(aUp));
+      ctx.fillText(sin.short, cx + (R + 18) * Math.cos(aUp), cy + (R + 18) * Math.sin(aUp));
 
       ctx.beginPath();
       ctx.moveTo(cx, cy);
@@ -355,35 +402,34 @@
       ctx.lineWidth = 1;
       ctx.stroke();
       ctx.fillStyle = C.ink2;
-      ctx.fillText(s.virtue, cx + (R + 18) * Math.cos(aDn), cy + (R + 18) * Math.sin(aDn));
+      ctx.fillText(vir.short, cx + (R + 18) * Math.cos(aDn), cy + (R + 18) * Math.sin(aDn));
 
-      const sp = pt(aUp, r.scores[s.key].pct);
-      const vp = pt(aDn, 100 - r.scores[s.key].pct);
-      verts.push({ name: s.name + '（罪）', pct: r.scores[s.key].pct, x: sp[0], y: sp[1] });
-      verts.push({ name: s.virtue + '（美德）', pct: 100 - r.scores[s.key].pct, x: vp[0], y: vp[1] });
+      const sp = pt(aUp, r.sinScores[p.sin].pct);
+      const vp = pt(aDn, r.virtueScores[p.virtue].pct);
+      verts.push({ name: sin.name + '（罪）', pct: r.sinScores[p.sin].pct, x: sp[0], y: sp[1] });
+      verts.push({ name: vir.name + '（德）', pct: r.virtueScores[p.virtue].pct, x: vp[0], y: vp[1] });
     });
 
-    // 罪多边形（上半）
-    poly(sins.map((s, i) => pt(angUp(i), r.scores[s.key].pct)));
+    // 罪多边形（上半，独立）
+    poly(pairs.map((p, i) => pt(angUp(i), r.sinScores[p.sin].pct)));
     ctx.fillStyle = hexToRgba(C.danger, 0.15);
     ctx.fill();
     ctx.strokeStyle = C.danger;
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // 美德多边形（下半）
-    poly(sins.map((s, i) => pt(angDn(i), 100 - r.scores[s.key].pct)));
+    // 美德多边形（下半，独立，不再镜像）
+    poly(pairs.map((p, i) => pt(angDn(i), r.virtueScores[p.virtue].pct)));
     ctx.fillStyle = hexToRgba(C.aqua, 0.15);
     ctx.fill();
     ctx.strokeStyle = C.aqua;
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // 顶点 + 数值
     ctx.font = '11px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
-    sins.forEach((s, i) => {
+    pairs.forEach((p, i) => {
       const aUp = angUp(i), aDn = angDn(i);
-      const sp = pt(aUp, r.scores[s.key].pct);
+      const sp = pt(aUp, r.sinScores[p.sin].pct);
       ctx.beginPath();
       ctx.arc(sp[0], sp[1], 4, 0, Math.PI * 2);
       ctx.fillStyle = C.danger;
@@ -392,11 +438,11 @@
       ctx.lineWidth = 1.5;
       ctx.stroke();
       ctx.fillStyle = C.ink2;
-      ctx.fillText(Math.round(r.scores[s.key].pct),
-        cx + (R * (clamp(r.scores[s.key].pct, 0, 100) / 100) + 11) * Math.cos(aUp),
-        cy + (R * (clamp(r.scores[s.key].pct, 0, 100) / 100) + 11) * Math.sin(aUp));
+      ctx.fillText(Math.round(r.sinScores[p.sin].pct),
+        cx + (R * (clamp(r.sinScores[p.sin].pct, 0, 100) / 100) + 11) * Math.cos(aUp),
+        cy + (R * (clamp(r.sinScores[p.sin].pct, 0, 100) / 100) + 11) * Math.sin(aUp));
 
-      const vp = pt(aDn, 100 - r.scores[s.key].pct);
+      const vp = pt(aDn, r.virtueScores[p.virtue].pct);
       ctx.beginPath();
       ctx.arc(vp[0], vp[1], 4, 0, Math.PI * 2);
       ctx.fillStyle = C.aqua;
@@ -405,9 +451,9 @@
       ctx.lineWidth = 1.5;
       ctx.stroke();
       ctx.fillStyle = C.ink2;
-      ctx.fillText(Math.round(100 - r.scores[s.key].pct),
-        cx + (R * (clamp(100 - r.scores[s.key].pct, 0, 100) / 100) + 11) * Math.cos(aDn),
-        cy + (R * (clamp(100 - r.scores[s.key].pct, 0, 100) / 100) + 11) * Math.sin(aDn));
+      ctx.fillText(Math.round(r.virtueScores[p.virtue].pct),
+        cx + (R * (clamp(r.virtueScores[p.virtue].pct, 0, 100) / 100) + 11) * Math.cos(aDn),
+        cy + (R * (clamp(r.virtueScores[p.virtue].pct, 0, 100) / 100) + 11) * Math.sin(aDn));
     });
 
     state.radarVerts = verts;
@@ -462,8 +508,7 @@
   $('btnRetryShuffle').addEventListener('click', () => begin(true));
   $('btnRestart').addEventListener('click', () => show('view-start'));
 
-  /* ---------------- 演示模式 ----------------
-     打开 index.html#demo 可自动作答并直接看到结果页，方便预览效果。 */
+  /* ---------------- 演示模式 ---------------- */
   function demo() {
     state.shuffle = true;
     state.skip = true;
