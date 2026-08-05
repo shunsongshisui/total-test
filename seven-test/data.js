@@ -19,13 +19,13 @@ window.SEVEN_DATA = {
      about : 答题页说明（当前隐藏，不显示）
   */
   sins: [
-    { key: 'pride',    name: '傲慢', virtue: '谦卑', short: '傲慢', en: 'PRIDE',    icon: '🦚', tag: '不可一世 · 目中无人', about: '自尊过度膨胀，难以认错' },
-    { key: 'greed',    name: '贪婪', virtue: '慷慨', short: '贪婪', en: 'GREED',    icon: '💰', tag: '欲壑难填 · 多拿多占', about: '总觉得自己拥有的不够' },
-    { key: 'lust',     name: '色欲', virtue: '贞洁', short: '色欲', en: 'LUST',     icon: '🌹', tag: '心动失控 · 欲壑难平', about: '欲望与心动的吸引力盖过判断' },
-    { key: 'envy',     name: '嫉妒', virtue: '仁爱', short: '嫉妒', en: 'ENVY',     icon: '🍋', tag: '暗中比较 · 眼红他人', about: '见不得身边人比自己好' },
-    { key: 'gluttony', name: '暴食', virtue: '节制', short: '暴食', en: 'GLUTTONY', icon: '🍔', tag: '欲罢不能 · 吃之无度', about: '在欲望面前难以自控' },
-    { key: 'wrath',    name: '暴怒', virtue: '忍耐', short: '暴怒', en: 'WRATH',    icon: '💥', tag: '一点就炸 · 火上心头', about: '低阈值愤怒与失控' },
-    { key: 'sloth',    name: '懒惰', virtue: '勤奋', short: '懒惰', en: 'SLOTH',    icon: '🛋️', tag: '明日复明 · 迟迟不动', about: '计划很多，动手很少' }
+    { key: 'pride',    name: '傲慢', virtue: '谦卑', short: '傲慢', en: 'PRIDE',    icon: '🦚', tag: '不可一世 · 目中无人', about: '自尊过度膨胀，难以认错', basis: '研究依据：Tangney（1999）区分"真实骄傲"与"傲慢型骄傲"——自满并不等于自信。' },
+    { key: 'greed',    name: '贪婪', virtue: '慷慨', short: '贪婪', en: 'GREED',    icon: '💰', tag: '欲壑难填 · 多拿多占', about: '总觉得自己拥有的不够', basis: '研究依据：Kasser（2002）物质主义研究——越是追求占有，越难满足。' },
+    { key: 'lust',     name: '色欲', virtue: '贞洁', short: '色欲', en: 'LUST',     icon: '🌹', tag: '心动失控 · 欲壑难平', about: '欲望与心动的吸引力盖过判断', basis: '研究依据：Baumeister 等（2007）自我控制模型——欲望的失控，本质是自控资源耗尽。' },
+    { key: 'envy',     name: '嫉妒', virtue: '仁爱', short: '嫉妒', en: 'ENVY',     icon: '🍋', tag: '暗中比较 · 眼红他人', about: '见不得身边人比自己好', basis: '研究依据：Smith & Kim（2007）——嫉妒有"良性"（激励）与"恶意"（贬损）之分。' },
+    { key: 'gluttony', name: '暴食', virtue: '节制', short: '暴食', en: 'GLUTTONY', icon: '🍔', tag: '欲罢不能 · 吃之无度', about: '在欲望面前难以自控', basis: '研究依据：Baumeister 等（2007）——"节制"是像肌肉一样可锻炼的自控力。' },
+    { key: 'wrath',    name: '暴怒', virtue: '忍耐', short: '暴怒', en: 'WRATH',    icon: '💥', tag: '一点就炸 · 火上心头', about: '低阈值愤怒与失控', basis: '研究依据：Coccaro（2012）——冲动性攻击有可测量的生理与认知基础。' },
+    { key: 'sloth',    name: '懒惰', virtue: '勤奋', short: '懒惰', en: 'SLOTH',    icon: '🛋️', tag: '明日复明 · 迟迟不动', about: '计划很多，动手很少', basis: '研究依据：Steel（2007）拖延元分析——拖延是自我调节失败，而非"懒"。' }
   ],
 
   /* ---------- 计分参数 ---------- */

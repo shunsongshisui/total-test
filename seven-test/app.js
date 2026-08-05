@@ -234,7 +234,8 @@
         '<span class="detail-band band-' + sc.band + '">' + BAND_LABEL[sc.band] + '</span>' +
         '<span class="detail-age" style="color:var(--muted)">· 对立美德：' + s.virtue + '</span>' +
         '</div>' +
-        '<p class="detail-text">' + D.bands[s.key][sc.band] + '</p>';
+        '<p class="detail-text">' + D.bands[s.key][sc.band] + '</p>' +
+        (s.basis ? '<p class="detail-basis">' + s.basis + '</p>' : '');
       dl.appendChild(div);
     });
 
