@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="七美德与七宗罪测试：38 题（35 计分 + 3 缓冲）× 7 条罪—美德双极轴（傲慢↔谦卑、贪婪↔慷慨、色欲↔贞洁、嫉妒↔仁爱、暴食↔节制、暴怒↔忍耐、懒惰↔勤奋）。">
+<title>七美德与七宗罪 · Seven Sins & Virtues</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">七美德与七宗罪<span class="brand-sub">SEVEN·SINS</span></div>
+    <button id="themeToggle" class="icon-btn" title="切换深浅主题" aria-label="切换深浅主题"><span id="themeIcon">◐</span></button>
+  </header>
+
+  <!-- ============ 开始页 ============ -->
+  <main id="view-start" class="view">
+    <section class="card hero-card">
+      <h1>你心里，住着哪几宗罪？</h1>
+      <p class="lead">傲慢、贪婪、色欲、嫉妒、暴食、暴怒、懒惰——这七宗罪最早是写给修道院里所有凡人的，几百年后依然精准命中每一个现代人。本测验用 <strong>38 道题</strong>（35 计分 + 3 缓冲）测量 <strong>7 条"罪—美德"双极轴</strong>：每一条轴的两端，是同一件事的相反面。所有题目都做了隐晦化处理，只描述具体情境，看不出在测什么——请凭第一直觉作答。结果给你两样东西：你的<strong>主导之罪</strong>，和你的<strong>守护美德</strong>。</p>
+
+      <div class="basis-grid">
+        <div class="basis-item"><b>7 条罪—美德双极轴</b><span>傲慢↔谦卑 · 贪婪↔慷慨 · 暴怒↔忍耐 ……</span></div>
+        <div class="basis-item"><b>文化原型 + 实证研究</b><span>Evagrius · 阿奎那 · 现代心理学</span></div>
+        <div class="basis-item"><b>隐晦化题面</b><span>情境式描述 + 缓冲题，看不出方向</span></div>
+        <div class="basis-item"><b>精细报告</b><span>罪孽指数 + 主导之罪 + 守护美德 + 雷达图</span></div>
+      </div>
+
+      <div class="settings">
+        <div class="field">
+          <span class="field-label">选项</span>
+          <label class="check"><input type="checkbox" id="optShuffle"> 打乱题目顺序（降低惯性作答）</label>
+          <label class="check"><input type="checkbox" id="optSkip" checked> 允许跳过题目（跳过的按"中立"计分）</label>
+        </div>
+      </div>
+
+      <button id="btnStart" class="btn-primary">开始测验</button>
+      <p class="note">38 道题约需 7 分钟 · 结果仅供自省与娱乐，非道德审判，非心理诊断</p>
+    </section>
+  </main>
+
+  <!-- ============ 答题页 ============ -->
+  <main id="view-test" class="view" hidden>
+    <div class="progress-wrap">
+      <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+      <div class="progress-meta">
+        <span id="qCounter">第 1 / 38 题</span>
+        <button id="btnQuit" class="link-btn">退出并重新开始</button>
+      </div>
+    </div>
+
+    <section class="card question-card">
+      <div class="q-head">
+        <span id="dimTag" class="dim-tag"></span>
+        <span id="dimAbout" class="dim-about"></span>
+      </div>
+      <p id="qText" class="question-text"></p>
+
+      <div class="likert">
+        <span id="scaleLeft" class="scale-label">不同意</span>
+        <div id="likertBtns" class="likert-btns" role="radiogroup"></div>
+        <span id="scaleRight" class="scale-label">同意</span>
+      </div>
+
+      <div class="q-nav">
+        <button id="btnPrev" class="btn-ghost">上一题</button>
+        <div class="q-nav-right">
+          <button id="btnSkip" class="link-btn" hidden>跳过此题</button>
+          <button id="btnNext" class="btn-ghost" disabled>下一题</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ 结果页 ============ -->
+  <main id="view-result" class="view" hidden>
+    <!-- 主数字 -->
+    <section class="card result-hero">
+      <div class="hero-age">
+        <div class="hero-num"><span id="heroNum" class="hero-figure">0</span><span class="hero-unit">指数</span></div>
+        <div id="heroBadge" class="hero-badge">—</div>
+      </div>
+      <div class="hero-meta">
+        <div class="chip"><span>主导之罪</span><b id="dominantChip">—</b></div>
+        <div class="chip"><span>守护美德</span><b id="virtueChip">—</b></div>
+      </div>
+      <p class="hero-note" id="heroNote"></p>
+    </section>
+
+    <!-- 罪量表 -->
+    <section class="card profile-card">
+      <h2 class="card-title">七宗罪量表</h2>
+      <p class="card-sub">七条轴按你的"罪端浓度"排序（0–100）；浓度越低，越接近对应的美德端。</p>
+      <div class="bar-list" id="barList"></div>
+    </section>
+
+    <!-- 主导之罪 -->
+    <section class="card archetype-card">
+      <h2 class="card-title" id="dominantTitle">—</h2>
+      <p id="dominantText" class="card-body"></p>
+    </section>
+
+    <!-- 守护美德 -->
+    <section class="card virtue-card">
+      <h2 class="card-title" id="virtueTitle">—</h2>
+      <p id="virtueText" class="card-body"></p>
+    </section>
+
+    <!-- 七罪雷达 -->
+    <section class="card duo-card">
+      <h2 class="card-title">七罪雷达</h2>
+      <p class="card-sub">七条轴各占一端，越靠外罪端浓度越高（中心 0 = 纯美德端，外缘 100 = 罪端满格）。</p>
+      <div class="viz-root">
+        <canvas id="radar" height="340"></canvas>
+        <div id="radarTip" class="radar-tip" hidden></div>
+        <div class="chart-legend">
+          <span class="legend-item"><i class="swatch swatch-accent"></i>你的罪端浓度</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 逐罪详解 -->
+    <section class="card detail-card">
+      <h2 class="card-title">逐罪详解</h2>
+      <p class="card-sub">档位：罪端浓度 &lt; 40 为美德主导 · 40–70 为凡常 · ≥ 70 为罪端突出。</p>
+      <div id="detailList" class="detail-list"></div>
+    </section>
+
+    <!-- 如何阅读 -->
+    <section class="card howto-card">
+      <h2 class="card-title">这份结果该怎么读？</h2>
+      <ol id="howToList" class="howto-list"></ol>
+    </section>
+
+    <!-- 依据与参考文献 -->
+    <section class="card ref-card">
+      <h2 class="card-title">依据与参考文献</h2>
+      <p class="card-body" id="basisIntro"></p>
+      <p class="card-sub ref-style-hint">著录格式：GB/T 7714-2015（按引用顺序编号）</p>
+      <ul id="refList" class="ref-list"></ul>
+    </section>
+
+    <!-- 致谢 -->
+    <section class="card ack-card">
+      <h2 class="card-title">致谢<span class="ack-en">ACKNOWLEDGEMENTS</span></h2>
+      <div id="ackBody" class="ack-body"></div>
+    </section>
+
+    <div class="result-actions">
+      <button id="btnRetrySame" class="btn-primary">再测一次（同样设置）</button>
+      <button id="btnRetryShuffle" class="btn-ghost">换顺序重测</button>
+      <button id="btnRestart" class="btn-ghost">返回开始页</button>
+    </div>
+
+    <p class="note" id="disclaimer"></p>
+  </main>
+
+</div>
+<div class="ctr-line">本测试已被浏览 <b id="ctrPv">—</b> 次 · <b id="ctrUv">—</b> 位访客</div>
+<footer class="footer">七美德与七宗罪 · 仅供自省与娱乐 · 非道德审判，非心理诊断</footer>
+<script src="../counter.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
