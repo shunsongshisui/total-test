@@ -37,10 +37,12 @@ window.SEVEN_DATA = {
     bandHigh: 70    // 罪端浓度 >= 70 为罪端突出
   },
 
-  /* ---------- 38 道题（35 计分 + 3 缓冲） ----------
+  /* ---------- 53 道题（49 计分 + 4 缓冲） ----------
      计分题已做"隐晦化"处理：全部改为情境式描述，题面不出现罪/美德
-     的名称，也不暗示哪个答案"更好"；3 道缓冲题（type: filler）
+     的名称，也不暗示哪个答案"更好"；4 道缓冲题（type: filler）
      不计分，用于打乱作答者对方向的猜测。
+     每条轴 7 题（4 正向 + 3 反向），反向题多于一半之前的比重，
+     用于抵消"默认都同意"的迎合性作答，提升测量信度。
      reverse: true 表示反向计分（同意得低罪端分，即倾向美德端）
   */
   questions: [
@@ -48,47 +50,62 @@ window.SEVEN_DATA = {
     { id: 's01', type: 'pride', text: '团队赢了一场比赛时，我总觉得最大的功劳应该记在我头上。', reverse: false },
     { id: 's02', type: 'pride', text: '如果是我错了，我很难当众承认"是我错了"。', reverse: false },
     { id: 's03', type: 'pride', text: '我心里常常觉得，身边很多人其实不如我。', reverse: false },
-    { id: 's04', type: 'pride', text: '被一个年纪比我小很多的人指点，我也能虚心听完。', reverse: true },
-    { id: 's05', type: 'pride', text: '遇到不懂的事，我会坦然说"我不懂"，而不是硬撑。', reverse: true },
+    { id: 's04', type: 'pride', text: '别人的建议我常常听不进去，因为我觉得他们不懂我要做的事。', reverse: false },
+    { id: 's05', type: 'pride', text: '被一个年纪比我小很多的人指点，我也能虚心听完。', reverse: true },
+    { id: 's06', type: 'pride', text: '遇到不懂的事，我会坦然说"我不懂"，而不是硬撑。', reverse: true },
+    { id: 's07', type: 'pride', text: '出了风头之后，我能很快回到人群里，不觉得"这本来就是我的位置"。', reverse: true },
     { id: 'f01', type: 'filler', text: '我早上起床后的状态，比晚上更好。', reverse: false },
     // 贪婪 ↔ 慷慨
-    { id: 's06', type: 'greed', text: '看到别人手里的好东西，我常常会想"为什么不是我的"。', reverse: false },
-    { id: 's07', type: 'greed', text: '每次分到好处，我总觉得"我怎么才拿这么点"。', reverse: false },
-    { id: 's08', type: 'greed', text: '为了多占一点便宜，我可以花不少心思去算计。', reverse: false },
-    { id: 's09', type: 'greed', text: '朋友急需用钱时，我可以毫不犹豫地把大部分借给他。', reverse: true },
-    { id: 's10', type: 'greed', text: '把东西分享给别人，对我来说是件开心的事，而不是割肉。', reverse: true },
+    { id: 's08', type: 'greed', text: '看到别人手里的好东西，我常常会想"为什么不是我的"。', reverse: false },
+    { id: 's09', type: 'greed', text: '每次分到好处，我总觉得"我怎么才拿这么点"。', reverse: false },
+    { id: 's10', type: 'greed', text: '为了多占一点便宜，我可以花不少心思去算计。', reverse: false },
+    { id: 's11', type: 'greed', text: '别人请客时我会很开心，但轮到我请客时，我会不自觉地算这笔账。', reverse: false },
+    { id: 's12', type: 'greed', text: '朋友急需用钱时，我可以毫不犹豫地把大部分借给他。', reverse: true },
+    { id: 's13', type: 'greed', text: '把东西分享给别人，对我来说是件开心的事，而不是割肉。', reverse: true },
+    { id: 's14', type: 'greed', text: '如果一顿饭能让大家开心，我不会在意自己多付一点。', reverse: true },
     // 色欲 ↔ 贞洁
-    { id: 's11', type: 'lust', text: '我很容易对刚认识不久的人产生好感和心动。', reverse: false },
-    { id: 's12', type: 'lust', text: '对我来说，"来电"的感觉比"安稳"重要得多。', reverse: false },
-    { id: 's13', type: 'lust', text: '吸引我的人一出现，我很难不把注意力放到他身上。', reverse: false },
-    { id: 's14', type: 'lust', text: '即使遇到很吸引我的人，我也能守住自己的界限。', reverse: true },
-    { id: 's15', type: 'lust', text: '比起一时的心动，我更看重长期踏实的陪伴。', reverse: true },
+    { id: 's15', type: 'lust', text: '我很容易对刚认识不久的人产生好感和心动。', reverse: false },
+    { id: 's16', type: 'lust', text: '对我来说，"来电"的感觉比"安稳"重要得多。', reverse: false },
+    { id: 's17', type: 'lust', text: '吸引我的人一出现，我很难不把注意力放到他身上。', reverse: false },
+    { id: 's18', type: 'lust', text: '看到外形很吸引我的人，我会忍不住多看几眼，很难移开目光。', reverse: false },
+    { id: 's19', type: 'lust', text: '即使遇到很吸引我的人，我也能守住自己的界限。', reverse: true },
+    { id: 's20', type: 'lust', text: '比起一时的心动，我更看重长期踏实的陪伴。', reverse: true },
+    { id: 's21', type: 'lust', text: '热恋期过去之后，我更期待平淡安稳的日常，而不是不断寻找新刺激。', reverse: true },
     // 嫉妒 ↔ 仁爱
-    { id: 's16', type: 'envy', text: '看到别人晒的幸福，我心里会莫名地不舒服。', reverse: false },
-    { id: 's17', type: 'envy', text: '朋友考得比我好时，我嘴上恭喜，心里却会偷偷比较。', reverse: false },
-    { id: 's18', type: 'envy', text: '别人的成功，有时候会让我觉得自己的努力都白费了。', reverse: false },
-    { id: 's19', type: 'envy', text: '真心为别人的好运高兴，对我来说是件自然的事。', reverse: true },
-    { id: 's20', type: 'envy', text: '身边人过得好，我更愿意把他们当成可以学习的伙伴，而不是对手。', reverse: true },
+    { id: 's22', type: 'envy', text: '看到别人晒的幸福，我心里会莫名地不舒服。', reverse: false },
+    { id: 's23', type: 'envy', text: '朋友考得比我好时，我嘴上恭喜，心里却会偷偷比较。', reverse: false },
+    { id: 's24', type: 'envy', text: '别人的成功，有时候会让我觉得自己的努力都白费了。', reverse: false },
+    { id: 's25', type: 'envy', text: '群里有人分享好消息时，我常常懒得捧场，甚至有点酸。', reverse: false },
+    { id: 's26', type: 'envy', text: '真心为别人的好运高兴，对我来说是件自然的事。', reverse: true },
+    { id: 's27', type: 'envy', text: '身边人过得好，我更愿意把他们当成可以学习的伙伴，而不是对手。', reverse: true },
+    { id: 's28', type: 'envy', text: '朋友获得了比我好的机会，我会替他开心，而不是失落。', reverse: true },
     { id: 'f02', type: 'filler', text: '比起甜食，我更喜欢咸口的东西。', reverse: false },
     // 暴食 ↔ 节制
-    { id: 's21', type: 'gluttony', text: '一遇到好吃的，我就很难停下来，常常吃到撑。', reverse: false },
-    { id: 's22', type: 'gluttony', text: '我常因为嘴馋，打乱原本定好的饮食计划。', reverse: false },
-    { id: 's23', type: 'gluttony', text: '心情不好的时候，我习惯用"吃点好的"来安抚自己。', reverse: false },
-    { id: 's24', type: 'gluttony', text: '再喜欢的东西，我也能浅尝辄止，不让自己失控。', reverse: true },
-    { id: 's25', type: 'gluttony', text: '我很少因为贪一时之快，把身体搞得很难受。', reverse: true },
+    { id: 's29', type: 'gluttony', text: '一遇到好吃的，我就很难停下来，常常吃到撑。', reverse: false },
+    { id: 's30', type: 'gluttony', text: '我常因为嘴馋，打乱原本定好的饮食计划。', reverse: false },
+    { id: 's31', type: 'gluttony', text: '心情不好的时候，我习惯用"吃点好的"来安抚自己。', reverse: false },
+    { id: 's32', type: 'gluttony', text: '明明说好只吃一口，我常常会控制不住再来第二口、第三口。', reverse: false },
+    { id: 's33', type: 'gluttony', text: '再喜欢的东西，我也能浅尝辄止，不让自己失控。', reverse: true },
+    { id: 's34', type: 'gluttony', text: '我很少因为贪一时之快，把身体搞得很难受。', reverse: true },
+    { id: 's35', type: 'gluttony', text: '面对一堆好吃的，我通常会先想"身体需不需要"，而不是"嘴巴想不想"。', reverse: true },
     // 暴怒 ↔ 忍耐
-    { id: 's26', type: 'wrath', text: '被人故意激怒时，我很难压住火，常常当场就炸。', reverse: false },
-    { id: 's27', type: 'wrath', text: '排队、堵车、被人插队，这些事很容易让我火冒三丈。', reverse: false },
-    { id: 's28', type: 'wrath', text: '我气头上说出的话，常常比我想的难听得多。', reverse: false },
-    { id: 's29', type: 'wrath', text: '遇到再讨厌的事，我也能先把脾气按住，冷静了再处理。', reverse: true },
-    { id: 's30', type: 'wrath', text: '别人的失误，我通常愿意再给一次机会，而不是马上翻脸。', reverse: true },
+    { id: 's36', type: 'wrath', text: '被人故意激怒时，我很难压住火，常常当场就炸。', reverse: false },
+    { id: 's37', type: 'wrath', text: '排队、堵车、被人插队，这些事很容易让我火冒三丈。', reverse: false },
+    { id: 's38', type: 'wrath', text: '我气头上说出的话，常常比我想的难听得多。', reverse: false },
+    { id: 's39', type: 'wrath', text: '被人一而再地冒犯时，我会有"要让对方知道厉害"的冲动。', reverse: false },
+    { id: 's40', type: 'wrath', text: '遇到再讨厌的事，我也能先把脾气按住，冷静了再处理。', reverse: true },
+    { id: 's41', type: 'wrath', text: '别人的失误，我通常愿意再给一次机会，而不是马上翻脸。', reverse: true },
+    { id: 's42', type: 'wrath', text: '即使被人当众误会，我也能先听完解释，而不是立刻发作。', reverse: true },
     { id: 'f03', type: 'filler', text: '我习惯把重要的日子记在备忘录里。', reverse: false },
     // 懒惰 ↔ 勤奋
-    { id: 's31', type: 'sloth', text: '明明知道该做的事，我常常一拖再拖，直到火烧眉毛。', reverse: false },
-    { id: 's32', type: 'sloth', text: '比起"开始做"，我更擅长"计划着做"——但就是不动手。', reverse: false },
-    { id: 's33', type: 'sloth', text: '日子能轻松过的话，我不会主动给自己加码。', reverse: false },
-    { id: 's34', type: 'sloth', text: '答应自己的事（比如锻炼、学习），我会认真兑现。', reverse: true },
-    { id: 's35', type: 'sloth', text: '看到机会，我会主动去争取，而不是等它掉下来。', reverse: true }
+    { id: 's43', type: 'sloth', text: '明明知道该做的事，我常常一拖再拖，直到火烧眉毛。', reverse: false },
+    { id: 's44', type: 'sloth', text: '比起"开始做"，我更擅长"计划着做"——但就是不动手。', reverse: false },
+    { id: 's45', type: 'sloth', text: '日子能轻松过的话，我不会主动给自己加码。', reverse: false },
+    { id: 's46', type: 'sloth', text: '需要额外努力才能做好的一件事，我常常会选择"差不多就行"。', reverse: false },
+    { id: 's47', type: 'sloth', text: '答应自己的事（比如锻炼、学习），我会认真兑现。', reverse: true },
+    { id: 's48', type: 'sloth', text: '看到机会，我会主动去争取，而不是等它掉下来。', reverse: true },
+    { id: 's49', type: 'sloth', text: '即使没有截止日期，我也会按自己的节奏把事情做完，而不是无限期搁置。', reverse: true },
+    { id: 'f04', type: 'filler', text: '下雨天待在家，比出门更让我自在。', reverse: false }
   ],
 
   /* ---------- 罪孽指数分档 ---------- */
