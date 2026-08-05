@@ -252,6 +252,8 @@ html, body {
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .swatch { width: 14px; height: 4px; border-radius: 2px; display: inline-block; }
 .swatch-accent { background: var(--accent); }
+.swatch-danger { background: var(--danger); }
+.swatch-aqua { background: var(--aqua); }
 
 .detail-list { display: grid; gap: 12px; }
 .detail-item { border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }

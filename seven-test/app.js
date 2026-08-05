@@ -281,7 +281,9 @@
     $('disclaimer').textContent = D.disclaimer;
   }
 
-  /* ---------------- 七罪雷达 ---------------- */
+  /* ---------------- 罪与德 · 上下对照雷达 ----------------
+     上半圆 = 七宗罪（罪端浓度，红）；下半圆 = 七美德（美德浓度 = 100 − 罪端浓度，绿）。
+     同一条轴上下镜像对称：上半画罪，下半画它的对立美德。 */
   function drawRadar() {
     const canvas = $('radar');
     if (!canvas || !state.results) return;
@@ -296,9 +298,9 @@
 
     const css = getComputedStyle(document.documentElement);
     const C = {
-      accent: css.getPropertyValue('--accent').trim() || '#2a78d6',
+      danger: css.getPropertyValue('--danger').trim() || '#c25a3a',
+      aqua: css.getPropertyValue('--aqua').trim() || '#1baf7a',
       grid: css.getPropertyValue('--grid').trim(),
-      muted: css.getPropertyValue('--muted').trim(),
       ink2: css.getPropertyValue('--ink-2').trim(),
       card: css.getPropertyValue('--card').trim()
     };
@@ -307,10 +309,12 @@
     const sins = D.sins;
     const N = sins.length;
     const cx = W / 2, cy = H / 2;
-    const R = Math.min(W, H) / 2 - 56;
-    const ang = (i) => -Math.PI / 2 + i * 2 * Math.PI / N;
-    const pt = (i, v) => {
-      const a = ang(i), rad = R * (clamp(v, 0, 100) / 100);
+    const R = Math.min(W, H) / 2 - 60;
+    // 罪在上半圆（角度 π→2π），美德在下半圆（角度 0→π），上下镜像
+    const angUp = (i) => Math.PI + (i + 0.5) * Math.PI / N;
+    const angDn = (i) => (i + 0.5) * Math.PI / N;
+    const pt = (a, v) => {
+      const rad = R * (clamp(v, 0, 100) / 100);
       return [cx + rad * Math.cos(a), cy + rad * Math.sin(a)];
     };
     const poly = (points) => {
@@ -319,53 +323,91 @@
       ctx.closePath();
     };
 
+    // 网格环
     [20, 40, 60, 80].forEach((v) => {
-      poly(Array.from({ length: N }, (_, i) => pt(i, v)));
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * v / 100, 0, Math.PI * 2);
       ctx.strokeStyle = C.grid;
       ctx.lineWidth = 1;
       ctx.stroke();
     });
 
+    // 辐条 + 标签（罪上、美德下）
     const verts = [];
     ctx.font = '12px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     sins.forEach((s, i) => {
-      const [sx, sy] = pt(i, 0);
-      const [ex, ey] = [cx + (R + 18) * Math.cos(ang(i)), cy + (R + 18) * Math.sin(ang(i))];
+      const aUp = angUp(i), aDn = angDn(i);
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.lineTo(sx, sy);
+      ctx.lineTo(cx + R * Math.cos(aUp), cy + R * Math.sin(aUp));
       ctx.strokeStyle = C.grid;
       ctx.lineWidth = 1;
       ctx.stroke();
       ctx.fillStyle = C.ink2;
-      ctx.fillText(s.short, ex, ey);
-      const [vx, vy] = pt(i, r.scores[s.key].pct);
-      verts.push({ name: s.name + ' · 对立美德 ' + s.virtue, pct: r.scores[s.key].pct, x: vx, y: vy });
+      ctx.fillText(s.short, cx + (R + 18) * Math.cos(aUp), cy + (R + 18) * Math.sin(aUp));
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + R * Math.cos(aDn), cy + R * Math.sin(aDn));
+      ctx.strokeStyle = C.grid;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = C.ink2;
+      ctx.fillText(s.virtue, cx + (R + 18) * Math.cos(aDn), cy + (R + 18) * Math.sin(aDn));
+
+      const sp = pt(aUp, r.scores[s.key].pct);
+      const vp = pt(aDn, 100 - r.scores[s.key].pct);
+      verts.push({ name: s.name + '（罪）', pct: r.scores[s.key].pct, x: sp[0], y: sp[1] });
+      verts.push({ name: s.virtue + '（美德）', pct: 100 - r.scores[s.key].pct, x: vp[0], y: vp[1] });
     });
 
-    poly(Array.from({ length: N }, (_, i) => pt(i, r.scores[sins[i].key].pct)));
-    ctx.fillStyle = hexToRgba(C.accent, 0.16);
+    // 罪多边形（上半）
+    poly(sins.map((s, i) => pt(angUp(i), r.scores[s.key].pct)));
+    ctx.fillStyle = hexToRgba(C.danger, 0.15);
     ctx.fill();
-    ctx.strokeStyle = C.accent;
+    ctx.strokeStyle = C.danger;
     ctx.lineWidth = 2;
     ctx.stroke();
 
+    // 美德多边形（下半）
+    poly(sins.map((s, i) => pt(angDn(i), 100 - r.scores[s.key].pct)));
+    ctx.fillStyle = hexToRgba(C.aqua, 0.15);
+    ctx.fill();
+    ctx.strokeStyle = C.aqua;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 顶点 + 数值
     ctx.font = '11px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
     sins.forEach((s, i) => {
-      const [x, y] = pt(i, r.scores[s.key].pct);
+      const aUp = angUp(i), aDn = angDn(i);
+      const sp = pt(aUp, r.scores[s.key].pct);
       ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = C.accent;
+      ctx.arc(sp[0], sp[1], 4, 0, Math.PI * 2);
+      ctx.fillStyle = C.danger;
       ctx.fill();
       ctx.strokeStyle = C.card;
       ctx.lineWidth = 1.5;
       ctx.stroke();
-      const rad = R * (clamp(r.scores[s.key].pct, 0, 100) / 100) + 11;
-      const [lx, ly] = [cx + rad * Math.cos(ang(i)), cy + rad * Math.sin(ang(i))];
       ctx.fillStyle = C.ink2;
-      ctx.fillText(Math.round(r.scores[s.key].pct), lx, ly);
+      ctx.fillText(Math.round(r.scores[s.key].pct),
+        cx + (R * (clamp(r.scores[s.key].pct, 0, 100) / 100) + 11) * Math.cos(aUp),
+        cy + (R * (clamp(r.scores[s.key].pct, 0, 100) / 100) + 11) * Math.sin(aUp));
+
+      const vp = pt(aDn, 100 - r.scores[s.key].pct);
+      ctx.beginPath();
+      ctx.arc(vp[0], vp[1], 4, 0, Math.PI * 2);
+      ctx.fillStyle = C.aqua;
+      ctx.fill();
+      ctx.strokeStyle = C.card;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = C.ink2;
+      ctx.fillText(Math.round(100 - r.scores[s.key].pct),
+        cx + (R * (clamp(100 - r.scores[s.key].pct, 0, 100) / 100) + 11) * Math.cos(aDn),
+        cy + (R * (clamp(100 - r.scores[s.key].pct, 0, 100) / 100) + 11) * Math.sin(aDn));
     });
 
     state.radarVerts = verts;

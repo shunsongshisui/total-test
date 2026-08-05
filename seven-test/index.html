@@ -108,15 +108,16 @@
       <p id="virtueText" class="card-body"></p>
     </section>
 
-    <!-- 七罪雷达 -->
+    <!-- 罪与德 · 上下对照雷达 -->
     <section class="card duo-card">
-      <h2 class="card-title">七罪雷达</h2>
-      <p class="card-sub">七条轴各占一端，越靠外罪端浓度越高（中心 0 = 纯美德端，外缘 100 = 罪端满格）。</p>
+      <h2 class="card-title">罪与德 · 上下对照雷达</h2>
+      <p class="card-sub">上半圆为七宗罪，下半圆为七美德：同一条轴上下镜像，越靠外浓度越高（中心 0，外缘 100）。美德浓度 = 100 − 罪浓度——两片影子此消彼长。</p>
       <div class="viz-root">
         <canvas id="radar" height="340"></canvas>
         <div id="radarTip" class="radar-tip" hidden></div>
         <div class="chart-legend">
-          <span class="legend-item"><i class="swatch swatch-accent"></i>你的罪端浓度</span>
+          <span class="legend-item"><i class="swatch swatch-danger"></i>七宗罪 · 罪端浓度</span>
+          <span class="legend-item"><i class="swatch swatch-aqua"></i>七美德 · 美德浓度</span>
         </div>
       </div>
     </section>
