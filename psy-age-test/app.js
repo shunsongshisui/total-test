@@ -297,8 +297,8 @@
     return { mean, dimMean };
   }
 
-  // 全部中立时的合成结果，作为"典型平衡成年"的收敛锚点
-  const NEUTRAL_ANCHOR = 38;
+  // 全部中立时的合成结果，作为"典型平衡成年"的收敛锚点（校准下修后约 33）
+  const NEUTRAL_ANCHOR = 33;
   function hesitationDelta(baseAge, meanMs) {
     const factor = Math.min(1, meanMs / 8000);
     return clamp((NEUTRAL_ANCHOR - baseAge) * factor * 0.6, -2, 2);
@@ -376,12 +376,12 @@
     const list = $('barList');
     list.innerHTML = '';
     r.dims.forEach((d) => {
-      const pct = clamp((d.age - 16) / (65 - 16) * 100, 0, 100);
+      const pct = clamp((d.age - 16) / (60 - 16) * 100, 0, 100);
       const row = document.createElement('div');
       row.className = 'bar-row';
       let marker = '';
       if (r.chrono != null) {
-        const cp = clamp((r.chrono - 16) / (65 - 16) * 100, 0, 100);
+        const cp = clamp((r.chrono - 16) / (60 - 16) * 100, 0, 100);
         marker = '<div class="bar-marker" style="left:' + cp + '%"></div>';
       }
       row.innerHTML =
@@ -526,7 +526,7 @@
         notesEl.appendChild(p);
       });
 
-      $('rhythmMethod').textContent = '方法说明：作答用时（反应时）是真实的心理学信号，但受设备、阅读速度与外界干扰影响较大，因此这里只作为"温和修正"而非硬性计分——整体越犹豫，结果越向典型平衡值（38 岁）收敛，幅度上限 ±2 岁。第一题热身、主观年龄题与超长停顿（>2 分钟）不计入统计。';
+      $('rhythmMethod').textContent = '方法说明：作答用时（反应时）是真实的心理学信号，但受设备、阅读速度与外界干扰影响较大，因此这里只作为"温和修正"而非硬性计分——整体越犹豫，结果越向典型平衡值（33 岁）收敛，幅度上限 ±2 岁。第一题热身、主观年龄题与超长停顿（>2 分钟）不计入统计。';
     } else {
       rc.hidden = true;
     }
@@ -560,7 +560,7 @@
     const N = dims.length;
     const cx = W / 2, cy = H / 2;
     const R = Math.min(W, H) / 2 - 56;
-    const FLOOR = 16, CEIL = 65;
+    const FLOOR = 16, CEIL = 60;
     const rFor = (age) => R * (clamp(age, FLOOR, CEIL) - FLOOR) / (CEIL - FLOOR);
     const ang = (i) => -Math.PI / 2 + i * 2 * Math.PI / N;
     const pt = (i, age) => {
