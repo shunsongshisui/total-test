@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="本命武器测试：28 题 × 7 维战斗气质（刚猛/迅捷/精准/射程/灵动/坚韧/时代），从 341 件武器全库（冷兵器/热武器/爆炸物/传说名器）中匹配你的本命武器，含完整图鉴。">
+<title>本命武器 · Destiny Weapon Test</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">本命武器<span class="brand-sub">DESTINY·WEAPON</span></div>
+    <button id="themeToggle" class="icon-btn" title="切换深浅主题" aria-label="切换深浅主题"><span id="themeIcon">◐</span></button>
+  </header>
+
+  <!-- ============ 开始页 ============ -->
+  <main id="view-start" class="view">
+    <section class="card hero-card">
+      <h1>你的本命武器，是什么？</h1>
+      <p class="lead">用 <strong>28 道隐晦情境题</strong>，测出你的「战斗气质」——刚猛、迅捷、精准、射程、灵动、坚韧、时代，7 个维度各 0–100。你的答案构成一幅理想武器画像，再与全库 <strong>341 件武器</strong>逐把比对，距离最近者就是你的本命武器。想直接看全库？<strong>图鉴</strong>里冷兵器、热武器、爆炸物、传说名器四类齐备。所有题目都做了隐晦化处理，看不出在测什么——凭第一直觉作答即可。</p>
+
+      <div class="basis-grid">
+        <div class="basis-item"><b>7 维战斗气质</b><span>刚猛 / 迅捷 / 精准 / 射程 / 灵动 / 坚韧 / 时代</span></div>
+        <div class="basis-item"><b>28 题隐晦情境</b><span>含反向题，7 维 × 4 题交叉验证</span></div>
+        <div class="basis-item"><b>341 件武器全库</b><span>冷兵器 110 · 热武器 171 · 爆炸物 30 · 名器 30</span></div>
+        <div class="basis-item"><b>本命 + 候补</b><span>最近者为本命，另给两位气质相仿的候补</span></div>
+      </div>
+
+      <div class="settings">
+        <div class="field">
+          <span class="field-label">选项</span>
+          <label class="check"><input type="checkbox" id="optShuffle"> 打乱题目顺序（降低惯性作答）</label>
+          <label class="check"><input type="checkbox" id="optSkip" checked> 允许跳过题目（跳过的按"中立"计分）</label>
+        </div>
+      </div>
+
+      <button id="btnStart" class="btn-primary">开始测验</button>
+      <div class="hero-actions">
+        <button id="btnFate" class="btn-ghost">🎲 随机天命</button>
+        <button id="btnGallery" class="btn-ghost">🗂️ 浏览图鉴</button>
+      </div>
+      <p class="note">28 题约需 4 分钟 · 武器无高低，只有适不适合你的脾气 · 结果仅供自省与娱乐，非军事建议、非心理诊断</p>
+    </section>
+  </main>
+
+  <!-- ============ 答题页 ============ -->
+  <main id="view-test" class="view" hidden>
+    <div class="progress-wrap">
+      <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+      <div class="progress-meta">
+        <span id="qCounter">第 1 / 28 题</span>
+        <button id="btnQuit" class="link-btn">退出并重新开始</button>
+      </div>
+    </div>
+
+    <section class="card question-card">
+      <div class="q-head">
+        <span id="dimAbout" class="dim-about">凭第一直觉作答，无需反复权衡</span>
+      </div>
+      <p id="qText" class="question-text"></p>
+
+      <div class="likert">
+        <span id="scaleLeft" class="scale-label">非常不同意</span>
+        <div id="likertBtns" class="likert-btns" role="radiogroup"></div>
+        <span id="scaleRight" class="scale-label">非常同意</span>
+      </div>
+
+      <div class="q-nav">
+        <button id="btnPrev" class="btn-ghost">上一题</button>
+        <div class="q-nav-right">
+          <button id="btnSkip" class="link-btn" hidden>跳过此题</button>
+          <button id="btnNext" class="btn-ghost" disabled>下一题</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ 结果页 ============ -->
+  <main id="view-result" class="view" hidden>
+    <!-- 本命武器大卡 -->
+    <section class="card weapon-hero">
+      <div id="fateBanner" class="banner fate-banner" hidden></div>
+      <div id="flatBanner" class="banner flat-banner" hidden></div>
+      <div id="weaponHeroEmoji" class="hero-emoji">🗡️</div>
+      <div id="weaponHeroName" class="hero-name">—</div>
+      <div id="weaponHeroEn" class="hero-en">—</div>
+      <div id="weaponHeroChips" class="hero-chips"></div>
+      <div id="weaponHeroMatch" class="hero-match">契合度 —%</div>
+    </section>
+
+    <!-- 气质 vs 武器 雷达 -->
+    <section class="card radar-card">
+      <h2 class="card-title">你的气质 × 它的属性</h2>
+      <p class="card-sub">实线多边形是你的战斗气质画像，虚线多边形是本命武器的属性。两半重合越多，越说明它是你气质的外化。</p>
+      <div class="viz-root">
+        <canvas id="radar" height="340"></canvas>
+        <div id="radarTip" class="radar-tip" hidden></div>
+        <div class="chart-legend">
+          <span class="legend-item"><i class="swatch swatch-accent"></i>你的气质画像</span>
+          <span class="legend-item"><i class="swatch swatch-gold"></i>本命武器属性</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 七维属性 -->
+    <section class="card stats-card">
+      <h2 class="card-title">七维属性</h2>
+      <p class="card-sub">横条为本命武器的属性值（0–100），色条上的小标记是你该维的画像值——两者越接近越同频。</p>
+      <div id="statBars" class="bar-list"></div>
+      <p id="subfamilyNote" class="subfamily-note"></p>
+    </section>
+
+    <!-- 为什么是你 -->
+    <section class="card why-card">
+      <h2 class="card-title">为什么是你</h2>
+      <div id="whyBody" class="why-body"></div>
+    </section>
+
+    <!-- 小传 + 心声 -->
+    <section class="card lore-card">
+      <h2 class="card-title">器物有灵<span class="ack-en">LORE &amp; VOICE</span></h2>
+      <p id="weaponLore" class="lore-text"></p>
+      <p id="weaponPhrase" class="phrase-text"></p>
+    </section>
+
+    <!-- 候补武器 -->
+    <section class="card backup-card">
+      <h2 class="card-title">气质相仿的候补</h2>
+      <p class="card-sub">它们与你的契合度仅次本命——点击可查看详情。</p>
+      <div id="backupList" class="backup-list"></div>
+    </section>
+
+    <!-- 如何阅读 -->
+    <section class="card howto-card">
+      <h2 class="card-title">这份结果该怎么读？</h2>
+      <ol id="howToList" class="howto-list"></ol>
+    </section>
+
+    <!-- 依据与参考文献 -->
+    <section class="card ref-card">
+      <h2 class="card-title">依据与参考文献</h2>
+      <p class="card-body" id="basisIntro"></p>
+      <p class="card-sub ref-style-hint">著录格式：GB/T 7714-2015（按引用顺序编号）</p>
+      <ul id="refList" class="ref-list"></ul>
+    </section>
+
+    <!-- 致谢 -->
+    <section class="card ack-card">
+      <h2 class="card-title">致谢<span class="ack-en">ACKNOWLEDGEMENTS</span></h2>
+      <div id="ackBody" class="ack-body"></div>
+    </section>
+
+    <div class="result-actions">
+      <button id="btnRetrySame" class="btn-primary">再测一次（同样设置）</button>
+      <div class="result-actions-row">
+        <button id="btnRetryShuffle" class="btn-ghost">换顺序重测</button>
+        <button id="galleryFromResult" class="btn-ghost">查看图鉴</button>
+        <button id="btnRestart" class="btn-ghost">返回开始页</button>
+      </div>
+    </div>
+
+    <p class="note" id="disclaimer"></p>
+  </main>
+
+  <!-- ============ 图鉴页 ============ -->
+  <main id="view-gallery" class="view" hidden>
+    <section class="card gallery-card">
+      <div class="gallery-head">
+        <h2 class="card-title">全武器图鉴</h2>
+        <button id="galleryBack" class="btn-ghost btn-sm">← 返回</button>
+      </div>
+      <p class="card-sub">冷兵器 · 热武器 · 爆炸物 · 传说名器，341 件。可按大类与子类筛选，或直接搜索名字。</p>
+
+      <div id="galleryCatTabs" class="cat-tabs"></div>
+      <input id="gallerySearch" class="search-input" type="search" placeholder="搜索武器名称 / 原名…">
+      <div id="gallerySubChips" class="sub-chips"></div>
+      <p id="galleryCount" class="gallery-count"></p>
+      <div id="galleryGrid" class="gallery-grid"></div>
+    </section>
+  </main>
+
+</div>
+
+<!-- ============ 详情弹层 ============ -->
+<div id="weaponModal" class="modal-overlay" hidden>
+  <div id="weaponModalContent" class="modal-content" role="dialog" aria-modal="true" aria-label="武器详情">
+    <button id="modalClose" class="modal-close" aria-label="关闭">×</button>
+    <div id="modalIcon" class="modal-icon">🗡️</div>
+    <div id="modalName" class="modal-name">—</div>
+    <div id="modalEn" class="modal-en">—</div>
+    <div id="modalChips" class="modal-chips"></div>
+    <div class="modal-section">
+      <h3 class="modal-h">七维属性</h3>
+      <div id="modalStats" class="bar-list"></div>
+    </div>
+    <div class="modal-section">
+      <h3 class="modal-h">小传</h3>
+      <p id="modalLore" class="modal-text"></p>
+    </div>
+    <div class="modal-section">
+      <h3 class="modal-h">心声</h3>
+      <p id="modalPhrase" class="modal-phrase"></p>
+    </div>
+  </div>
+</div>
+
+<div class="ctr-line">本测试已被浏览 <b id="ctrPv">—</b> 次 · <b id="ctrUv">—</b> 位访客</div>
+<footer class="footer">本命武器 · 仅供自省与娱乐 · 非军事建议，非心理诊断</footer>
+<script src="../counter.js"></script>
+<script src="data.js"></script>
+<script src="data-cold.js"></script>
+<script src="data-guns.js"></script>
+<script src="data-exp.js"></script>
+<script src="data-mythic.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
