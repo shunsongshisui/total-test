@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="本命武器测试：28 题 × 7 维战斗气质（刚猛/迅捷/精准/射程/灵动/坚韧/时代），从 341 件武器全库（冷兵器/热武器/爆炸物/传说名器）中匹配你的本命武器，含完整图鉴。">
+<meta name="description" content="本命武器测试：情境量表或二选一快答（42/56 题可选）× 7 维战斗气质（刚猛/迅捷/精准/射程/灵动/坚韧/时代），从 341 件武器全库（冷兵器/热武器/爆炸物/传说名器）中匹配你的本命武器，含完整图鉴。">
 <title>本命武器 · Destiny Weapon Test</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -19,16 +19,31 @@
   <main id="view-start" class="view">
     <section class="card hero-card">
       <h1>你的本命武器，是什么？</h1>
-      <p class="lead">用 <strong>28 道隐晦情境题</strong>，测出你的「战斗气质」——刚猛、迅捷、精准、射程、灵动、坚韧、时代，7 个维度各 0–100。你的答案构成一幅理想武器画像，再与全库 <strong>341 件武器</strong>逐把比对，距离最近者就是你的本命武器。想直接看全库？<strong>图鉴</strong>里冷兵器、热武器、爆炸物、传说名器四类齐备。所有题目都做了隐晦化处理，看不出在测什么——凭第一直觉作答即可。</p>
+      <p class="lead">用一套隐晦情境题，测出你的「战斗气质」——刚猛、迅捷、精准、射程、灵动、坚韧、时代，7 个维度各 0–100。你的答案构成一幅理想武器画像，再与全库 <strong>341 件武器</strong>逐把比对，距离最近者就是你的本命武器。想直接看全库？<strong>图鉴</strong>里冷兵器、热武器、爆炸物、传说名器四类齐备。题目做了隐晦化处理，看不出在测什么——题型和题量都可以自选。</p>
 
       <div class="basis-grid">
         <div class="basis-item"><b>7 维战斗气质</b><span>刚猛 / 迅捷 / 精准 / 射程 / 灵动 / 坚韧 / 时代</span></div>
-        <div class="basis-item"><b>28 题隐晦情境</b><span>含反向题，7 维 × 4 题交叉验证</span></div>
+        <div class="basis-item"><b>两种题型</b><span>情境量表 或 二选一快答，各含反向题交叉验证</span></div>
+        <div class="basis-item"><b>42 / 56 题自选</b><span>快答 4 分钟，完整版约 6 分钟</span></div>
         <div class="basis-item"><b>341 件武器全库</b><span>冷兵器 110 · 热武器 171 · 爆炸物 30 · 名器 30</span></div>
         <div class="basis-item"><b>本命 + 候补</b><span>最近者为本命，另给两位气质相仿的候补</span></div>
       </div>
 
       <div class="settings">
+        <div class="field">
+          <span class="field-label">题型</span>
+          <div class="radio-group" role="radiogroup" aria-label="题型">
+            <label class="radio"><input type="radio" name="optType" value="likert" checked> 情境量表<span class="radio-sub">5 档同意度，每题细细想</span></label>
+            <label class="radio"><input type="radio" name="optType" value="forced"> 二选一快答<span class="radio-sub">两选一，凭本能，更快</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">题量</span>
+          <div class="radio-group" role="radiogroup" aria-label="题量">
+            <label class="radio"><input type="radio" name="optPerDim" value="6" checked> 标准版<span class="radio-sub">42 题 · 约 4 分钟</span></label>
+            <label class="radio"><input type="radio" name="optPerDim" value="8"> 完整版<span class="radio-sub">56 题 · 约 6 分钟，更准</span></label>
+          </div>
+        </div>
         <div class="field">
           <span class="field-label">选项</span>
           <label class="check"><input type="checkbox" id="optShuffle"> 打乱题目顺序（降低惯性作答）</label>
@@ -41,7 +56,7 @@
         <button id="btnFate" class="btn-ghost">🎲 随机天命</button>
         <button id="btnGallery" class="btn-ghost">🗂️ 浏览图鉴</button>
       </div>
-      <p class="note">28 题约需 4 分钟 · 武器无高低，只有适不适合你的脾气 · 结果仅供自省与娱乐，非军事建议、非心理诊断</p>
+      <p class="note">武器无高低，只有适不适合你的脾气 · 结果仅供自省与娱乐，非军事建议、非心理诊断</p>
     </section>
   </main>
 
@@ -191,9 +206,14 @@
     <div id="modalName" class="modal-name">—</div>
     <div id="modalEn" class="modal-en">—</div>
     <div id="modalChips" class="modal-chips"></div>
+    <div id="modalImg" class="modal-img" hidden></div>
     <div class="modal-section">
       <h3 class="modal-h">七维属性</h3>
       <div id="modalStats" class="bar-list"></div>
+    </div>
+    <div class="modal-section">
+      <h3 class="modal-h">性能参数</h3>
+      <div id="modalSpecs" class="spec-list" hidden></div>
     </div>
     <div class="modal-section">
       <h3 class="modal-h">小传</h3>
@@ -214,6 +234,7 @@
 <script src="data-guns.js"></script>
 <script src="data-exp.js"></script>
 <script src="data-mythic.js"></script>
+<script src="data-specs.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

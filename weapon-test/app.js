@@ -1,7 +1,9 @@
 /* =====================================================================
    本命武器测试 · 逻辑层
-   模型：28 题（7 维 × 4，含反向题）→ 理想武器画像 profile（7 维 0–100）
+   模型：7 维 × N 题（Likert 情境量表 或 forced 二选一快答，两种题量可选）
+   → 理想武器画像 profile（7 维 0–100）
    → 与全库 341 件加权欧氏距离，最近者为本命武器，其次为候补。
+   题型 × 题量四组合：likert/forced × 42/56（perDim 6/8），同一题库按维切分。
    视图：开始 / 答题 / 结果 / 图鉴（第 4 个视图）+ 详情弹层。
    模式：test（答题）或 fate（随机天命：随机生成非扁平 profile 走同一匹配）。
    ===================================================================== */
@@ -15,8 +17,11 @@
   const LIKERT_LABELS = ['非常不同意', '不同意', '中立', '同意', '非常同意'];
 
   const state = {
+    type: 'likert',        // 'likert' | 'forced'
+    perDim: 6,             // 每维题数 6（42 题）| 8（56 题）
     shuffle: false,
     skip: true,
+    pool: [],              // 当前轮抽出的题目数组（含对象引用）
     order: [],
     answers: {},
     answerSum: 0,          // 答案和，用于文案模板的确定性取模
@@ -42,7 +47,9 @@
         icon: w.icon || sub.icon,
         lore: w.lore || sub.lore || '',
         phrase: w.phrase || sub.phrase || '',
-        stats: Object.assign({}, sub.stats, w.stats || {})
+        stats: Object.assign({}, sub.stats, w.stats || {}),
+        specs: w.specs || sub.specs || (D.specs && D.specs[w.id]) || null,  // 性能参数 [{k,v}...]，缺则弹层显示"待收录"
+        img: w.img || sub.img || ''              // 图片路径，缺则用 emoji 占位
       };
     });
   }
@@ -64,7 +71,15 @@
   });
 
   /* ---------------- 开始页 ---------------- */
+  function readType() {
+    const t = document.querySelector('input[name="optType"]:checked');
+    state.type = t ? t.value : 'likert';
+    const n = document.querySelector('input[name="optPerDim"]:checked');
+    state.perDim = n ? parseInt(n.value, 10) : 6;
+  }
+
   $('btnStart').addEventListener('click', () => {
+    readType();
     state.shuffle = $('optShuffle').checked;
     state.skip = $('optSkip').checked;
     state.mode = 'test';
@@ -81,6 +96,19 @@
     openGallery();
   });
 
+  /* 按维抽题：每维取前 perDim 道（likert 前 6/8 题恰好含 1/2 道反向题，
+     forced 前 6/8 题恰好 3h+3l / 4h+4l 平衡），跨维交替排列避免同一维连排。 */
+  function buildPool() {
+    const src = D.questions[state.type];
+    const byDim = {};
+    DIM_KEYS.forEach((k) => { byDim[k] = src.filter((q) => q.dim === k); });
+    let pool = [];
+    for (let i = 0; i < state.perDim; i++) {
+      DIM_KEYS.forEach((k) => { if (byDim[k][i]) pool.push(byDim[k][i]); });
+    }
+    return pool;
+  }
+
   function begin(forceShuffle) {
     state.answers = {};
     state.answerSum = 0;
@@ -89,9 +117,9 @@
     state.profile = null;
     if (forceShuffle) state.shuffle = true;
 
-    let pool = D.questions.slice();
-    if (state.shuffle) pool = shuffle(pool);
-    state.order = pool.map((q) => q.id);
+    state.pool = buildPool();
+    if (state.shuffle) state.pool = shuffle(state.pool);
+    state.order = state.pool.map((q) => q.id);
     show('view-test');
     renderQ(0);
   }
@@ -107,43 +135,82 @@
 
   /* ---------------- 答题页 ---------------- */
   function renderQ(i) {
-    const qid = state.order[i];
+    const q = state.pool[i];
+    const qid = q.id;
     const total = state.order.length;
     $('qCounter').textContent = '第 ' + (i + 1) + ' / ' + total + ' 题';
     $('progressFill').style.width = ((i + 1) / total) * 100 + '%';
     $('btnPrev').disabled = i === 0;
     $('btnSkip').hidden = !state.skip;
 
-    const q = D.questions.find((x) => x.id === qid);
-    $('dimAbout').textContent = '凭第一直觉作答，无需反复权衡';
-    $('qText').textContent = q.text;
+    const isForced = q.type === 'forced';
+    $('qText').textContent = q.text || (isForced ? '下面两种情况，你本能上更靠哪一种？' : '');
     $('btnNext').textContent = '下一题';
+    $('dimAbout').textContent = isForced
+      ? '别权衡，凭本能选——二选一没有对错'
+      : '凭第一直觉作答，无需反复权衡';
 
-    const box = $('likertBtns');
-    box.innerHTML = '';
-    const current = state.answers[qid];
-    LIKERT_LABELS.forEach((label, idx) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = label;
-      b.setAttribute('role', 'radio');
-      b.setAttribute('aria-checked', current === idx + 1 ? 'true' : 'false');
-      if (current === idx + 1) b.classList.add('selected');
-      b.addEventListener('click', () => answer(qid, idx + 1));
-      box.appendChild(b);
-    });
+    const scale = $('scaleLeft').parentElement;
+    if (isForced) {
+      scale.classList.add('forced-mode');
+      // 把原 likert 三件套隐藏，改用两个大按钮
+      const left = $('scaleLeft'), right = $('scaleRight');
+      left.style.display = 'none';
+      right.style.display = 'none';
+      const box = $('likertBtns');
+      box.classList.add('forced-btns');
+      box.innerHTML = '';
+      ['A', 'B'].forEach((key, idx) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'forced-opt';
+        b.textContent = (idx === 0 ? q.a : q.b) || '';
+        b.setAttribute('role', 'radio');
+        b.setAttribute('aria-checked', state.answers[qid] === key ? 'true' : 'false');
+        if (state.answers[qid] === key) b.classList.add('selected');
+        b.addEventListener('click', () => answer(qid, key));
+        box.appendChild(b);
+      });
+    } else {
+      scale.classList.remove('forced-mode');
+      const left = $('scaleLeft'), right = $('scaleRight');
+      left.style.display = '';
+      right.style.display = '';
+      const box = $('likertBtns');
+      box.classList.remove('forced-btns');
+      box.innerHTML = '';
+      const current = state.answers[qid];
+      LIKERT_LABELS.forEach((label, idx) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.setAttribute('role', 'radio');
+        b.setAttribute('aria-checked', current === idx + 1 ? 'true' : 'false');
+        if (current === idx + 1) b.classList.add('selected');
+        b.addEventListener('click', () => answer(qid, idx + 1));
+        box.appendChild(b);
+      });
+    }
 
-    const answered = typeof state.answers[qid] === 'number';
+    const answered = state.answers[qid] != null;
     $('btnNext').disabled = !state.skip && !answered;
   }
 
   function answer(qid, val) {
     state.answers[qid] = val;
     const box = $('likertBtns');
-    Array.from(box.children).forEach((b, idx) => {
-      b.classList.toggle('selected', idx + 1 === val);
-      b.setAttribute('aria-checked', idx + 1 === val ? 'true' : 'false');
-    });
+    if (state.type === 'forced') {
+      Array.from(box.children).forEach((b, idx) => {
+        const key = ['A', 'B'][idx];
+        b.classList.toggle('selected', key === val);
+        b.setAttribute('aria-checked', key === val ? 'true' : 'false');
+      });
+    } else {
+      Array.from(box.children).forEach((b, idx) => {
+        b.classList.toggle('selected', idx + 1 === val);
+        b.setAttribute('aria-checked', idx + 1 === val ? 'true' : 'false');
+      });
+    }
     $('btnNext').disabled = false;
     setTimeout(next, 150);
   }
@@ -167,17 +234,25 @@
   $('btnQuit').addEventListener('click', () => { show('view-start'); });
 
   /* ---------------- 计分：profile ---------------- */
-  function valToScore(v, dir) {
+  function valToScore(v, q) {
     if (v == null) return 50;                       // 跳过 → 中立
-    if (dir === '-') return (SC.likertMax - v) / (SC.likertMax - SC.likertMin) * 100;
+    if (q.type === 'forced') {
+      // dir:'h' 选 A 推高该维 → 100；dir:'l' 选 A 压低该维 → 0
+      const high = (q.dir === 'h') === (v === 'A');
+      return high ? 100 : 0;
+    }
+    if (q.dir === '-') return (SC.likertMax - v) / (SC.likertMax - SC.likertMin) * 100;
     return (v - SC.likertMin) / (SC.likertMax - SC.likertMin) * 100;
   }
 
   function computeProfile() {
     const profile = {};
+    const dimQs = {};
+    state.pool.forEach((q) => { (dimQs[q.dim] = dimQs[q.dim] || []).push(q); });
     D.dims.forEach((d) => {
-      const qs = D.questions.filter((q) => q.dim === d.key);
-      const vals = qs.map((q) => valToScore(state.answers[q.id], q.dir));
+      const qs = dimQs[d.key] || [];
+      if (!qs.length) { profile[d.key] = 50; return; }
+      const vals = qs.map((q) => valToScore(state.answers[q.id], q));
       profile[d.key] = vals.reduce((a, b) => a + b, 0) / vals.length;
     });
     return profile;
@@ -221,7 +296,12 @@
 
   function submit() {
     state.profile = computeProfile();
-    state.answerSum = Object.keys(state.answers).reduce((s, id) => s + (state.answers[id] || 0), 0);
+    // forced 答案是 'A'/'B' 字符串，统一折算成数值，保证 answerSum 为数字
+    state.answerSum = Object.keys(state.answers).reduce((s, id) => {
+      const v = state.answers[id];
+      if (v == null) return s;
+      return s + (typeof v === 'string' ? (v === 'A' ? 7 : 3) : v);
+    }, 0);
     state.results = computeResults(state.profile);
     renderResult(state.results);
     show('view-result');
@@ -606,6 +686,31 @@
     $('modalEn').textContent = w.en;
     $('modalChips').innerHTML = chips.map((c) => '<span class="chip-mini">' + c + '</span>').join('');
     renderStatBars('modalStats', w.stats, null);
+
+    // 性能参数表
+    const specBox = $('modalSpecs');
+    if (w.specs && w.specs.length) {
+      specBox.hidden = false;
+      specBox.innerHTML = w.specs.map(function (s) {
+        return '<div class="spec-row"><span class="spec-k">' + s.k + '</span><span class="spec-v">' + s.v + '</span></div>';
+      }).join('');
+    } else {
+      specBox.hidden = false;
+      specBox.innerHTML = '<div class="spec-row spec-pending">详细参数待收录，先看个大概。</div>';
+    }
+
+    // 图片位
+    const imgBox = $('modalImg');
+    if (w.img) {
+      imgBox.hidden = false;
+      imgBox.classList.add('has-img');
+      imgBox.innerHTML = '<img src="' + w.img + '" alt="' + w.n + '">';
+    } else {
+      imgBox.hidden = false;
+      imgBox.classList.remove('has-img');
+      imgBox.innerHTML = '<div class="img-placeholder">' + w.icon + '<span>暂无实拍图</span></div>';
+    }
+
     $('modalLore').textContent = w.lore || '传世之器，待主而鸣。';
     $('modalPhrase').textContent = '「' + (w.phrase || '我等的，就是你这样的人。') + '」';
     $('weaponModal').hidden = false;

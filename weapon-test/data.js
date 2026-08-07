@@ -1,7 +1,8 @@
 /* =====================================================================
    本命武器测试 · 核心数据层
    模型：7 维战斗气质（刚猛/迅捷/精准/射程/灵动/坚韧/时代），各 0–100。
-     28 题（7 维 × 4 题，每维含 1 道反向题），答案映射为"理想武器画像"，
+     题库两种题型（情境量表 likert / 二选一快答 forced）× 两档题量（42 / 56，
+     每维 6 / 8 题，含反向题），答案映射为"理想武器画像"，
      再与全武器库逐把加权欧氏距离，最近者为本命武器。
    武器库：4 大类（冷兵器/热武器/爆炸物/名器）→ 组 → 子类（subs 定义
    基础七维）→ 具体条目（继承子类，名器/名枪可稀疏覆盖 stats）。
@@ -30,47 +31,146 @@ window.WEAPON_DATA = {
     flatRange: 15          // 7 维极差 < 此值判为"扁平画像"
   },
 
-  /* ---------- 28 道题（7 维 × 4，每维含 1 道反向题 dir:'-'） ----------
-     题面全部"隐晦化"：情境式描述，不出现"刚猛/迅捷"等维度字面，
-     看不出哪个答案更好。正向 = 同意推高该维；反向 = 同意压低该维。
+  /* ---------- 题库（两种题型 × 两档题量） ----------
+     likert : 5 档情境量表。每维 8 题，前 6 题供 42 题版、前 8 题供 56 题版；
+              含反向题（dir:'-'，同意压低该维）。题面全部"隐晦化"：
+              情境式描述，不出现"刚猛/迅捷"等维度字面，看不出哪个答案更好。
+     forced : 二选一快答。每维 8 题，dir:'h' = 选 A 推高该维；dir:'l' = 选 A 压低该维。
+              选项成对出现，A/B 各代气质一端，隐晦化处理。
   */
-  questions: [
-    // ===== 刚猛 =====
-    { id: 'p1', dim: 'power',     text: '面前是一扇锁死的铁门，时间不等人——我第一反应是直接撞开或砸开，而不是先找钥匙。' },
-    { id: 'p2', dim: 'power',     text: '团队遇上硬仗时，我通常是第一个撸袖子顶上、把"重活"揽下来的那个。' },
-    { id: 'p3', dim: 'power',     text: '说服不了别人的时候，我宁可跟对方正面掰手腕，也不想低声下气。' },
-    { id: 'p4', dim: 'power', dir: '-', text: '我擅长借力打力、四两拨千斤，几乎不需要用蛮力硬碰。' },
-    // ===== 迅捷 =====
-    { id: 's1', dim: 'speed',     text: '我做事讲究"快"——宁可先干起来，也不愿在原地反复琢磨。' },
-    { id: 's2', dim: 'speed',     text: '加载条多转两圈我就开始烦躁——等待对我来说是一种酷刑。' },
-    { id: 's3', dim: 'speed',     text: '遇到突发状况，我往往是第一个反应过来、第一个行动的人。' },
-    { id: 's4', dim: 'speed', dir: '-', text: '我习惯慢工出细活——宁可慢一点，也不能粗糙地交差。' },
-    // ===== 精准 =====
-    { id: 'c1', dim: 'precision', text: '比起广撒网，我更享受把一件事做到极致精细。' },
-    { id: 'c2', dim: 'precision', text: '投掷、射击、落笔这类讲究"准头"的事，我向来不怵。' },
-    { id: 'c3', dim: 'precision', text: '我宁可多花一倍时间，也要让每一个细节待在它该在的位置。' },
-    { id: 'c4', dim: 'precision', dir: '-', text: '别人常说我粗枝大叶——大方向对就行，细节差不多得了。' },
-    // ===== 射程 =====
-    { id: 'r1', dim: 'range',     text: '面对冲突，我本能地先拉开距离，站到安全的观察位再看情况。' },
-    { id: 'r2', dim: 'range',     text: '我更信任"隔着一段距离解决问题"——能不近身就不近身。' },
-    { id: 'r3', dim: 'range',     text: '挑位置时，我总想挑个视野开阔、进可攻退可守的"高位"。' },
-    { id: 'r4', dim: 'range', dir: '-', text: '短兵相接、贴身缠斗的紧张感，反而让我觉得痛快。' },
-    // ===== 灵动 =====
-    { id: 'm1', dim: 'mobility',  text: '出门我喜欢轻装简行，身上东西越少越自在。' },
-    { id: 'm2', dim: 'mobility',  text: '在人堆里我能穿梭自如，很少被挤到、堵到。' },
-    { id: 'm3', dim: 'mobility',  text: '遇到麻烦，我第一反应是"跑"——灵活走位远比硬扛划算。' },
-    { id: 'm4', dim: 'mobility', dir: '-', text: '我走到哪都习惯带齐装备，宁可多备一点，也不能缺一样。' },
-    // ===== 坚韧 =====
-    { id: 't1', dim: 'toughness', text: '受挫或受伤时，我习惯咬牙硬扛，很少让人看出不对劲。' },
-    { id: 't2', dim: 'toughness', text: '别人说我能扛事——压力越大，我反而越沉得住。' },
-    { id: 't3', dim: 'toughness', text: '持久战比闪电战更合我脾气：我更怕的是"熬不到点"，不是"熬得久"。' },
-    { id: 't4', dim: 'toughness', dir: '-', text: '一有不对劲，我先躲起来观察，从不让自己当靶子。' },
-    // ===== 时代 =====
-    { id: 'e1', dim: 'era',       text: '比起刀光剑影的古老战场，我更喜欢齿轮、火药与硝烟的味道。' },
-    { id: 'e2', dim: 'era',       text: '挑装备我信"最新款"——精度、稳定性、可维护性都比情怀重要。' },
-    { id: 'e3', dim: 'era', dir: '-', text: '我反而对老物件、手工技艺、传统兵器，有说不清的亲近感。' },
-    { id: 'e4', dim: 'era',       text: '如果让我选搭档，我更信任一台精密现代的设备，而不是一把传世老剑。' }
-  ],
+  questions: {
+    likert: [
+      // ===== 刚猛 =====
+      { id: 'p1', dim: 'power', text: '面前是一扇锁死的铁门，时间不等人——我第一反应是直接撞开或砸开，而不是先找钥匙。' },
+      { id: 'p2', dim: 'power', text: '团队遇上硬仗时，我通常是第一个撸袖子顶上、把"重活"揽下来的那个。' },
+      { id: 'p3', dim: 'power', text: '说服不了别人的时候，我宁可跟对方正面掰手腕，也不想低声下气。' },
+      { id: 'p4', dim: 'power', dir: '-', text: '我擅长借力打力、四两拨千斤，几乎不需要用蛮力硬碰。' },
+      { id: 'p5', dim: 'power', text: '开山、撬动、推倒这类"使大劲"的活儿，交到我手里时，我从来不怵。' },
+      { id: 'p6', dim: 'power', text: '越是有人拦着不让我做，我越想做——阻力反而让我来劲。' },
+      { id: 'p7', dim: 'power', dir: '-', text: '遇到推不动的事，我会先停下来算笔账：值不值得硬碰？不值就换条路。' },
+      { id: 'p8', dim: 'power', text: '别人说我"出手太重"。可我觉得，一出手就该是那个分量。' },
+      // ===== 迅捷 =====
+      { id: 's1', dim: 'speed', text: '我做事讲究"快"——宁可先干起来，也不愿在原地反复琢磨。' },
+      { id: 's2', dim: 'speed', text: '加载条多转两圈我就开始烦躁——等待对我来说是一种酷刑。' },
+      { id: 's3', dim: 'speed', text: '遇到突发状况，我往往是第一个反应过来、第一个行动的人。' },
+      { id: 's4', dim: 'speed', dir: '-', text: '我习惯慢工出细活——宁可慢一点，也不能粗糙地交差。' },
+      { id: 's5', dim: 'speed', text: '同样一件事，别人要磨半天，我通常看一眼就上手了，手比脑子先动。' },
+      { id: 's6', dim: 'speed', text: '我不怕局面乱，就怕"来不及"——先跑起来，总比停在原地强。' },
+      { id: 's7', dim: 'speed', dir: '-', text: '重要的话，我习惯先在脑子里过三遍再开口——急不来的事急不得。' },
+      { id: 's8', dim: 'speed', text: '一天里的事拖到第二天，我会记挂得睡不踏实。' },
+      // ===== 精准 =====
+      { id: 'c1', dim: 'precision', text: '比起广撒网，我更享受把一件事做到极致精细。' },
+      { id: 'c2', dim: 'precision', text: '投掷、射击、落笔这类讲究"准头"的事，我向来不怵。' },
+      { id: 'c3', dim: 'precision', text: '我宁可多花一倍时间，也要让每一个细节待在它该在的位置。' },
+      { id: 'c4', dim: 'precision', dir: '-', text: '别人常说我粗枝大叶——大方向对就行，细节差不多得了。' },
+      { id: 'c5', dim: 'precision', text: '别人交上来的东西，我总忍不住逐行挑——错别字、对不齐的边，在我眼里特别扎眼。' },
+      { id: 'c6', dim: 'precision', text: '差之毫厘的结果过不了我这一关——我要的是"正好"，不是"差不多"。' },
+      { id: 'c7', dim: 'precision', dir: '-', text: '为了 1% 的差别搭上大把时间，我觉得不值——差不多就能用了。' },
+      { id: 'c8', dim: 'precision', text: '我擅长把一团乱麻理出次序，让每样东西回到它该在的位置。' },
+      // ===== 射程 =====
+      { id: 'r1', dim: 'range', text: '面对冲突，我本能地先拉开距离，站到安全的观察位再看情况。' },
+      { id: 'r2', dim: 'range', text: '我更信任"隔着一段距离解决问题"——能不近身就不近身。' },
+      { id: 'r3', dim: 'range', text: '挑位置时，我总想挑个视野开阔、进可攻退可守的"高位"。' },
+      { id: 'r4', dim: 'range', dir: '-', text: '短兵相接、贴身缠斗的紧张感，反而让我觉得痛快。' },
+      { id: 'r5', dim: 'range', text: '独处一处、远远看着人群，我不仅不慌，反而觉得这样才看得清。' },
+      { id: 'r6', dim: 'range', text: '动手之前，我会先退开两步，把整盘局势看完再落子。' },
+      { id: 'r7', dim: 'range', dir: '-', text: '热闹的中心我总想挤进去——远远旁观让我坐不住。' },
+      { id: 'r8', dim: 'range', text: '同样帮人，我更愿意在暗处把关键一步做掉，而不是冲到亮处当靶子。' },
+      // ===== 灵动 =====
+      { id: 'm1', dim: 'mobility', text: '出门我喜欢轻装简行，身上东西越少越自在。' },
+      { id: 'm2', dim: 'mobility', text: '在人堆里我能穿梭自如，很少被挤到、堵到。' },
+      { id: 'm3', dim: 'mobility', text: '遇到麻烦，我第一反应是"跑"——灵活走位远比硬扛划算。' },
+      { id: 'm4', dim: 'mobility', dir: '-', text: '我走到哪都习惯带齐装备，宁可多备一点，也不能缺一样。' },
+      { id: 'm5', dim: 'mobility', text: '计划一变，我能立刻跟着变——被打乱对我来说只是换条走法。' },
+      { id: 'm6', dim: 'mobility', text: '走路我专挑没人走的近路、台阶、缝隙——规规矩矩排队走直线，闷得慌。' },
+      { id: 'm7', dim: 'mobility', dir: '-', text: '我做事喜欢一条道走到黑，中途改主意会让我浑身不自在。' },
+      { id: 'm8', dim: 'mobility', text: '局面越乱，我越能抢先找到新出口——乱局反而显出我的本事。' },
+      // ===== 坚韧 =====
+      { id: 't1', dim: 'toughness', text: '受挫或受伤时，我习惯咬牙硬扛，很少让人看出不对劲。' },
+      { id: 't2', dim: 'toughness', text: '别人说我能扛事——压力越大，我反而越沉得住。' },
+      { id: 't3', dim: 'toughness', text: '持久战比闪电战更合我脾气：我更怕的是"熬不到点"，不是"熬得久"。' },
+      { id: 't4', dim: 'toughness', dir: '-', text: '一有不对劲，我先躲起来观察，从不让自己当靶子。' },
+      { id: 't5', dim: 'toughness', text: '连轴转、连班赶的日子，常常是别人先垮，我还能撑到收尾。' },
+      { id: 't6', dim: 'toughness', text: '伤口也好、麻烦也好，我习惯自己处理好再让人知道。' },
+      { id: 't7', dim: 'toughness', dir: '-', text: '一碰到苦和累，我第一念是"凭什么是我"——扛一阵可以，久了不行。' },
+      { id: 't8', dim: 'toughness', text: '比"赢得快"更让我安心的是"拖得起"——我能等，等到局势转到我这边。' },
+      // ===== 时代 =====
+      { id: 'e1', dim: 'era', text: '比起刀光剑影的古老战场，我更喜欢齿轮、火药与硝烟的味道。' },
+      { id: 'e2', dim: 'era', text: '挑装备我信"最新款"——精度、稳定性、可维护性都比情怀重要。' },
+      { id: 'e3', dim: 'era', dir: '-', text: '我反而对老物件、老手艺，有说不清的亲近感。' },
+      { id: 'e4', dim: 'era', text: '面对一个刚研发、还没经过时间检验的新方案，我的第一反应是好奇，而不是怀疑。' },
+      { id: 'e5', dim: 'era', text: '店门口挂"新到货"，我的脚会自己拐进去；旧货架我很少回头看。' },
+      { id: 'e6', dim: 'era', text: '同样一道工序，我更信测量仪上的读数，而不是老师傅那句"差不多"。' },
+      { id: 'e7', dim: 'era', dir: '-', text: '老手艺里有样东西是机器给不了的——慢，但踏实。' },
+      { id: 'e8', dim: 'era', text: '新东西出了问题，我宁愿自己翻说明书弄明白，也不想退回老办法。' }
+    ],
+
+    forced: [
+      // ===== 刚猛（dir:'h' = 选 A 推高刚猛；dir:'l' = 选 A 压低刚猛） =====
+      { id: 'pf1', dim: 'power', type: 'forced', dir: 'h', a: '门锁着，我抬脚就踹', b: '我去找管理员拿钥匙' },
+      { id: 'pf2', dim: 'power', type: 'forced', dir: 'h', a: '车陷泥里，我下去推', b: '先打电话叫救援' },
+      { id: 'pf3', dim: 'power', type: 'forced', dir: 'l', a: '吵起来我慢慢讲理', b: '吵起来我嗓门压过他' },
+      { id: 'pf4', dim: 'power', type: 'forced', dir: 'h', a: '抢着买单、抢着干活', b: '排队等轮到我' },
+      { id: 'pf5', dim: 'power', type: 'forced', dir: 'l', a: '能用杠杆撬，就不用蛮力', b: '抡圆了直接砸' },
+      { id: 'pf7', dim: 'power', type: 'forced', dir: 'l', a: '赢了嘴仗不算赢', b: '气势上就不能输' },
+      { id: 'pf6', dim: 'power', type: 'forced', dir: 'h', a: '拦我的人，我自己请他让开', b: '换个门走，不冲突' },
+      { id: 'pf8', dim: 'power', type: 'forced', dir: 'l', a: '分两趟搬，稳一点', b: '一个人把整箱水扛上楼' },
+      // ===== 迅捷 =====
+      { id: 'sf1', dim: 'speed', type: 'forced', dir: 'h', a: '绿灯刚亮就起步', b: '起步前先看后视镜' },
+      { id: 'sf2', dim: 'speed', type: 'forced', dir: 'h', a: '外卖十分钟没到就催', b: '等就等，不急' },
+      { id: 'sf3', dim: 'speed', type: 'forced', dir: 'l', a: '看完片尾再走', b: '片尾字幕一起就撤' },
+      { id: 'sf4', dim: 'speed', type: 'forced', dir: 'h', a: '边吃饭边回消息', b: '吃完了再处理' },
+      { id: 'sf5', dim: 'speed', type: 'forced', dir: 'l', a: '磨刀不误砍柴工', b: '先砍起来再说' },
+      { id: 'sf7', dim: 'speed', type: 'forced', dir: 'l', a: '排队一小时我也等', b: '看到长队掉头就走' },
+      { id: 'sf6', dim: 'speed', type: 'forced', dir: 'h', a: '想到什么先记下来', b: '记不住说明不重要' },
+      { id: 'sf8', dim: 'speed', type: 'forced', dir: 'l', a: '散步才舒服', b: '走路比谁都急' },
+      // ===== 精准 =====
+      { id: 'cf1', dim: 'precision', type: 'forced', dir: 'h', a: '字写得好看要紧', b: '字能看懂就行' },
+      { id: 'cf2', dim: 'precision', type: 'forced', dir: 'h', a: '量两次，剪一次', b: '量一次，差不多就剪' },
+      { id: 'cf3', dim: 'precision', type: 'forced', dir: 'l', a: '错别字无伤大雅', b: '错别字毁所有' },
+      { id: 'cf4', dim: 'precision', type: 'forced', dir: 'h', a: '表格对齐才舒服', b: '能看清就行' },
+      { id: 'cf5', dim: 'precision', type: 'forced', dir: 'l', a: '拍完照不调色', b: '光线角度都要调' },
+      { id: 'cf7', dim: 'precision', type: 'forced', dir: 'l', a: '大概知道就行', b: '必须弄清楚' },
+      { id: 'cf6', dim: 'precision', type: 'forced', dir: 'h', a: '螺丝拧到刚好', b: '拧紧就行' },
+      { id: 'cf8', dim: 'precision', type: 'forced', dir: 'l', a: '塞得下就行', b: '打包要整整齐齐' },
+      // ===== 射程 =====
+      { id: 'rf1', dim: 'range', type: 'forced', dir: 'h', a: '坐后排，看全车人', b: '坐前排，加入对话' },
+      { id: 'rf2', dim: 'range', type: 'forced', dir: 'h', a: '发消息沟通', b: '当面说清楚' },
+      { id: 'rf3', dim: 'range', type: 'forced', dir: 'l', a: '人群中间最自在', b: '边上看戏最舒服' },
+      { id: 'rf4', dim: 'range', type: 'forced', dir: 'h', a: '先看窗外视野开不开阔', b: '先看楼里热闹不热闹' },
+      { id: 'rf5', dim: 'range', type: 'forced', dir: 'l', a: '隔着屏幕没感觉', b: '隔着屏幕更安全' },
+      { id: 'rf7', dim: 'range', type: 'forced', dir: 'l', a: '离得近才有掌控感', b: '离得远才安心' },
+      { id: 'rf6', dim: 'range', type: 'forced', dir: 'h', a: '在远处把问题解决了', b: '到跟前才处理' },
+      { id: 'rf8', dim: 'range', type: 'forced', dir: 'l', a: '必须见面谈', b: '视频会议就行' },
+      // ===== 灵动 =====
+      { id: 'mf1', dim: 'mobility', type: 'forced', dir: 'h', a: '出门就带手机钥匙', b: '背包里什么都有' },
+      { id: 'mf2', dim: 'mobility', type: 'forced', dir: 'h', a: '人缝里钻过去', b: '排队等空档' },
+      { id: 'mf3', dim: 'mobility', type: 'forced', dir: 'l', a: '一条路线走到底', b: '今天换条路试试' },
+      { id: 'mf4', dim: 'mobility', type: 'forced', dir: 'h', a: '撞上就先跑', b: '撞上就先扛' },
+      { id: 'mf5', dim: 'mobility', type: 'forced', dir: 'l', a: '装备越全越踏实', b: '装备越少越利索' },
+      { id: 'mf7', dim: 'mobility', type: 'forced', dir: 'l', a: '熟悉的地方才安心', b: '陌生的地方才刺激' },
+      { id: 'mf6', dim: 'mobility', type: 'forced', dir: 'h', a: '计划变了马上改', b: '计划定了就不动' },
+      { id: 'mf8', dim: 'mobility', type: 'forced', dir: 'l', a: '能扛就扛，不躲', b: '能躲就躲，不硬碰' },
+      // ===== 坚韧 =====
+      { id: 'tf1', dim: 'toughness', type: 'forced', dir: 'h', a: '感冒了照常上班', b: '感冒了就请假' },
+      { id: 'tf2', dim: 'toughness', type: 'forced', dir: 'h', a: '心里难受自己扛', b: '找人倒苦水' },
+      { id: 'tf3', dim: 'toughness', type: 'forced', dir: 'l', a: '打不过就跑', b: '跑不了就拼' },
+      { id: 'tf4', dim: 'toughness', type: 'forced', dir: 'h', a: '长跑比短跑适合我', b: '冲刺比长跑适合我' },
+      { id: 'tf5', dim: 'toughness', type: 'forced', dir: 'l', a: '这次失败了就换方向', b: '这次失败了再来一次' },
+      { id: 'tf7', dim: 'toughness', type: 'forced', dir: 'l', a: '撑不住很正常', b: '撑不住就是不够强' },
+      { id: 'tf6', dim: 'toughness', type: 'forced', dir: 'h', a: '疼也得把活干完', b: '疼就先停下' },
+      { id: 'tf8', dim: 'toughness', type: 'forced', dir: 'l', a: '到点就睡，明天再说', b: '熬夜加班，天亮再睡' },
+      // ===== 时代 =====
+      { id: 'ef1', dim: 'era', type: 'forced', dir: 'h', a: '新手机一上市就买', b: '旧手机用坏再换' },
+      { id: 'ef2', dim: 'era', type: 'forced', dir: 'h', a: '看评测数据下单', b: '听老用户口碑下单' },
+      { id: 'ef3', dim: 'era', type: 'forced', dir: 'l', a: '电子书方便，但纸质书有温度', b: '电子书就够了' },
+      { id: 'ef4', dim: 'era', type: 'forced', dir: 'h', a: '软件要更新到最新', b: '能用就不升级' },
+      { id: 'ef5', dim: 'era', type: 'forced', dir: 'l', a: '手写有感觉', b: '打字快就完了' },
+      { id: 'ef7', dim: 'era', type: 'forced', dir: 'l', a: '老字号值得排队', b: '新店才值得探店' },
+      { id: 'ef6', dim: 'era', type: 'forced', dir: 'h', a: '新流程新规矩，学就完了', b: '老办法用着顺手' },
+      { id: 'ef8', dim: 'era', type: 'forced', dir: 'l', a: '老司机说的准没错', b: '参数摆在那，我信参数' }
+    ]
+  },
 
   /* ---------- 子类定义（~65 个） ----------
      cat : 大类（cold/gun/exp/mythic）

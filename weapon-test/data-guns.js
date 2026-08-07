@@ -11,14 +11,14 @@
   var pistolSemi = [
     { id: 'g001', n: '格洛克 17', en: 'Glock 17', sub: 'pistol_semi', lore: '奥地利聚合物枪身，半自动手枪的销量之王，可靠到近乎无聊。', phrase: '简单、可靠，近乎无聊——但赢了。', stats: { speed: 64, mobility: 66 } },
     { id: 'g002', n: 'M1911', en: 'M1911', sub: 'pistol_semi', lore: '约翰·勃朗宁设计，.45 口径百年经典，二战美军的灵魂。', phrase: '岁月磨不掉的枪。', stats: { power: 56, era: 82 } },
-    { id: 'g003', n: '伯莱塔 92F', en: 'Beretta 92F', sub: 'pistol_semi', lore: '意大利制式手枪，美军的 M9，优雅与耐用的平衡。', phrase: '意大利式的可靠。' },
-    { id: 'g004', n: 'HK USP', en: 'HK USP', sub: 'pistol_semi', lore: '德国模块化手枪，警察与特工之选。', phrase: '无懈可击的德式严谨。', stats: { precision: 76 } },
-    { id: 'g005', n: 'SIG P226', en: 'SIG P226', sub: 'pistol_semi', lore: '瑞士血统、德式做工，精度口碑极佳。', phrase: '准，是它的修养。', stats: { precision: 78 } },
+    { id: 'g003', n: '伯莱塔 92F', en: 'Beretta 92F', sub: 'pistol_semi', lore: '意大利制式，美军选作 M9 用了三十年，开闭锁卡铁简单，沙漠里打进砂子还能退弹。', phrase: '意大利式的可靠。' },
+    { id: 'g004', n: 'HK USP', en: 'HK USP', sub: 'pistol_semi', lore: '1993 年的模块化手枪，保险、扳机、握把都能换，德国警察与各国特工长期在册。', phrase: '无懈可击的德式严谨。', stats: { precision: 76 } },
+    { id: 'g005', n: 'SIG P226', en: 'SIG P226', sub: 'pistol_semi', lore: '1980 年美军"手枪竞标"输给伯莱塔，被特警与特工收走，25 米内散布常在一掌之内。', phrase: '准，是它的修养。', stats: { precision: 78 } },
     { id: 'g006', n: 'CZ 75', en: 'CZ 75', sub: 'pistol_semi', lore: '捷克国民手枪，人机工程出众，握过一次就忘不掉。', phrase: '一握，就是为你的手而生。' },
     { id: 'g007', n: '沙漠之鹰', en: 'Desert Eagle', sub: 'pistol_semi', lore: '.50 口径猛兽，后坐力与名气一样大，开一枪全世界都看过来。', phrase: '我的存在本身，就是威慑。', stats: { power: 88, speed: 40, precision: 76, mobility: 48 } },
-    { id: 'g008', n: 'FN 五七', en: 'FN Five-seveN', sub: 'pistol_semi', lore: '5.7mm 穿甲弹，轻薄却致命，给防弹衣准备的问候。', phrase: '小口径，大野心。' },
+    { id: 'g008', n: 'FN 五七', en: 'FN Five-seveN', sub: 'pistol_semi', lore: '和 P90 共用 5.7×28mm 弹，弹头重 2 克出头，初速却接近步枪，能打穿软质防弹衣。', phrase: '小口径，大野心。' },
     { id: 'g009', n: 'HK VP70', en: 'HK VP70', sub: 'pistol_semi', lore: '聚合物枪身的先驱，三连发点射的七十年代设想。', phrase: '七十年代，就敢想未来。' },
-    { id: 'g010', n: '瓦尔特 PPK', en: 'Walther PPK', sub: 'pistol_semi', lore: '特工 007 的爱枪，小巧优雅，西装口袋里藏着。', phrase: '优雅的威胁。', stats: { mobility: 70 } },
+    { id: 'g010', n: '瓦尔特 PPK', en: 'Walther PPK', sub: 'pistol_semi', lore: '1931 年的紧凑型，全枪不到 600 克，007 在小说里选了它，西装口袋里放得下。', phrase: '优雅的威胁。', stats: { mobility: 70 } },
     { id: 'g011', n: 'SIG P320', en: 'SIG P320', sub: 'pistol_semi', lore: '模块化套件，美军新一代制式 M17 的原型。', phrase: '时代的答案，由它来写。' },
     { id: 'g012', n: '92 式手枪', en: 'QSZ-92', sub: 'pistol_semi', lore: '中国现役制式手枪，5.8mm 口径，轻便利落。', phrase: '轻装上阵，足够快。' },
     { id: 'g013', n: '勃朗宁大威力', en: 'Browning Hi-Power', sub: 'pistol_semi', lore: '13 发大弹匣的半自动，从二战一直打到现代。', phrase: '装得多，赢得稳。' },
@@ -26,12 +26,12 @@
     { id: 'g015', n: '托卡列夫 TT-33', en: 'TT-33', sub: 'pistol_semi', lore: '苏军老枪，结构简单，穿透力强。', phrase: '钢铁时代的简洁。', stats: { era: 82 } },
     { id: 'g016', n: '马卡洛夫 PM', en: 'Makarirov PM', sub: 'pistol_semi', lore: '苏军小巧制式手枪，贴身防护的一把好手。', phrase: '小，但从不失手。' },
     { id: 'g017', n: 'HK P7', en: 'HK P7', sub: 'pistol_semi', lore: '挤压握把才击发的独特手枪，安全与速度兼得。', phrase: '握紧它，它才醒。' },
-    { id: 'g018', n: '格洛克 19', en: 'Glock 19', sub: 'pistol_semi', lore: '紧凑型经典，隐蔽携带之王。', phrase: '藏在身上，随时在场。' }
+    { id: 'g018', n: '格洛克 19', en: 'Glock 19', sub: 'pistol_semi', lore: 'G17 的紧凑版，握把短一截、弹容量少两发，却成了全球警用与隐蔽携枪的主流。', phrase: '藏在身上，随时在场。' }
   ];
 
   /* ==================== 左轮手枪 ==================== */
   var pistolRev = [
-    { id: 'g019', n: '柯尔特蟒蛇', en: 'Colt Python', sub: 'pistol_revolve', lore: '高精度左轮，六发 .357，收藏与实战兼备。', phrase: '优雅与杀意并存。', stats: { precision: 76 } },
+    { id: 'g019', n: '柯尔特蟒蛇', en: 'Colt Python', sub: 'pistol_revolve', lore: '1955 年上市的 .357 左轮，手工装配合膛，20 世纪后半被当收藏品，估价翻了几十倍。', phrase: '优雅与杀意并存。', stats: { precision: 76 } },
     { id: 'g020', n: 'S&W M29', en: 'S&W Model 29', sub: 'pistol_revolve', lore: '.44 马格南，克林特·伊斯特伍德"脏哈利"的招牌。', phrase: '感觉幸运吗？——这是它的台词。', stats: { power: 68 } },
     { id: 'g021', n: 'S&W M500', en: 'S&W Model 500', sub: 'pistol_revolve', lore: '.500 口径巨无霸，量产左轮中的力量之王。', phrase: '后坐力，是它的签名。', stats: { power: 92, speed: 36 } },
     { id: 'g022', n: '柯尔特和平缔造者', en: 'Colt Peacemaker', sub: 'pistol_revolve', lore: '西部单动传奇，一枪定生死的时代符号。', phrase: '西部只有一个规矩。', stats: { era: 74 } },
@@ -73,14 +73,14 @@
     { id: 'g046', n: 'AK-47', en: 'AK-47', sub: 'ar_assault', lore: '卡拉什尼科夫，全球产量最大的步枪，泥沙俱下仍能开火。', phrase: '泥沙俱下，仍能开火。', stats: { power: 74, toughness: 52 } },
     { id: 'g047', n: 'AKM', en: 'AKM', sub: 'ar_assault', lore: 'AK 的现代化版本，把传奇的毛病修得更少。', phrase: '传奇的进化。' },
     { id: 'g048', n: 'AK-74', en: 'AK-74', sub: 'ar_assault', lore: '苏联 5.45mm 版，后坐更小，精度更好。', phrase: '老树发新枝。' },
-    { id: 'g049', n: 'M16A4', en: 'M16A4', sub: 'ar_assault', lore: '美军经典小口径步枪，皮轨化之后依然是老将。', phrase: '越战雨林里长出来的 A4。', stats: { precision: 68 } },
+    { id: 'g049', n: 'M16A4', en: 'M16A4', sub: 'ar_assault', lore: '1960 年代入役，A4 型换上皮卡汀尼导轨，用到现在超六十年，仍是北约标准口径。', phrase: '越战雨林里长出来的 A4。', stats: { precision: 68 } },
     { id: 'g050', n: 'M4A1', en: 'M4A1', sub: 'ar_assault', lore: '美军主力卡宾步枪，全能选手，现代步兵的万能钥匙。', phrase: '现代步兵的万能钥匙。' },
-    { id: 'g051', n: 'HK416', en: 'HK416', sub: 'ar_assault', lore: '德国改良 AR，特种部队口碑之选。', phrase: '把 AR 的缺点，都修好了。', stats: { precision: 70 } },
+    { id: 'g051', n: 'HK416', en: 'HK416', sub: 'ar_assault', lore: '把 M16 的气吹式换成短行程活塞，积炭少了，2011 年击毙本·拉登的行动里它就在场。', phrase: '把 AR 的缺点，都修好了。', stats: { precision: 70 } },
     { id: 'g052', n: 'SCAR-L', en: 'SCAR-L', sub: 'ar_assault', lore: '比利时 FN 特种步枪，模块化到极致。', phrase: '特种部队的答案。' },
     { id: 'g053', n: 'SCAR-H', en: 'SCAR-H', sub: 'ar_assault', lore: '7.62 版 SCAR，威力大一号，猛一截。', phrase: '大了，就狠了。', stats: { power: 80 } },
     { id: 'g054', n: 'G36', en: 'G36', sub: 'ar_assault', lore: '德国现役突击步枪，聚合物枪身，理性得近乎完美。', phrase: '德国人的理性。' },
     { id: 'g055', n: 'AUG', en: 'Steyr AUG', sub: 'ar_assault', lore: '奥地利无托步枪，牛眼瞄具，工业设计杰作。', phrase: '一枪，集成一切。' },
-    { id: 'g056', n: 'FAMAS', en: 'FAMAS', sub: 'ar_assault', lore: '法国无托步枪，优雅的法国腔调。', phrase: '法兰西的浪漫，在枪上。' },
+    { id: 'g056', n: 'FAMAS', en: 'FAMAS', sub: 'ar_assault', lore: '法军 1979 年列装的无托步枪，枪身紧凑，换弹夹要按杠杆，法国人自己用惯了不嫌。', phrase: '法兰西的浪漫，在枪上。' },
     { id: 'g057', n: '95 式步枪', en: 'QBZ-95', sub: 'ar_assault', lore: '中国无托制式步枪，站如松、稳如钟。', phrase: '站如松，稳如钟。' },
     { id: 'g058', n: '81 式步枪', en: 'QBZ-81', sub: 'ar_assault', lore: '中国长枪木托，步枪时代的老兵，可靠的名声传遍雨林。', phrase: '老兵不死。', stats: { toughness: 48 } },
     { id: 'g059', n: '56 式冲锋枪', en: 'Type 56', sub: 'ar_assault', lore: 'AK 的中国兄弟，以"冲锋枪"之名行步枪之实。', phrase: '中国制造的 AK 答案。', stats: { era: 86 } },
@@ -149,11 +149,11 @@
 
   /* ==================== 半自动霰弹枪 ==================== */
   var shotSemi = [
-    { id: 'g101', n: '伯奈利 M4', en: 'Benelli M4', sub: 'shot_semi', lore: '意大利半自动战术霰弹枪，优雅的暴力。', phrase: '半自动的优雅暴力。', stats: { power: 88 } },
+    { id: 'g101', n: '伯奈利 M4', en: 'Benelli M4', sub: 'shot_semi', lore: '美军"三军战斗霰弹枪"，半自动与泵动双模式，装了换管装置连榴弹都能打。', phrase: '半自动的优雅暴力。', stats: { power: 88 } },
     { id: 'g102', n: 'SPAS-12', en: 'SPAS-12', sub: 'shot_semi', lore: '半自动/泵动双模式，动作片里的明星。', phrase: '电影里的主角枪。' },
     { id: 'g103', n: 'Saiga-12', en: 'Saiga-12', sub: 'shot_semi', lore: 'AK 血统的半自动霰弹枪，机枪式供弹。', phrase: '卡拉什尼科夫的霰弹答案。' },
     { id: 'g104', n: 'AA-12', en: 'AA-12', sub: 'shot_semi', lore: '全自动霰弹枪，火力如墙，谁挡谁麻。', phrase: '自动霰弹，火力如墙。' },
-    { id: 'g105', n: '雷明顿 1100', en: 'Remington 1100', sub: 'shot_semi', lore: '经典半自动猎枪，猎人手里的优雅。', phrase: '猎人手中的优雅。' }
+    { id: 'g105', n: '雷明顿 1100', en: 'Remington 1100', sub: 'shot_semi', lore: '1963 年上市，半自动后坐减半，飞碟射击和猎鸟的老手用到今天还舍不得换。', phrase: '猎人手中的优雅。' }
   ];
 
   /* ==================== 双管霰弹枪 ==================== */
@@ -182,7 +182,7 @@
     { id: 'g119', n: 'M110', en: 'M110', sub: 'sniper_semi', lore: '美军半自动狙击，现代战争的精确连发。', phrase: '现代战争的精确连发。' },
     { id: 'g120', n: 'MK14 EBR', en: 'MK14 EBR', sub: 'sniper_semi', lore: '战斗步枪改装的狙击平台，老树配新镜。', phrase: '老树，新瞄准镜。' },
     { id: 'g121', n: 'PSG-1', en: 'PSG-1', sub: 'sniper_semi', lore: '德国警用半自动狙击，精度极限。', phrase: '德国式的一锤定音。' },
-    { id: 'g122', n: 'MK11', en: 'MK11', sub: 'sniper_semi', lore: '美国海军半自动狙击，海上的沉稳。', phrase: '海上的沉稳。' },
+    { id: 'g122', n: 'MK11', en: 'MK11', sub: 'sniper_semi', lore: '美国海军的半自动精确步枪，7.62 口径配十发弹匣，甲板海风里照样打得出密集散布。', phrase: '海上的沉稳。' },
     { id: 'g123', n: 'VSS 微声狙击', en: 'VSS Vintorez', sub: 'sniper_semi', lore: '苏联微声狙击，无声的收割者。', phrase: '无声的收割。' },
     { id: 'g124', n: 'SVU', en: 'SVU', sub: 'sniper_semi', lore: 'SVD 的无托版，缩短，但不妥协。', phrase: '缩短，不妥协。' }
   ];
@@ -226,13 +226,13 @@
     { id: 'g147', n: 'M134 迷你炮', en: 'M134 Minigun', sub: 'mg_gatling', lore: '转管机枪，直升机上的金属风暴。', phrase: '风暴，由它定义。', stats: { speed: 96 } },
     { id: 'g148', n: 'GAU-8 复仇者', en: 'GAU-8 Avenger', sub: 'mg_gatling', lore: '战斗机上的 30mm 机关炮，飞机是围着它造的。', phrase: '飞机为它而造。' },
     { id: 'g149', n: 'GAU-19', en: 'GAU-19', sub: 'mg_gatling', lore: '三管 .50 转管机枪，三个管，一条命。', phrase: '三个管，一条命。' },
-    { id: 'g150', n: '手摇加特林', en: 'Hand-crank Gatling', sub: 'mg_gatling', lore: '最早的转管机枪，手摇也一样致命。', phrase: '手摇，也一样致命。', stats: { era: 76 } }
+    { id: 'g150', n: '手摇加特林', en: 'Hand-crank Gatling', sub: 'mg_gatling', lore: '1861 年加特林医生发明，6 根枪管手摇轮转，一分钟打二百发，内战里首秀就收割一片。', phrase: '手摇，也一样致命。', stats: { era: 76 } }
   ];
 
   /* ==================== 榴弹发射器 ==================== */
   var grenadeLauncher = [
     { id: 'g151', n: 'M203', en: 'M203', sub: 'special_gl', lore: '步枪下挂榴弹发射器，一枪两用。', phrase: '一枪两用，面面俱到。' },
-    { id: 'g152', n: 'M79', en: 'M79', sub: 'special_gl', lore: '独立榴弹枪，越战经典，一炮一个街角。', phrase: '一炮，一个街角。' },
+    { id: 'g152', n: 'M79', en: 'M79', sub: 'special_gl', lore: '越战美军的单发榴弹枪，40mm 一发能清一个街角，枪托里还藏一颗子弹应急。', phrase: '一炮，一个街角。' },
     { id: 'g153', n: 'GP-25', en: 'GP-25', sub: 'special_gl', lore: '俄罗斯步枪下挂榴弹，俄式的补上一击。', phrase: '俄式的补上一击。' },
     { id: 'g154', n: 'QLG91', en: 'QLG91', sub: 'special_gl', lore: '中国下挂榴弹发射器，东方的一击。', phrase: '东方的一击。' },
     { id: 'g155', n: 'HK AG36', en: 'HK AG36', sub: 'special_gl', lore: '德国下挂榴弹，面面俱到。', phrase: '德式的面面俱到。' }

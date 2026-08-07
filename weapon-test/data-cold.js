@@ -10,31 +10,31 @@
   /* ==================== 剑类 ==================== */
   var swords = [
     // ---- 单手剑 ----
-    { id: 'c001', n: '汉剑', en: 'Han Jian', sub: 'sword_single', lore: '汉代武官佩剑，八面剑身，刚直而含蓄，是礼与武的双重符号。', phrase: '威仪，藏于鞘中。' },
+    { id: 'c001', n: '汉剑', en: 'Han Jian', sub: 'sword_single', lore: '汉代武官佩剑，八面剑身，佩者按品级着冠、挂绶，佩剑与官阶挂钩两汉四百年。', phrase: '威仪，藏于鞘中。' },
     { id: 'c002', n: '秦剑', en: 'Qin Sword', sub: 'sword_single', lore: '秦军制式青铜剑，刃长而锋，韧性让它敢在战场上直刺。', phrase: '大秦的锋芒，从不空回。' },
     { id: 'c003', n: '罗马斯帕塔', en: 'Roman Spatha', sub: 'sword_single', lore: '罗马骑兵长刃，可劈可刺，横跨帝国四百年。', phrase: '帝国的脊梁。' },
     { id: 'c004', n: '维京剑', en: 'Viking Sword', sub: 'sword_single', lore: '维京人的单手剑，剑柄华丽如船首，跟着他们航向未知的海。', phrase: '握它的人，从不回头。' },
-    { id: 'c005', n: '骑士随身剑', en: 'Arming Sword', sub: 'sword_single', lore: '中世纪骑士的随身佩剑，单手灵活，配合盾牌攻守兼备。', phrase: '忠诚，即剑刃。' },
+    { id: 'c005', n: '骑士随身剑', en: 'Arming Sword', sub: 'sword_single', lore: '11 世纪起的骑士常备剑，左手持盾、右手挥剑，一场比武打下来剑刃卷几处是常事。', phrase: '忠诚，即剑刃。' },
     { id: 'c006', n: '明制佩剑', en: 'Ming Pei Jian', sub: 'sword_single', lore: '明代官员与武人的佩剑，剑装金银错彩，是身份更是态度。', phrase: '刀光里，见风骨。' },
     { id: 'c007', n: '欧洲笼手剑', en: 'Basket-hilted Sword', sub: 'sword_single', lore: '护手如笼，护住执剑的手，从此剑术敢更放肆。', phrase: '放手去劈，手有人护。' },
     // ---- 双手剑 / 重剑 ----
     { id: 'c008', n: '德意志双手剑', en: 'Zweihänder', sub: 'sword_two', lore: '文艺复兴雇佣兵的招牌，剑长过人，横扫如墙，一人可挡一面。', phrase: '一人，即一墙。' },
     { id: 'c009', n: '高地阔剑', en: 'Claymore', sub: 'sword_two', lore: '苏格兰高地的大剑，挥起来如风车，让英格兰长弓也退避三舍。', phrase: '群山替我咆哮。' },
-    { id: 'c010', n: '中国双手剑', en: 'Chinese Two-hand Sword', sub: 'sword_two', lore: '双手运剑，势大力沉，剑走刚猛，一力降十会。', phrase: '力气，就是剑术。' },
+    { id: 'c010', n: '中国双手剑', en: 'Chinese Two-hand Sword', sub: 'sword_two', lore: '明代剑谱里的双手剑重达三五斤，双手抡圆了可劈断枪杆，靠的是整条腰背发力。', phrase: '力气，就是剑术。' },
     { id: 'c011', n: '欧洲长剑', en: 'Longsword', sub: 'sword_two', lore: '中世纪长剑，半剑技法可反握破甲，攻防一体。', phrase: '剑，即是半个盾。' },
     { id: 'c012', n: '楚式重剑', en: 'Chu Heavy Sword', sub: 'sword_two', lore: '楚国重剑，剑身厚实，劈砍无双——楚国曾以剑立国。', phrase: '楚国用剑，说了算。' },
     // ---- 软剑 ----
     { id: 'c013', n: '龙泉软剑', en: 'Longquan Soft Sword', sub: 'sword_soft', lore: '剑身可弯成环，缠丝绕腕，讲究以柔克刚，四两拨千斤。', phrase: '绕指柔，夺命刚。' },
     { id: 'c014', n: '蛇形软剑', en: 'Snake Soft Sword', sub: 'sword_soft', lore: '剑走如蛇，忽软忽硬，让对手无从拆解你的下一招。', phrase: '你的力，我全还给你。' },
     // ---- 双剑 ----
-    { id: 'c015', n: '雌雄双股剑', en: 'Double Jian', sub: 'sword_double', lore: '双手各持一剑，一长一短，攻守相济，密不透风。', phrase: '左手为盾，右手为矛。' },
-    { id: 'c016', n: '鸳鸯剑', en: 'Yuanyang Swords', sub: 'sword_double', lore: '双剑并出如鸳鸯，剑光交错，成双才叫无懈可击。', phrase: '成双，才无破绽。' },
+    { id: 'c015', n: '雌雄双股剑', en: 'Double Jian', sub: 'sword_double', lore: '刘备起兵时用双剑，一长一短分持两手，长剑主攻、短剑护腕，乱军中杀出一条路。', phrase: '左手为盾，右手为矛。' },
+    { id: 'c016', n: '鸳鸯剑', en: 'Yuanyang Swords', sub: 'sword_double', lore: '双剑一雌一雄分持左右，剑诀讲究两剑同出，一手格开对手兵刃、另一手已到咽喉。', phrase: '成双，才无破绽。' },
     // ---- 短剑 ----
     { id: 'c017', n: '罗马短剑', en: 'Gladius', sub: 'sword_short', lore: '罗马军团的短剑，近身刺击，是步兵方阵的牙齿。', phrase: '一寸短，一寸险。' },
     { id: 'c018', n: '巴斯特小剑', en: 'Parrying Dagger', sub: 'sword_short', lore: '决斗者的左手剑，格挡、缴械、贴身反击，步步杀机。', phrase: '主剑是名，它是命。' },
     { id: 'c019', n: '青铜短剑', en: 'Bronze Dagger', sub: 'sword_short', lore: '最早的金属短兵之一，贴身缠斗时，它是最终的一句话。', phrase: '短，够用就好。' },
     // ---- 细剑 / 刺剑 ----
-    { id: 'c020', n: '西洋细剑', en: 'Rapier', sub: 'sword_thrust', lore: '文艺复兴的决斗剑，只刺不砍，优雅而致命，谈笑间分出胜负。', phrase: '一点寒芒，先到。' },
+    { id: 'c020', n: '西洋细剑', en: 'Rapier', sub: 'sword_thrust', lore: '16 世纪决斗场的细剑，剑身长逾一米、重不足一公斤，只刺不砍，一剑下去常见尸体仰面倒地。', phrase: '一点寒芒，先到。' },
     { id: 'c021', n: '宫廷刺剑', en: 'Smallsword', sub: 'sword_thrust', lore: '宫廷里的细剑，剑身如针，是绅士最后的礼貌。', phrase: '礼貌，也是一种威胁。' },
     { id: 'c022', n: '花剑', en: 'Fleuret', sub: 'sword_thrust', lore: '现代击剑的花剑原型，灵敏如舌，点到为止却分毫不差。', phrase: '点到，即胜。' },
     // ---- 大剑 / 巨剑 ----
@@ -45,7 +45,7 @@
   /* ==================== 刀类 ==================== */
   var daos = [
     // ---- 唐横刀 ----
-    { id: 'c025', n: '环首唐横刀', en: 'Tang Heng Dao', sub: 'dao_heng', lore: '盛唐环首直刀，刀身刚直，马上步兵皆宜。', phrase: '盛唐气象，一刀出鞘。' },
+    { id: 'c025', n: '环首唐横刀', en: 'Tang Heng Dao', sub: 'dao_heng', lore: '唐代横刀随府兵制式，刀环挂穗，步兵马上皆用，一刀削得牛皮甲对穿。', phrase: '盛唐气象，一刀出鞘。' },
     { id: 'c026', n: '唐仪刀', en: 'Tang Yi Dao', sub: 'dao_heng', lore: '唐代仪仗用刀，刀鞘鎏金，礼与武并立于一处。', phrase: '礼在鞘，武在刃。' },
     { id: 'c027', n: '汉环首刀', en: 'Han Ring-pommel Dao', sub: 'dao_heng', lore: '汉军环首刀，让刀取代剑成为战场主力。', phrase: '从剑到刀，是进化。' },
     // ---- 苗刀 ----
@@ -53,7 +53,7 @@
     { id: 'c029', n: '辛酉刀法苗刀', en: 'Xinyou Miao Dao', sub: 'dao_miao', lore: '明末抗倭苗刀，辛酉刀法传世，专克倭刀之利。', phrase: '破倭，就在这一刀。' },
     // ---- 弯刀 ----
     { id: 'c030', n: '阿拉伯弯刀', en: 'Scimitar', sub: 'dao_wand', lore: '弧形刀身，马背上挥出，切割如新月掠过。', phrase: '新月之下，皆是我道。' },
-    { id: 'c031', n: '波斯舍施尔', en: 'Shamshir', sub: 'dao_wand', lore: '波斯弯刀，弧如弯月，刀术舞起来像一支曲子。', phrase: '优雅，即杀机。' },
+    { id: 'c031', n: '波斯舍施尔', en: 'Shamshir', sub: 'dao_wand', lore: '波斯舍施尔，刀身弯出近 30° 的弧度，马背上挥过不留血，弯刃让伤口更难缝合。', phrase: '优雅，即杀机。' },
     { id: 'c032', n: '土耳其基利', en: 'Kilij', sub: 'dao_wand', lore: '奥斯曼骑兵弯刀，刃背加厚，劈砍力冠绝所有弯刀。', phrase: '铁骑之刃，从不回头。' },
     // ---- 武士刀 / 太刀 ----
     { id: 'c033', n: '太刀', en: 'Tachi', sub: 'dao_samurai', lore: '日本古刀，刃长且弯，悬于腰侧，劈削如风。', phrase: '古都的月色，也斩得断。' },
@@ -115,7 +115,7 @@
     { id: 'c064', n: '锏', en: 'Jian (Mace)', sub: 'whip_jian', lore: '四棱无锋，专破重甲，打人不流血，内伤先到。', phrase: '不流血，也要你记住。' },
     { id: 'c065', n: '金锏', en: 'Gold Jian', sub: 'whip_jian', lore: '瓦岗秦琼持金锏，忠义与刚硬融于一身。', phrase: '刚硬到不讲情面。' },
     // ---- 双锏 ----
-    { id: 'c066', n: '双锏', en: 'Double Jian', sub: 'whip_double', lore: '双锏在手，攻守兼备，近身格挡的利器。', phrase: '左手挡，右手打。' },
+    { id: 'c066', n: '双锏', en: 'Double Jian', sub: 'whip_double', lore: '铁锏一根四棱、长约三尺，秦琼持双锏，专往对手兵刃上架，硬碰硬把刀剑震脱手。', phrase: '左手挡，右手打。' },
     // ---- 铁鞭 ----
     { id: 'c067', n: '铁鞭', en: 'Iron Bian', sub: 'whip_iron', lore: '竹节状铁鞭，鞭打百炼，宋代武人的标配。', phrase: '打的是骨头，记的是教训。' },
     { id: 'c068', n: '竹节钢鞭', en: 'Bamboo-joint Steel Whip', sub: 'whip_iron', lore: '鞭身如竹节，力道灌入，隔甲透力。', phrase: '力透三层甲。' },
@@ -138,7 +138,7 @@
     { id: 'c075', n: '破甲战锤', en: 'War Hammer', sub: 'hammer_war', lore: '中世纪破甲利器，尖锤一凿，能穿板甲。', phrase: '甲再厚，也挡不住一锤。' },
     { id: 'c076', n: '短把战锤', en: 'Horseman Hammer', sub: 'hammer_war', lore: '马上的短锤，近战一锤定音，不拖泥带水。', phrase: '一锤，就够。' },
     // ---- 双锤 ----
-    { id: 'c077', n: '双锤', en: 'Double Hammer', sub: 'hammer_double', lore: '双手持锤，抡起来密不透风，力与威的展示。', phrase: '双锤出，山让路。' },
+    { id: 'c077', n: '双锤', en: 'Double Hammer', sub: 'hammer_double', lore: '锤头包铁、连柄重逾十斤，双锤抡起来以圆弧护身，砸中盾牌能把盾后的臂骨震折。', phrase: '双锤出，山让路。' },
     // ---- 流星锤 ----
     { id: 'c078', n: '流星锤', en: 'Meteor Hammer', sub: 'hammer_meteor', lore: '长绳系锤，掷出如流星，收放之间藏着杀机。', phrase: '流星划破的，是防线。' },
     // ---- 钉头锤 ----

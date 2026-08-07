@@ -18,7 +18,7 @@
     // ---- 神刀 ----
     { id: 'm007', n: '青龙偃月刀', en: 'Green Dragon Crescent', sub: 'mythic_blade', lore: '关云长的八十二斤长刀，过五关斩六将，义字当头。', phrase: '忠义的重量。', stats: { power: 94, range: 44, toughness: 76 } },
     { id: 'm008', n: '屠龙刀', en: 'Tulong Dao', sub: 'mythic_blade', lore: '"宝刀屠龙，号令天下"，与倚天剑并称的武林至宝。', phrase: '宝刀屠龙，号令天下。', stats: { power: 93, toughness: 74 } },
-    { id: 'm009', n: '三尖两刃刀', en: 'Three-point Two-edge Blade', sub: 'mythic_blade', lore: '传说中二郎神的三尖两刃刀，神威凛凛，神鬼辟易。', phrase: '神鬼，见了也让路。', stats: { precision: 82, range: 40 } },
+    { id: 'm009', n: '三尖两刃刀', en: 'Three-point Two-edge Blade', sub: 'mythic_blade', lore: '二郎神杨戬的兵器，一杆三尖两刃，梅山七圣都听他调度，斩妖时排兵列阵在前。', phrase: '神鬼，见了也让路。', stats: { precision: 82, range: 40 } },
     // ---- 神戟 ----
     { id: 'm010', n: '方天画戟', en: 'Fangtian Huaji', sub: 'mythic_pole', lore: '吕布手中的画戟，人中吕布、马中赤兔，无人能挡。', phrase: '人中吕布，马中赤兔。', stats: { power: 92, speed: 70, range: 48 } },
     { id: 'm011', n: '霸王戟', en: 'Overlord Ji', sub: 'mythic_pole', lore: '西楚霸王的戟，破釜沉舟时它也在阵前。', phrase: '霸王举鼎，戟挑山河。', stats: { power: 95, toughness: 78 } },
@@ -39,7 +39,7 @@
     // ---- 神匕 ----
     { id: 'm022', n: '鱼肠剑', en: 'Yuchang Dagger', sub: 'mythic_dagger', lore: '藏于鱼腹的短剑，专诸一击，改变一个时代。', phrase: '藏在鱼腹，一剑成名。', stats: { speed: 94, precision: 90 } },
     { id: 'm023', n: '徐夫人匕首', en: 'Xu Furen Dagger', sub: 'mythic_dagger', lore: '荆轲刺秦所用，淬以剧毒，图穷匕见。', phrase: '图穷匕见，一刺不中。', stats: { precision: 92, speed: 90 } },
-    { id: 'm024', n: '寒光匕', en: 'Cold Light Dagger', sub: 'mythic_dagger', lore: '古书中寒光凛冽的短匕，出鞘即是决定。', phrase: '出鞘，即是决定。', stats: { speed: 92, mobility: 88 } },
+    { id: 'm024', n: '寒光匕', en: 'Cold Light Dagger', sub: 'mythic_dagger', lore: '古书里记载的短匕，通体泛寒光，多记于刺客与侠客案底，出鞘从来只为一个结果。', phrase: '出鞘，即是决定。', stats: { speed: 92, mobility: 88 } },
     // ---- 神鞭 ----
     { id: 'm025', n: '打神鞭', en: 'Dashen Bian', sub: 'mythic_whip', lore: '封神之战的至宝，专打神仙，打人更是手到擒来。', phrase: '专打神，不打人。', stats: { precision: 90, range: 44 } },
     { id: 'm026', n: '九节钢鞭', en: 'Nine-section Steel Whip', sub: 'mythic_whip', lore: '名将手中的九节钢鞭，鞭出如龙，专破重甲。', phrase: '鞭出如龙，破甲有声。', stats: { power: 76, speed: 84 } },
@@ -47,7 +47,7 @@
     { id: 'm027', n: '如意金箍棒', en: 'Ruyi Jingu Bang', sub: 'mythic_staff', lore: '定海神针铁，一万三千五百斤，轻重随心，斗战胜佛的兵器。', phrase: '一万三千五百斤，轻重随心。', stats: { power: 94, speed: 88, mobility: 78 } },
     { id: 'm028', n: '降魔杵', en: 'Vajra Pestle', sub: 'mythic_staff', lore: '韦驮的降魔杵，佛前的雷霆，专镇邪祟。', phrase: '佛前的雷霆。', stats: { power: 90, toughness: 82 } },
     { id: 'm029', n: '金刚杵', en: 'Vajra', sub: 'mythic_staff', lore: '密宗法器，降伏的不是敌人，是妄念。', phrase: '降伏的，是妄念。', stats: { precision: 82, toughness: 76 } },
-    { id: 'm030', n: '混铁棍', en: 'Iron Staff', sub: 'mythic_staff', lore: '一根浑铁棍，打得天翻地覆的野性。', phrase: '野性，也自有章法。', stats: { power: 88, speed: 78 } }
+    { id: 'm030', n: '混铁棍', en: 'Iron Staff', sub: 'mythic_staff', lore: '一根浑铁棍，两头无刃、通体包铁，市井好汉抡起来，一条街的人先让三分。', phrase: '野性，也自有章法。', stats: { power: 88, speed: 78 } }
   ];
 
   W.weapons = W.weapons.concat(list);
