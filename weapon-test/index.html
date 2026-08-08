@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="本命武器测试：情境量表或二选一快答（42/56 题可选）× 7 维战斗气质（刚猛/迅捷/精准/射程/灵动/坚韧/时代），从 341 件武器全库（冷兵器/热武器/爆炸物/传说名器）中匹配你的本命武器，含完整图鉴。">
+<meta name="description" content="本命武器测试：情境量表或二选一快答（42/56/70 题可选）× 7 维战斗气质（刚猛/迅捷/精准/射程/灵动/坚韧/时代），从 341 件武器全库（冷兵器/热武器/爆炸物/传说名器）中匹配你的本命武器，含完整图鉴。">
 <title>本命武器 · Destiny Weapon Test</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -19,12 +19,12 @@
   <main id="view-start" class="view">
     <section class="card hero-card">
       <h1>你的本命武器，是什么？</h1>
-      <p class="lead">用一套隐晦情境题，测出你的「战斗气质」——刚猛、迅捷、精准、射程、灵动、坚韧、时代，7 个维度各 0–100。你的答案构成一幅理想武器画像，再与全库 <strong>341 件武器</strong>逐把比对，距离最近者就是你的本命武器。想直接看全库？<strong>图鉴</strong>里冷兵器、热武器、爆炸物、传说名器四类齐备。题目做了隐晦化处理，看不出在测什么——题型和题量都可以自选。</p>
+      <p class="lead">用一套隐晦情境题，测出你的「战斗气质」，刚猛、迅捷、精准、射程、灵动、坚韧、时代，7 个维度各 0–100。你的答案构成一幅理想武器画像，再与全库 <strong>341 件武器</strong>逐把比对，距离最近者就是你的本命武器。想直接看全库？<strong>图鉴</strong>里冷兵器、热武器、爆炸物、传说名器四类齐备。题目做了隐晦化处理，看不出在测什么，题型和题量都可以自选。</p>
 
       <div class="basis-grid">
         <div class="basis-item"><b>7 维战斗气质</b><span>刚猛 / 迅捷 / 精准 / 射程 / 灵动 / 坚韧 / 时代</span></div>
         <div class="basis-item"><b>两种题型</b><span>情境量表 或 二选一快答，各含反向题交叉验证</span></div>
-        <div class="basis-item"><b>42 / 56 题自选</b><span>快答 4 分钟，完整版约 6 分钟</span></div>
+        <div class="basis-item"><b>42 / 56 / 70 题自选</b><span>快答 4 分钟，深度版约 8 分钟</span></div>
         <div class="basis-item"><b>341 件武器全库</b><span>冷兵器 110 · 热武器 171 · 爆炸物 30 · 名器 30</span></div>
         <div class="basis-item"><b>本命 + 候补</b><span>最近者为本命，另给两位气质相仿的候补</span></div>
       </div>
@@ -42,6 +42,7 @@
           <div class="radio-group" role="radiogroup" aria-label="题量">
             <label class="radio"><input type="radio" name="optPerDim" value="6" checked> 标准版<span class="radio-sub">42 题 · 约 4 分钟</span></label>
             <label class="radio"><input type="radio" name="optPerDim" value="8"> 完整版<span class="radio-sub">56 题 · 约 6 分钟，更准</span></label>
+            <label class="radio"><input type="radio" name="optPerDim" value="10"> 深度版<span class="radio-sub">70 题 · 约 8 分钟，最准</span></label>
           </div>
         </div>
         <div class="field">
@@ -122,7 +123,7 @@
     <!-- 七维属性 -->
     <section class="card stats-card">
       <h2 class="card-title">七维属性</h2>
-      <p class="card-sub">横条为本命武器的属性值（0–100），色条上的小标记是你该维的画像值——两者越接近越同频。</p>
+      <p class="card-sub">横条为本命武器的属性值（0–100），色条上的小标记是你该维的画像值，两者越接近越同频。</p>
       <div id="statBars" class="bar-list"></div>
       <p id="subfamilyNote" class="subfamily-note"></p>
     </section>
@@ -143,7 +144,7 @@
     <!-- 候补武器 -->
     <section class="card backup-card">
       <h2 class="card-title">气质相仿的候补</h2>
-      <p class="card-sub">它们与你的契合度仅次本命——点击可查看详情。</p>
+      <p class="card-sub">它们与你的契合度仅次本命，点击可查看详情。</p>
       <div id="backupList" class="backup-list"></div>
     </section>
 
@@ -216,6 +217,10 @@
       <div id="modalSpecs" class="spec-list" hidden></div>
     </div>
     <div class="modal-section">
+      <h3 class="modal-h">来龙去脉</h3>
+      <div id="modalStory" class="story-list"></div>
+    </div>
+    <div class="modal-section">
       <h3 class="modal-h">小传</h3>
       <p id="modalLore" class="modal-text"></p>
     </div>
@@ -235,6 +240,7 @@
 <script src="data-exp.js"></script>
 <script src="data-mythic.js"></script>
 <script src="data-specs.js"></script>
+<script src="data-story.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

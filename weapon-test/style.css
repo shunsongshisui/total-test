@@ -421,6 +421,20 @@ html, body {
 .spec-v { color: var(--ink-2); text-align: right; }
 .spec-pending { color: var(--muted); font-style: italic; }
 
+/* ---------- 弹窗 · 来龙去脉 ---------- */
+.story-list { display: grid; gap: 8px; }
+.story-row {
+  display: flex; gap: 12px; align-items: flex-start;
+  font-size: 13px; line-height: 1.65; color: var(--ink-2);
+}
+.story-k {
+  flex-shrink: 0; min-width: 34px; text-align: center;
+  padding: 2px 8px; border-radius: 999px; font-size: 12px;
+  color: var(--muted); background: var(--bg-2); border: 1px solid var(--border);
+}
+.story-v { flex: 1; }
+.story-pending { color: var(--muted); font-style: italic; }
+
 /* ---------- 页脚 / 计数器 ---------- */
 .ctr-line { text-align: center; font-size: 12px; color: var(--muted); padding: 20px 0 0; }
 .ctr-line b { font-variant-numeric: tabular-nums; color: var(--ink-2); }

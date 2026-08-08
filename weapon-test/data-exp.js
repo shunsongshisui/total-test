@@ -11,11 +11,11 @@
     { id: 'x001', n: '米尔斯手榴弹', en: 'Mills Bomb', sub: 'exp_grenade', lore: '英军二战经典，拉开、倒数、投出，一套动作定生死。', phrase: '拉开，倒数，五秒。', stats: { era: 80 } },
     { id: 'x002', n: '木柄手榴弹', en: 'M24 Stick Grenade', sub: 'exp_grenade', lore: '德式长柄手榴弹，可单投可集束，二战两大阵营都用。', phrase: '一磕，一投，一响。', stats: { era: 80 } },
     { id: 'x003', n: '破片手榴弹', en: 'Fragmentation Grenade', sub: 'exp_grenade', lore: '钢珠破片四散，弹片比弹体更会说话。', phrase: '弹片，比弹体更会说话。' },
-    { id: 'x004', n: '燃烧手榴弹', en: 'AN-M14 Incendiary', sub: 'exp_grenade', lore: '镁基燃烧，瞬间把一隅烧成火海。', phrase: '烧起来，就别想熄。' },
+    { id: 'x004', n: '燃烧手榴弹', en: 'AN-M14 Incendiary', sub: 'exp_grenade', lore: '美制 AN-M14，装铝热剂加镁，一炸开烧到两千多度，持续烧半分钟以上，金属都能烧穿。', phrase: '烧起来，就别想熄。' },
     { id: 'x005', n: '67 式木柄手榴弹', en: 'Type 67', sub: 'exp_grenade', lore: '中国经典木柄手榴弹，产量以亿计。', phrase: '亿万个答案，一声响。', stats: { era: 82 } },
     { id: 'x006', n: '攻防两用手榴弹', en: 'Offensive-Defensive Grenade', sub: 'exp_grenade', lore: '两种破片厚度，两套使用场景，一弹两用。', phrase: '进攻防守，我都能。' },
-    { id: 'x007', n: '白磷手榴弹', en: 'White Phosphorus', sub: 'exp_grenade', lore: '沾上就烧，烟雾与火并存的狠货。', phrase: '碰到它的，都记住了。' },
-    { id: 'x008', n: '磁性反坦克手榴弹', en: 'Magnetic AT Grenade', sub: 'exp_grenade', lore: '吸在装甲上炸，专治铁壳子。', phrase: '铁壳子，也挡不住贴脸。' },
+    { id: 'x007', n: '白磷手榴弹', en: 'White Phosphorus', sub: 'exp_grenade', lore: '白磷一接触空气就自燃，沾到身上烧进肉里，水泼不灭，只能挖掉，战场上用它打烟雾也打人。', phrase: '碰到它的，都记住了。' },
+    { id: 'x008', n: '磁性反坦克手榴弹', en: 'Magnetic AT Grenade', sub: 'exp_grenade', lore: '二战德军造的，弹底嵌磁铁，往坦克装甲上一贴就吸住，几秒后起爆，专治正面打不穿的铁壳子。', phrase: '铁壳子，也挡不住贴脸。' },
     // ---- 燃烧瓶 ----
     { id: 'x009', n: '莫洛托夫鸡尾酒', en: 'Molotov Cocktail', sub: 'exp_molotov', lore: '汽油瓶加布条，巷战里的廉价怒火。', phrase: '廉价，但烧得起来。' },
     { id: 'x010', n: '凝固汽油燃烧瓶', en: 'Napalm Bomb', sub: 'exp_molotov', lore: '粘稠的火焰，甩都甩不掉。', phrase: '粘上，就甩不掉。' },
@@ -45,7 +45,7 @@
     { id: 'x027', n: '爆破筒', en: 'Bangalore Torpedo', sub: 'exp_bang', lore: '直塞碉堡枪眼，一条铁管就是一座炮。', phrase: '塞进去，就是一锤定音。' },
     { id: 'x028', n: '破障爆破筒', en: 'Demolition Tube', sub: 'exp_bang', lore: '对付铁丝网与障碍墙，开路就靠它。', phrase: '路，炸出来的才硬。' },
     // ---- 简易爆炸装置 ----
-    { id: 'x029', n: '简易爆炸装置', en: 'IED', sub: 'exp_ied', lore: '路边炸弹，成本低到发指，威慑大到离谱。', phrase: '成本低，但从不廉价。' },
+    { id: 'x029', n: '简易爆炸装置', en: 'IED', sub: 'exp_ied', lore: '路边炸弹，旧炮弹、化肥都能当装药，埋一晚上就能炸穿防雷车底盘，阿富汗伊拉克战场上最防不胜防的一路。', phrase: '成本低，但从不廉价。' },
     { id: 'x030', n: '车载简易炸弹', en: 'Car Bomb', sub: 'exp_ied', lore: '整辆车变成一颗弹，撞进去的往往不是车。', phrase: '开进去的，是它。' }
   ];
 

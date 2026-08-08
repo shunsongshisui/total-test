@@ -3,7 +3,7 @@
    模型：7 维 × N 题（Likert 情境量表 或 forced 二选一快答，两种题量可选）
    → 理想武器画像 profile（7 维 0–100）
    → 与全库 341 件加权欧氏距离，最近者为本命武器，其次为候补。
-   题型 × 题量四组合：likert/forced × 42/56（perDim 6/8），同一题库按维切分。
+   题型 × 题量六组合：likert/forced × 42/56/70（perDim 6/8/10），同一题库按维切分。
    视图：开始 / 答题 / 结果 / 图鉴（第 4 个视图）+ 详情弹层。
    模式：test（答题）或 fate（随机天命：随机生成非扁平 profile 走同一匹配）。
    ===================================================================== */
@@ -18,7 +18,7 @@
 
   const state = {
     type: 'likert',        // 'likert' | 'forced'
-    perDim: 6,             // 每维题数 6（42 题）| 8（56 题）
+    perDim: 6,             // 每维题数 6（42 题）| 8（56 题）| 10（70 题）
     shuffle: false,
     skip: true,
     pool: [],              // 当前轮抽出的题目数组（含对象引用）
@@ -96,8 +96,8 @@
     openGallery();
   });
 
-  /* 按维抽题：每维取前 perDim 道（likert 前 6/8 题恰好含 1/2 道反向题，
-     forced 前 6/8 题恰好 3h+3l / 4h+4l 平衡），跨维交替排列避免同一维连排。 */
+  /* 按维抽题：每维取前 perDim 道（likert 前 6/8/10 题恰好含 1/2/3 道反向题，
+     forced 前 6/8/10 题恰好 3h+3l / 4h+4l / 5h+5l 平衡），跨维交替排列避免同一维连排。 */
   function buildPool() {
     const src = D.questions[state.type];
     const byDim = {};
@@ -147,7 +147,7 @@
     $('qText').textContent = q.text || (isForced ? '下面两种情况，你本能上更靠哪一种？' : '');
     $('btnNext').textContent = '下一题';
     $('dimAbout').textContent = isForced
-      ? '别权衡，凭本能选——二选一没有对错'
+      ? '别权衡，凭本能选，二选一没有对错'
       : '凭第一直觉作答，无需反复权衡';
 
     const scale = $('scaleLeft').parentElement;
@@ -433,7 +433,7 @@
     const flatEl = $('flatBanner');
     if (r.flat) {
       flatEl.hidden = false;
-      flatEl.textContent = '🕊️ 白纸之境：你的画像在各维度几乎一致，任何武器都可能认领你——这把它只是抢了先。';
+      flatEl.textContent = '🕊️ 白纸之境：你的画像在各维度几乎一致，任何武器都可能认领你，这把它只是抢了先。';
     } else {
       flatEl.hidden = true;
     }
@@ -453,7 +453,7 @@
     renderBackup(r.ranked);
 
     // 子类名
-    $('subfamilyNote').textContent = '你的本命落在「' + sub.label + '」这一类——同一类下，还有 ' +
+    $('subfamilyNote').textContent = '你的本命落在「' + sub.label + '」这一类，同一类下，还有 ' +
       (state.weapons.filter((x) => x.sub === w.sub).length - 1) + ' 位同门与你气质相仿。';
 
     $('galleryFromResult').onclick = () => {
@@ -709,6 +709,19 @@
       imgBox.hidden = false;
       imgBox.classList.remove('has-img');
       imgBox.innerHTML = '<div class="img-placeholder">' + w.icon + '<span>暂无实拍图</span></div>';
+    }
+
+    // 来龙去脉：优先独立故事，退回子类背景
+    const storyBox = $('modalStory');
+    const st = (D.stories && D.stories[w.id]) || (D.subStories && D.subStories[w.sub]);
+    if (st) {
+      storyBox.innerHTML = [
+        '<div class="story-row"><span class="story-k">起源</span><span class="story-v">' + st.origin + '</span></div>',
+        '<div class="story-row"><span class="story-k">历史</span><span class="story-v">' + st.history + '</span></div>',
+        '<div class="story-row"><span class="story-k">性能</span><span class="story-v">' + st.perf + '</span></div>'
+      ].join('');
+    } else {
+      storyBox.innerHTML = '<div class="story-row story-pending">来历待考，先记住它的形制。</div>';
     }
 
     $('modalLore').textContent = w.lore || '传世之器，待主而鸣。';
