@@ -39,7 +39,11 @@ global.document = {
   getElementById(id) { if (!els.has(id)) els.set(id, makeEl()); return els.get(id); },
   createElement() { return makeEl(); },
   querySelector(sel) {
-    if (sel.indexOf('optVersion') !== -1 && sel.indexOf(':checked') !== -1) return radio(sel, 'optVersion', versionSel);
+    if (sel.indexOf('optVersion') !== -1 && sel.indexOf(':checked') !== -1) {
+      const r = radio(sel, 'optVersion', versionSel);
+      console.log('    [qsel] ' + sel + ' → value=' + r.value + ' (versionSel=' + versionSel + ')');
+      return r;
+    }
     if (sel.indexOf('optType') !== -1 && sel.indexOf(':checked') !== -1) return radio(sel, 'optType', typeSel);
     if (sel.indexOf('optPerDim') !== -1 && sel.indexOf(':checked') !== -1) return radio(sel, 'optPerDim', perDimSel);
     if (sel.indexOf('optVersion') !== -1) { const r = makeEl(); r.name = 'optVersion'; r.value = /value="([^"]+)"/.exec(sel)[1]; return r; }
