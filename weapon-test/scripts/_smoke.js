@@ -23,13 +23,18 @@ function makeEl() {
       contains(c) { return this._s.has(c); }
     },
     style: {}, hidden: false, disabled: false, checked: false, value: '',
-    textContent: '', innerHTML: '', setAttribute(k, v) { this[k] = v; },
+    textContent: '', setAttribute(k, v) { this[k] = v; },
     addEventListener(t, fn) { this._handlers[t] = fn; }, fire(t) { if (this._handlers[t]) this._handlers[t](); },
     appendChild(c) { this.children.push(c); return c; },
     querySelectorAll() { return [makeEl()]; }, querySelector() { return makeEl(); },
     getBoundingClientRect() { return { width: 400, height: 340, left: 0, top: 0 }; },
     getContext() { return ctx; }, focus() {}
   };
+  // innerHTML 赋值要清空 children（真实浏览器语义），否则反复渲染会堆积
+  Object.defineProperty(e, 'innerHTML', {
+    get() { return this._html || ''; },
+    set(v) { this._html = v; this.children.length = 0; }
+  });
   Object.defineProperty(e, 'parentElement', { get() { return e._parent || (e._parent = makeEl()); } });
   return e;
 }
@@ -39,11 +44,7 @@ global.document = {
   getElementById(id) { if (!els.has(id)) els.set(id, makeEl()); return els.get(id); },
   createElement() { return makeEl(); },
   querySelector(sel) {
-    if (sel.indexOf('optVersion') !== -1 && sel.indexOf(':checked') !== -1) {
-      const r = radio(sel, 'optVersion', versionSel);
-      console.log('    [qsel] ' + sel + ' → value=' + r.value + ' (versionSel=' + versionSel + ')');
-      return r;
-    }
+    if (sel.indexOf('optVersion') !== -1 && sel.indexOf(':checked') !== -1) return radio(sel, 'optVersion', versionSel);
     if (sel.indexOf('optType') !== -1 && sel.indexOf(':checked') !== -1) return radio(sel, 'optType', typeSel);
     if (sel.indexOf('optPerDim') !== -1 && sel.indexOf(':checked') !== -1) return radio(sel, 'optPerDim', perDimSel);
     if (sel.indexOf('optVersion') !== -1) { const r = makeEl(); r.name = 'optVersion'; r.value = /value="([^"]+)"/.exec(sel)[1]; return r; }
@@ -72,10 +73,10 @@ pass(el('howToList').children[0] && el('howToList').children[0].textContent.inde
 /* ---------- 经典版完整作答（likert, 42 题） ---------- */
 function run(version, expectName) {
   versionSel = version;
-  console.log('  [probe] run(' + version + ') → versionSel=' + versionSel);
+  // 清掉上一轮的结果，防止循环在真正 submit 前就因旧结果而提前跳出
+  const prevName = el('weaponHeroName');
+  if (prevName) prevName.textContent = '—';
   el('btnStart').fire('click');
-  const qc = el('qCounter').textContent;
-  console.log('  [probe] 进入答题页, qCounter=' + JSON.stringify(qc));
   let guard = 0;
   while (guard++ < 200) {
     const box = el('likertBtns');
@@ -95,14 +96,11 @@ pass(classicName !== '—', 'classic 42 题作答→出结果（本命:' + class
 /* ---------- 天命版 ---------- */
 el('btnFate').fire('click');
 pass(el('weaponHeroName').textContent !== '—', '天命版掷骰→出结果');
-pass(!el('versionBanner').hidden, '天命版版本横幅隐藏');
+pass(el('versionBanner').hidden === true, '天命版版本横幅隐藏');
 
 /* ---------- 单独版（6 道手癖题，三维） ---------- */
 const dexName = run('dexterity');
 pass(dexName !== '—', 'dexterity 6 题作答→出结果（本命:' + dexName + '）');
-console.log('  [debug] versionBanner.hidden=', el('versionBanner') && el('versionBanner').hidden, ' text=', JSON.stringify(el('versionBanner') && el('versionBanner').textContent));
-console.log('  [debug] statsTitle=', JSON.stringify(el('statsTitle') && el('statsTitle').textContent));
-console.log('  [debug] howToList[0]=', JSON.stringify(el('howToList').children[0] && el('howToList').children[0].textContent));
 pass(el('statsTitle').textContent === '三维 · 巧手属性', '单独版属性标题 = 三维·巧手属性');
 pass(!el('versionBanner').hidden && el('versionBanner').textContent.indexOf('手癖') !== -1, '单独版版本横幅显示');
 pass(el('howToList').children[0] && el('howToList').children[0].textContent.indexOf('手癖') !== -1, '单独版 howTo 讲手癖');
@@ -110,6 +108,7 @@ pass(el('howToList').children[0] && el('howToList').children[0].textContent.inde
 /* ---------- 混合版（forced 42 + 6 习惯 = 48 题，含强制二选一） ---------- */
 typeSel = 'forced';
 versionSel = 'mixed';
+el('weaponHeroName').textContent = '—';
 el('btnStart').fire('click');
 let guard = 0;
 while (guard++ < 200) {
@@ -127,6 +126,7 @@ pass(!el('versionBanner').hidden && el('versionBanner').textContent.indexOf('补
 
 /* ---------- 混合版 likert 70 + 6 题 ---------- */
 typeSel = 'likert'; versionSel = 'mixed';
+el('weaponHeroName').textContent = '—';
 el('btnStart').fire('click');
 guard = 0;
 while (guard++ < 300) {
@@ -138,5 +138,6 @@ while (guard++ < 300) {
   if (nameEl && nameEl.textContent !== '—') break;
 }
 pass(el('weaponHeroName').textContent !== '—', 'mixed likert 76 题（70+6）作答→出结果');
+pass(el('statsTitle').textContent === '七维属性（含「补给」）', '混合版 likert 走完属性标题仍是补给版');
 
 console.log('冒烟测试结束');
