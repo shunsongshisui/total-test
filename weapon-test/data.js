@@ -11,7 +11,9 @@
    ===================================================================== */
 window.WEAPON_DATA = {
 
-  /* ---------- 7 维定义 ---------- */
+  /* ---------- 7 维定义 ----------
+     原版 era 叫"时代"；混合版经 eraMix 改称"补给"（自给自足 ↔ 依赖补给），
+     武器库 era 数值不变：冷兵器低、热武器高，恰好贴合"自足 ↔ 依赖补给"的语义。 */
   dims: [
     { key: 'power',      name: '刚猛', short: '刚', desc: '爆发力 · 破坏力' },
     { key: 'speed',      name: '迅捷', short: '迅', desc: '出招 · 攻速' },
@@ -22,13 +24,22 @@ window.WEAPON_DATA = {
     { key: 'era',        name: '时代', short: '代', desc: '古典 ↔ 现代' }
   ],
 
+  /* 混合版的 era 维度定义（key 不变，仅名字/描述/简称改掉） */
+  eraMix: { key: 'era', name: '补给', short: '补', desc: '自给自足 ↔ 依赖补给' },
+
   /* ---------- 计分参数 ---------- */
   scoring: {
     likertMin: 1,
     likertMax: 5,
     neutral: 3,            // 跳过题按中立计（→ 50 分）
     eraWeight: 1.5,        // 时代维度权重略高，强化"冷/热"分化
-    flatRange: 15          // 7 维极差 < 此值判为"扁平画像"
+    flatRange: 15,         // 7 维极差 < 此值判为"扁平画像"
+    habitLabels: ['完全不会', '偶尔', '有时', '经常', '总是'],
+    habitCap: 12,          // 手腕习惯给单维的上限加成
+    drawK: 5,              // 本命抽取：取距离最近的前 K 把
+    drawTemp: 5,           // 本命抽取：softmax 温度（越小越偏向最近）
+    drawKDex: 10,          // 单独版（手癖）池小、距离密，加大 K / 温度让结果更分散
+    drawTempDex: 10
   },
 
   /* ---------- 题库（两种题型 × 三档题量） ----------
@@ -197,8 +208,32 @@ window.WEAPON_DATA = {
       { id: 'ef8', dim: 'era', type: 'forced', dir: 'l', a: '老司机说的准没错', b: '参数摆在那，我信参数' },
       { id: 'ef9', dim: 'era', type: 'forced', dir: 'h', a: '新工具再难，也值得学', b: '老办法用得顺手就行' },
       { id: 'ef10', dim: 'era', type: 'forced', dir: 'l', a: '菜单上新菜，我先点招牌老味道', b: '新菜先试一口，不好再换' }
+    ],
+
+    /* ===== 手腕习惯（混合版主流程末尾 / 单独版专用，5 档频率量表） =====
+       dims: 命中维度与权重；作答频率 1-5 → 因子 = max(0,(freq-2)/3)，
+       单维合计上限 scoring.habitCap。只加不减，不惩罚"不爱动"的人。 */
+    habits: [
+      { id: 'h1', text: '我手里有笔、钥匙或笔帽时，会不自觉地在指尖转来转去。', dims: [{ key: 'precision', w: 6 }, { key: 'mobility', w: 6 }] },
+      { id: 'h2', text: '洗完手或手上有水，我会习惯性地甩腕、转手。', dims: [{ key: 'mobility', w: 6 }, { key: 'speed', w: 4 }] },
+      { id: 'h3', text: '我常打响指、掰指节，或有意无意地转手腕。', dims: [{ key: 'precision', w: 6 }] },
+      { id: 'h4', text: '坐着时我常抖腿、敲桌面，或者用手指打节拍。', dims: [{ key: 'speed', w: 6 }] },
+      { id: 'h5', text: '我能用单手轻松转笔、抛接或倒腾手里的小东西。', dims: [{ key: 'precision', w: 6 }, { key: 'mobility', w: 4 }] },
+      { id: 'h6', text: '别人常说我手上动作又快又活，学手势、比划几下就会。', dims: [{ key: 'speed', w: 4 }, { key: 'mobility', w: 6 }] }
     ]
   },
+
+  /* ---------- 单独版（手癖探测）的灵动武器池 ----------
+     只在这些子类里匹配，保证结果落在"巧手"系武器上。 */
+  dexteritySubs: [
+    'sword_soft', 'sword_double', 'sword_short', 'sword_thrust',
+    'dao_butterfly', 'dao_short',
+    'whip_nine', 'whip_leather',
+    'hidden_knife', 'hidden_dart', 'hidden_needle', 'hidden_sleeve', 'hidden_eimei', 'hidden_pen',
+    'odd_nunchaku', 'odd_3sec', 'odd_rope', 'odd_fan',
+    'fist_claw',
+    'mythic_dagger', 'mythic_whip'
+  ],
 
   /* ---------- 子类定义（~65 个） ----------
      cat : 大类（cold/gun/exp/mythic）
@@ -475,3 +510,49 @@ window.WEAPON_DATA = {
   /* ---------- 武器库（由各数据文件 push 填充） ---------- */
   weapons: []
 };
+
+/* =====================================================================
+   混合版题库：把"时代"维 20 题换成"补给"维（自给自足/续航可靠 ↔ 依赖补给/追求爆发）。
+   原版经典题保留在 questions.likert / forced，混合版 = 非 era 题 + 下方新 era 题。
+   方向：era 高 = 补给依赖（热武器端），era 低 = 自给自足（冷兵器端）。
+   所以"同意怕断供/怕没子弹/信手艺"为反向题（dir:'-'），"同意认补给/求爆发/信机器"为正。
+   ===================================================================== */
+(function () {
+  'use strict';
+  var D = window.WEAPON_DATA;
+
+  var eraLikertMix = [
+    // 同意→压向冷兵器端（反向）
+    { id: 'e1', dim: 'era', dir: '-', text: '一想到东西会"用完"、会"断档"，我心里就不踏实；我更愿意把底气放在永远不缺的东西上。' },
+    { id: 'e3', dim: 'era', dir: '-', text: '关键时刻卡壳、没子弹、要换弹，这种"掉链子"比输掉更让我接受不了。' },
+    { id: 'e5', dim: 'era', dir: '-', text: '机器越复杂，我越不放心；这种东西越简单越好，最好永远坏不了。' },
+    { id: 'e7', dim: 'era', dir: '-', text: '我更能靠练出来的手感取胜，而不是靠一件比我更"先进"的家伙。' },
+    { id: 'e9', dim: 'era', dir: '-', text: '爆发再猛，也比不上"什么时候都能用"；我不要一时的痛快，我要长久的可靠。' },
+    // 同意→推向热武器端（正向）
+    { id: 'e2', dim: 'era', text: '只要火力够猛，弹药、保养这些后顾之忧，我都认。' },
+    { id: 'e4', dim: 'era', text: '为了火力管够，背再重的装备、备再多的弹药，我都愿意。' },
+    { id: 'e6', dim: 'era', text: '把准头、力道交给机器去完成，是人类的本事，不是偷懒。' },
+    { id: 'e8', dim: 'era', text: '换弹、清障、保养这些"伺候"机器的麻烦，换来的是压倒性的火力，值。' },
+    { id: 'e10', dim: 'era', text: '我更享受"火力全开"的爽快，而不是省着用、慢慢用。' }
+  ];
+
+  var eraForcedMix = [
+    // dir:'l' = 选 A 压向冷兵器端（自给自足）
+    { id: 'ef1', dim: 'era', type: 'forced', dir: 'l', a: '东西用不坏，我才敢把命托给它', b: '东西越炸越好，坏了再修' },
+    { id: 'ef3', dim: 'era', type: 'forced', dir: 'l', a: '补给断了，我也能撑到底', b: '补给断了，我就完了' },
+    { id: 'ef5', dim: 'era', type: 'forced', dir: 'l', a: '练出来的本事，谁也夺不走', b: '到手的火力，才是真的' },
+    { id: 'ef7', dim: 'era', type: 'forced', dir: 'l', a: '我怕的是"没得用"，不是"不够狠"', b: '我怕的是"不够狠"，不是"没得用"' },
+    { id: 'ef9', dim: 'era', type: 'forced', dir: 'l', a: '我信自己的手，多过信机器', b: '我信机器，多过信自己的手' },
+    // dir:'h' = 选 A 推向热武器端（依赖补给/追求爆发）
+    { id: 'ef2', dim: 'era', type: 'forced', dir: 'h', a: '关键时刻，火力越猛越有底气', b: '关键时刻，不掉链子才有底气' },
+    { id: 'ef4', dim: 'era', type: 'forced', dir: 'h', a: '我愿意花心思保养一件好家伙', b: '我更想要一件不用费心的家伙' },
+    { id: 'ef6', dim: 'era', type: 'forced', dir: 'h', a: '一梭子打空，痛快', b: '每一发都省着点用' },
+    { id: 'ef8', dim: 'era', type: 'forced', dir: 'h', a: '复杂一点没关系，强就够了', b: '简单可靠，比强更重要' },
+    { id: 'ef10', dim: 'era', type: 'forced', dir: 'h', a: '一次爆发定胜负，正合我意', b: '慢慢磨，总能磨到赢' }
+  ];
+
+  D.questions.likertMix = D.questions.likert.filter(function (q) { return q.dim !== 'era'; })
+    .concat(eraLikertMix);
+  D.questions.forcedMix = D.questions.forced.filter(function (q) { return q.dim !== 'era'; })
+    .concat(eraForcedMix);
+})();

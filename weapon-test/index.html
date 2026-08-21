@@ -19,7 +19,7 @@
   <main id="view-start" class="view">
     <section class="card hero-card">
       <h1>你的本命武器，是什么？</h1>
-      <p class="lead">用一套隐晦情境题，测出你的「战斗气质」，刚猛、迅捷、精准、射程、灵动、坚韧、时代，7 个维度各 0–100。你的答案构成一幅理想武器画像，再与全库 <strong>341 件武器</strong>逐把比对，距离最近者就是你的本命武器。想直接看全库？<strong>图鉴</strong>里冷兵器、热武器、爆炸物、传说名器四类齐备。题目做了隐晦化处理，看不出在测什么，题型和题量都可以自选。</p>
+      <p class="lead">用一套隐晦情境题，测出你的「战斗气质」，刚猛、迅捷、精准、射程、灵动、坚韧、时代，7 个维度各 0–100。你的答案构成一幅理想武器画像，再与全库 <strong>341 件武器</strong>逐把比对，距离最近者就是你的本命武器。想直接看全库？<strong>图鉴</strong>里冷兵器、热武器、爆炸物、传说名器四类齐备。题目做了隐晦化处理，看不出在测什么，题型和题量都可以自选。<strong>版本</strong>可选：原版、混合版（「时代」换「补给」+ 手腕习惯）、单独版（纯手癖探测）、天命版（随机掷骰）。</p>
 
       <div class="basis-grid">
         <div class="basis-item"><b>7 维战斗气质</b><span>刚猛 / 迅捷 / 精准 / 射程 / 灵动 / 坚韧 / 时代</span></div>
@@ -31,13 +31,22 @@
 
       <div class="settings">
         <div class="field">
+          <span class="field-label">版本</span>
+          <div class="radio-group" role="radiogroup" aria-label="版本">
+            <label class="radio"><input type="radio" name="optVersion" value="classic" checked> 原版<span class="radio-sub">经典 7 维题 · 含「时代」</span></label>
+            <label class="radio"><input type="radio" name="optVersion" value="mixed"> 混合版<span class="radio-sub">「时代」换「补给」+ 手腕习惯</span></label>
+            <label class="radio"><input type="radio" name="optVersion" value="dexterity"> 单独版<span class="radio-sub">纯手癖探测 · 6 题快测</span></label>
+            <label class="radio"><input type="radio" name="optVersion" value="fate"> 天命版<span class="radio-sub">随机天命 · 命运掷骰</span></label>
+          </div>
+        </div>
+        <div class="field" id="fieldType">
           <span class="field-label">题型</span>
           <div class="radio-group" role="radiogroup" aria-label="题型">
             <label class="radio"><input type="radio" name="optType" value="likert" checked> 情境量表<span class="radio-sub">5 档同意度，每题细细想</span></label>
             <label class="radio"><input type="radio" name="optType" value="forced"> 二选一快答<span class="radio-sub">两选一，凭本能，更快</span></label>
           </div>
         </div>
-        <div class="field">
+        <div class="field" id="fieldPerDim">
           <span class="field-label">题量</span>
           <div class="radio-group" role="radiogroup" aria-label="题量">
             <label class="radio"><input type="radio" name="optPerDim" value="6" checked> 标准版<span class="radio-sub">42 题 · 约 4 分钟</span></label>
@@ -99,6 +108,7 @@
     <section class="card weapon-hero">
       <div id="fateBanner" class="banner fate-banner" hidden></div>
       <div id="flatBanner" class="banner flat-banner" hidden></div>
+      <div id="versionBanner" class="banner version-banner" hidden></div>
       <div id="weaponHeroEmoji" class="hero-emoji">🗡️</div>
       <div id="weaponHeroName" class="hero-name">—</div>
       <div id="weaponHeroEn" class="hero-en">—</div>
@@ -122,7 +132,7 @@
 
     <!-- 七维属性 -->
     <section class="card stats-card">
-      <h2 class="card-title">七维属性</h2>
+      <h2 class="card-title" id="statsTitle">七维属性</h2>
       <p class="card-sub">横条为本命武器的属性值（0–100），色条上的小标记是你该维的画像值，两者越接近越同频。</p>
       <div id="statBars" class="bar-list"></div>
       <p id="subfamilyNote" class="subfamily-note"></p>

@@ -2,8 +2,12 @@
    本命武器测试 · 逻辑层
    模型：7 维 × N 题（Likert 情境量表 或 forced 二选一快答，两种题量可选）
    → 理想武器画像 profile（7 维 0–100）
-   → 与全库 341 件加权欧氏距离，最近者为本命武器，其次为候补。
-   题型 × 题量六组合：likert/forced × 42/56/70（perDim 6/8/10），同一题库按维切分。
+   → 与全库 341 件加权欧氏距离；本命从最近 K 把里按 softmax 概率抽取，
+     近处概率高、远处也有机会，均衡各武器出场率。
+   版本：classic 原版（经典 7 维题，含「时代」维）
+        | mixed 混合版（「时代」换「补给」+ 主流程末尾追加手腕习惯题）
+        | dexterity 单独版（只答 6 道手腕习惯题，只匹配"巧手"武器池、只算三维）
+        | fate 天命版（随机天命）。
    视图：开始 / 答题 / 结果 / 图鉴（第 4 个视图）+ 详情弹层。
    模式：test（答题）或 fate（随机天命：随机生成非扁平 profile 走同一匹配）。
    ===================================================================== */
@@ -18,6 +22,7 @@
 
   const state = {
     type: 'likert',        // 'likert' | 'forced'
+    version: 'classic',    // 'classic' 原版 | 'mixed' 混合版 | 'dexterity' 单独版 | 'fate' 天命版
     perDim: 6,             // 每维题数 6（42 题）| 8（56 题）| 10（70 题）
     shuffle: false,
     skip: true,
@@ -34,6 +39,51 @@
     gallery: { cat: 'all', sub: 'all', query: '' },
     returnView: 'view-start'
   };
+
+  /* ---------------- 版本系统 ---------------- */
+  const VERSIONS = [
+    { key: 'classic', name: '原版', short: '原', banner: null,
+      desc: '经典 7 维题 · 含「时代」维' },
+    { key: 'mixed', name: '混合版', short: '混',
+      banner: '🌿 混合版：你的第 7 维是「补给」而非「时代」——自给自足还是依赖火力，另加 6 道手腕习惯题的加成。',
+      desc: '「时代」换「补给」+ 手腕习惯' },
+    { key: 'dexterity', name: '单独版', short: '单',
+      banner: '🖐️ 单独版 · 手癖探测：只凭日常手腕习惯，从「巧手」武器池里挑中了它。',
+      desc: '纯手癖探测 · 6 题快测' },
+    { key: 'fate', name: '天命版', short: '命', banner: null,
+      desc: '随机天命 · 命运掷骰' }
+  ];
+  function versionMeta(v) { return VERSIONS.find((x) => x.key === v) || VERSIONS[0]; }
+
+  /* 单独版只探测"手"：只用精准 / 迅捷 / 灵动三维；
+     混合版把 era 维的名字、描述换成语义正确的「补给」。 */
+  function activeDims() {
+    if (state.version === 'dexterity') {
+      return D.dims.filter((d) => d.key === 'precision' || d.key === 'speed' || d.key === 'mobility');
+    }
+    return D.dims;
+  }
+  function activeKeys() { return activeDims().map((d) => d.key); }
+  function dimDef(key) {
+    let d = D.dims.find((x) => x.key === key);
+    if (state.version === 'mixed' && key === 'era') d = D.eraMix;
+    return d || D.dims[0];
+  }
+
+  /* 开始页：单独版 / 天命版下，题型与题量选项不适用，置灰禁用。 */
+  function updateVersionUI() {
+    const isSimple = state.version === 'dexterity' || state.version === 'fate';
+    ['fieldType', 'fieldPerDim'].forEach((id) => {
+      const f = $(id);
+      if (!f) return;
+      f.classList.toggle('disabled', isSimple);
+      Array.from(f.querySelectorAll('input')).forEach((i) => { i.disabled = isSimple; });
+    });
+    if (state.version === 'dexterity') {
+      const lt = document.querySelector('input[name="optType"][value="likert"]');
+      if (lt) lt.checked = true;
+    }
+  }
 
   /* ---------------- 武器库解析（启动时一次） ----------------
      将子类基础七维、icon、lore、phrase 合入每个条目并缓存，
@@ -76,18 +126,32 @@
     state.type = t ? t.value : 'likert';
     const n = document.querySelector('input[name="optPerDim"]:checked');
     state.perDim = n ? parseInt(n.value, 10) : 6;
+    const v = document.querySelector('input[name="optVersion"]:checked');
+    state.version = v ? v.value : 'classic';
+    if (state.version === 'dexterity') { state.type = 'likert'; state.perDim = 0; }
   }
 
   $('btnStart').addEventListener('click', () => {
     readType();
+    updateVersionUI();
     state.shuffle = $('optShuffle').checked;
     state.skip = $('optSkip').checked;
+    if (state.version === 'fate') { fate(); return; }   // 天命版不走答题
     state.mode = 'test';
     begin(false);
   });
 
+  /* 版本单选变化时同步禁用/启用题型、题量 */
+  ['classic', 'mixed', 'dexterity', 'fate'].forEach((k) => {
+    const r = document.querySelector('input[name="optVersion"][value="' + k + '"]');
+    if (r) r.addEventListener('change', () => { state.version = k; updateVersionUI(); });
+  });
+
   $('btnFate').addEventListener('click', () => {
-    state.mode = 'fate';
+    const r = document.querySelector('input[name="optVersion"][value="fate"]');
+    if (r) r.checked = true;
+    state.version = 'fate';
+    updateVersionUI();
     fate();
   });
 
@@ -99,13 +163,18 @@
   /* 按维抽题：每维取前 perDim 道（likert 前 6/8/10 题恰好含 1/2/3 道反向题，
      forced 前 6/8/10 题恰好 3h+3l / 4h+4l / 5h+5l 平衡），跨维交替排列避免同一维连排。 */
   function buildPool() {
-    const src = D.questions[state.type];
+    if (state.version === 'dexterity') return D.questions.habits.slice();
+    const bank = (state.version === 'mixed')
+      ? D.questions[state.type + 'Mix']   // 混合版题库：非 era 题 + 新「补给」era 题
+      : D.questions[state.type];
+    const keys = activeKeys();
     const byDim = {};
-    DIM_KEYS.forEach((k) => { byDim[k] = src.filter((q) => q.dim === k); });
+    keys.forEach((k) => { byDim[k] = bank.filter((q) => q.dim === k); });
     let pool = [];
     for (let i = 0; i < state.perDim; i++) {
-      DIM_KEYS.forEach((k) => { if (byDim[k][i]) pool.push(byDim[k][i]); });
+      keys.forEach((k) => { if (byDim[k][i]) pool.push(byDim[k][i]); });
     }
+    if (state.version === 'mixed') pool = pool.concat(D.questions.habits.slice());
     return pool;
   }
 
@@ -144,11 +213,14 @@
     $('btnSkip').hidden = !state.skip;
 
     const isForced = q.type === 'forced';
+    const isHabit = !isForced && !!q.dims;   // 手腕习惯题：频率量表
     $('qText').textContent = q.text || (isForced ? '下面两种情况，你本能上更靠哪一种？' : '');
     $('btnNext').textContent = '下一题';
     $('dimAbout').textContent = isForced
       ? '别权衡，凭本能选，二选一没有对错'
-      : '凭第一直觉作答，无需反复权衡';
+      : isHabit
+        ? '回想平时不经意的动作，按频率作答，答不出就凭印象'
+        : '凭第一直觉作答，无需反复权衡';
 
     const scale = $('scaleLeft').parentElement;
     if (isForced) {
@@ -176,11 +248,15 @@
       const left = $('scaleLeft'), right = $('scaleRight');
       left.style.display = '';
       right.style.display = '';
+      // 习惯题用频率量表标签，普通量表用同意度标签
+      left.textContent = isHabit ? SC.habitLabels[0] : '非常不同意';
+      right.textContent = isHabit ? SC.habitLabels[SC.habitLabels.length - 1] : '非常同意';
       const box = $('likertBtns');
       box.classList.remove('forced-btns');
       box.innerHTML = '';
       const current = state.answers[qid];
-      LIKERT_LABELS.forEach((label, idx) => {
+      const labels = isHabit ? SC.habitLabels : LIKERT_LABELS;
+      labels.forEach((label, idx) => {
         const b = document.createElement('button');
         b.type = 'button';
         b.textContent = label;
@@ -198,8 +274,10 @@
 
   function answer(qid, val) {
     state.answers[qid] = val;
+    const q = state.pool.find((x) => x.id === qid);
+    const isForced = q && q.type === 'forced';
     const box = $('likertBtns');
-    if (state.type === 'forced') {
+    if (isForced) {
       Array.from(box.children).forEach((b, idx) => {
         const key = ['A', 'B'][idx];
         b.classList.toggle('selected', key === val);
@@ -245,16 +323,41 @@
     return (v - SC.likertMin) / (SC.likertMax - SC.likertMin) * 100;
   }
 
+  /* 手腕习惯加成：只加不减，单维上限 scoring.habitCap。
+     频率 1-5 → 因子 max(0,(freq-2)/3)：完全不会/偶尔无加成，经常、总是才有。 */
+  function applyHabits(profile) {
+    const boosts = {};
+    D.dims.forEach((d) => { boosts[d.key] = 0; });
+    state.pool.forEach((q) => {
+      if (!q.dims) return;
+      const v = state.answers[q.id];
+      if (v == null) return;
+      const factor = Math.max(0, (v - 2) / 3);
+      q.dims.forEach((dd) => {
+        boosts[dd.key] = Math.min(SC.habitCap, boosts[dd.key] + dd.w * factor);
+      });
+    });
+    D.dims.forEach((d) => {
+      if (boosts[d.key] > 0 && profile[d.key] != null) {
+        profile[d.key] = clamp(profile[d.key] + boosts[d.key], 0, 100);
+      }
+    });
+  }
+
   function computeProfile() {
     const profile = {};
     const dimQs = {};
-    state.pool.forEach((q) => { (dimQs[q.dim] = dimQs[q.dim] || []).push(q); });
-    D.dims.forEach((d) => {
+    state.pool.forEach((q) => {
+      if (q.dims) return;                        // 习惯题单独算加成
+      (dimQs[q.dim] = dimQs[q.dim] || []).push(q);
+    });
+    activeDims().forEach((d) => {
       const qs = dimQs[d.key] || [];
       if (!qs.length) { profile[d.key] = 50; return; }
       const vals = qs.map((q) => valToScore(state.answers[q.id], q));
       profile[d.key] = vals.reduce((a, b) => a + b, 0) / vals.length;
     });
+    applyHabits(profile);
     return profile;
   }
 
@@ -263,15 +366,24 @@
   D.dims.forEach((d) => { W[d.key] = 1; });
   W.era = SC.eraWeight;
 
+  /* 单独版只测"手"：精准/迅捷/灵动三维参与距离，其余维权重为 0。 */
+  function weightFor(k) {
+    if (state.version === 'dexterity') {
+      return (k === 'precision' || k === 'speed' || k === 'mobility') ? 1 : 0;
+    }
+    return W[k] || 1;
+  }
+
   function distSq(profile, stats) {
     let sum = 0, wsum = 0;
     D.dims.forEach((d) => {
+      const w = weightFor(d.key);
+      if (!w) return;
       const delta = profile[d.key] - stats[d.key];
-      const w = W[d.key];
       sum += w * delta * delta;
       wsum += w;
     });
-    return sum / wsum;
+    return wsum ? sum / wsum : 0;
   }
 
   function isFlat(profile) {
@@ -279,18 +391,40 @@
     return Math.max(...vals) - Math.min(...vals) < SC.flatRange;
   }
 
+  /* softmax 抽取：从距离最近的前 K 把里按 exp(-dist/T) 概率抽取本命。
+     近处概率高、远处也有机会，均衡各武器出场率（避免总抽中那几把）。 */
+  function softmaxPick(ranked, temp) {
+    const weights = ranked.map((r) => Math.exp(-r.dist / temp));
+    const sum = weights.reduce((a, b) => a + b, 0);
+    let x = Math.random() * sum;
+    for (let i = 0; i < weights.length; i++) {
+      x -= weights[i];
+      if (x <= 0) return i;
+    }
+    return weights.length - 1;
+  }
+
   function matchAll(profile) {
-    const ranked = state.weapons.slice().map((w) => {
+    let pool = state.weapons;
+    if (state.version === 'dexterity') {
+      pool = pool.filter((w) => D.dexteritySubs.indexOf(w.sub) !== -1);
+    }
+    const ranked = pool.slice().map((w) => {
       const d = Math.sqrt(distSq(profile, w.stats));
       return { w: w, dist: d, match: clamp(Math.round(100 - d), 0, 100) };
     });
     ranked.sort((a, b) => a.dist - b.dist || a.w.order - b.w.order);
-    return ranked;
+    const isDex = state.version === 'dexterity';
+    const K = Math.min(isDex ? SC.drawKDex : SC.drawK, ranked.length);
+    const top = ranked.slice(0, K);
+    const drawn = top[softmaxPick(top, isDex ? SC.drawTempDex : SC.drawTemp)];
+    return [drawn].concat(ranked.filter((r) => r.w !== drawn.w));
   }
 
   function computeResults(profile) {
     const ranked = matchAll(profile);
-    const flat = isFlat(profile);
+    // 单独版三维本就会偏平，不判"白纸之境"
+    const flat = state.version !== 'dexterity' && isFlat(profile);
     return { profile, ranked, flat };
   }
 
@@ -325,7 +459,7 @@
   }
 
   /* ---------------- "为什么是你"（模板生成，不逐把手写） ---------------- */
-  function dimName(key) { const d = D.dims.find((x) => x.key === key); return d ? d.name : key; }
+  function dimName(key) { return dimDef(key).name; }
   function pick(arr, salt) { return arr[salt % arr.length]; }
   function fill(tpl, map) {
     return tpl.replace(/\{(\w+)\}/g, (_, k) => map[k] !== undefined ? map[k] : '');
@@ -333,12 +467,13 @@
 
   function whyText(profile, weapon) {
     const seed = state.answerSum || 1;
+    const keys = activeKeys();
     const deltas = {};
-    DIM_KEYS.forEach((k) => { deltas[k] = profile[k] - weapon.stats[k]; });
-    const resonance = DIM_KEYS.filter((k) => weapon.stats[k] >= 60 && profile[k] >= 55 && Math.abs(deltas[k]) <= 15);
-    const edge = DIM_KEYS.filter((k) => weapon.stats[k] - profile[k] >= 25);
-    const gap = DIM_KEYS.filter((k) => Math.abs(deltas[k]) >= 35);
-    const native = DIM_KEYS.filter((k) => profile[k] >= 60 && weapon.stats[k] < 55);
+    keys.forEach((k) => { deltas[k] = profile[k] - weapon.stats[k]; });
+    const resonance = keys.filter((k) => weapon.stats[k] >= 60 && profile[k] >= 55 && Math.abs(deltas[k]) <= 15);
+    const edge = keys.filter((k) => weapon.stats[k] - profile[k] >= 25);
+    const gap = keys.filter((k) => Math.abs(deltas[k]) >= 35);
+    const native = keys.filter((k) => profile[k] >= 60 && weapon.stats[k] < 55);
 
     const out = [];
     out.push(fill(pick(D.whyTemplates.opening, seed), { name: weapon.n }));
@@ -351,7 +486,7 @@
     } else if (native.length) {
       out.push(fill(pick(D.whyTemplates.native, seed + 1), { dim: dimName(native[0]) }));
     } else {
-      out.push(fill(pick(D.whyTemplates.resonance, seed + 1), { dim: dimName(DIM_KEYS[seed % DIM_KEYS.length]) }));
+      out.push(fill(pick(D.whyTemplates.resonance, seed + 1), { dim: dimName(keys[seed % keys.length]) }));
     }
 
     if (edge.length && out.length < 4) {
@@ -375,13 +510,14 @@
   function renderStatBars(container, stats, highlight) {
     const box = $(container);
     box.innerHTML = '';
-    D.dims.forEach((d) => {
+    activeDims().forEach((d) => {
+      const def = dimDef(d.key);
       const v = Math.round(stats[d.key]);
       const hl = highlight && highlight[d.key] != null ? Math.round(highlight[d.key]) : null;
       const row = document.createElement('div');
       row.className = 'wbar-row';
       row.innerHTML =
-        '<span class="wbar-name">' + d.name + '<small>' + d.desc + '</small></span>' +
+        '<span class="wbar-name">' + def.name + '<small>' + def.desc + '</small></span>' +
         '<div class="wbar-track"><div class="wbar-fill" style="width:' + v + '%"></div>' +
         (hl != null ? '<div class="wbar-marker" style="left:' + hl + '%"></div>' : '') +
         '</div>' +
@@ -438,8 +574,26 @@
       flatEl.hidden = true;
     }
 
+    // 版本横幅
+    const vb = $('versionBanner');
+    if (state.mode !== 'fate') {
+      const banner = versionMeta(state.version).banner;
+      if (banner) { vb.hidden = false; vb.textContent = banner; }
+      else vb.hidden = true;
+    } else {
+      vb.hidden = true;
+    }
+
     // 雷达 + 属性条
     renderStatBars('statBars', w.stats, r.profile);
+
+    // 版本感知的"如何阅读"与标题
+    renderHowTo();
+    const st = $('statsTitle');
+    if (st) {
+      st.textContent = state.version === 'dexterity' ? '三维 · 巧手属性'
+        : (state.version === 'mixed' ? '七维属性（含「补给」）' : '七维属性');
+    }
 
     // 小传 + 心声
     $('weaponLore').innerHTML = '<b>' + w.n + ' · 小传</b><br>' + (w.lore || '传世之器，待主而鸣。');
@@ -493,7 +647,9 @@
     const r = state.results;
     const weapon = r.ranked[0].w;
     const profile = r.profile;
-    const N = DIM_KEYS.length;
+    const dims = activeDims();
+    const keys = dims.map((d) => d.key);
+    const N = keys.length;
     const cx = Wc / 2, cy = H / 2;
     const R = Math.min(Wc, H) / 2 - 46;
     const ang = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / N;
@@ -518,7 +674,7 @@
     ctx.font = '12px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    DIM_KEYS.forEach((k, i) => {
+    keys.forEach((k, i) => {
       const a = ang(i);
       ctx.beginPath();
       ctx.moveTo(cx, cy);
@@ -527,12 +683,12 @@
       ctx.lineWidth = 1;
       ctx.stroke();
       ctx.fillStyle = C.ink2;
-      const d = D.dims.find((x) => x.key === k);
+      const d = dimDef(k);
       ctx.fillText(d.short, cx + (R + 18) * Math.cos(a), cy + (R + 18) * Math.sin(a));
     });
 
     // 武器 stats 多边形（虚线 · gold）
-    poly(DIM_KEYS.map((k, i) => pt(ang(i), weapon.stats[k])));
+    poly(keys.map((k, i) => pt(ang(i), weapon.stats[k])));
     ctx.fillStyle = hexToRgba(C.gold, 0.10);
     ctx.fill();
     ctx.strokeStyle = C.gold;
@@ -542,7 +698,7 @@
     ctx.setLineDash([]);
 
     // 你的 profile 多边形（实线 · accent）
-    poly(DIM_KEYS.map((k, i) => pt(ang(i), profile[k])));
+    poly(keys.map((k, i) => pt(ang(i), profile[k])));
     ctx.fillStyle = hexToRgba(C.accent, 0.12);
     ctx.fill();
     ctx.strokeStyle = C.accent;
@@ -550,10 +706,10 @@
     ctx.stroke();
 
     const verts = [];
-    DIM_KEYS.forEach((k, i) => {
+    keys.forEach((k, i) => {
       const a = ang(i);
       const p = pt(a, profile[k]);
-      verts.push({ name: D.dims.find((x) => x.key === k).name + ' · 你', pct: Math.round(profile[k]), x: p[0], y: p[1] });
+      verts.push({ name: dimDef(k).name + ' · 你', pct: Math.round(profile[k]), x: p[0], y: p[1] });
       ctx.beginPath();
       ctx.arc(p[0], p[1], 4, 0, Math.PI * 2);
       ctx.fillStyle = C.accent;
@@ -738,8 +894,14 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('weaponModal').hidden) closeModal(); });
 
   /* ---------------- 结果页按钮 ---------------- */
-  $('btnRetrySame').addEventListener('click', () => { state.mode = 'test'; begin(false); });
-  $('btnRetryShuffle').addEventListener('click', () => { state.mode = 'test'; begin(true); });
+  $('btnRetrySame').addEventListener('click', () => {
+    if (state.version === 'fate') { fate(); return; }
+    state.mode = 'test'; begin(false);
+  });
+  $('btnRetryShuffle').addEventListener('click', () => {
+    if (state.version === 'fate') { fate(); return; }
+    state.mode = 'test'; begin(true);
+  });
   $('btnRestart').addEventListener('click', () => { show('view-start'); });
 
   /* ---------------- 静态内容（如何阅读 / 参考文献 / 致谢 / 免责声明） ---------------- */
@@ -749,14 +911,45 @@
     return s;
   }
 
-  function renderStatic() {
+  /* "如何阅读"随版本变化：混合版讲「补给」、单独版只讲手癖、天命版讲掷骰。 */
+  function howToItems() {
+    if (state.version === 'dexterity') {
+      return [
+        '单独版 · 手癖探测：只凭 6 道日常手腕习惯题作答，从「巧手」武器池（软剑、双剑、蝴蝶刀、暗器、双截棍、铁爪等）里匹配你的本命。',
+        '每题按频率作答（完全不会 → 总是），习惯越多，精准、迅捷、灵动三维加成越高（每维上限 12，只加不减，不惩罚手懒的人）。',
+        '结果页雷达只画这三个维度——这个版本探测的就是你的「手」。'
+      ];
+    }
+    if (state.version === 'fate') {
+      return [
+        '天命版：命运替你掷骰，随机翻出一套战斗气质，再从全库挑中了它。',
+        '匹配度 = 100 − 归一化距离。结果仅供娱乐，别太当真。'
+      ];
+    }
+    const eraName = state.version === 'mixed' ? '补给' : '时代';
+    const eraExplain = state.version === 'mixed'
+      ? '补给越低越自给自足（冷兵器端），越高越依赖补给（热武器端）。'
+      : '时代越低越古典、越高越现代。';
+    const items = D.howToRead.slice();
+    items[0] = '本测验用 7 个维度勾勒你的"战斗气质"：刚猛、迅捷、精准、射程、灵动、坚韧、' + eraName + '。每个维度 0–100，' + eraExplain;
+    if (state.version === 'mixed') {
+      items.push('混合版把原「时代」维换成了「补给」维：你更信自给自足的可靠，还是更认补给管够的爆发。另追加 6 道手腕习惯题，习惯越多，精准/迅捷/灵动三维获得加成（只加不减）。');
+    }
+    return items;
+  }
+
+  function renderHowTo() {
     const ht = $('howToList');
     ht.innerHTML = '';
-    D.howToRead.forEach((t) => {
+    howToItems().forEach((t) => {
       const li = document.createElement('li');
       li.textContent = t;
       ht.appendChild(li);
     });
+  }
+
+  function renderStatic() {
+    renderHowTo();
 
     $('basisIntro').textContent = D.basisIntro;
     const rf = $('refList');

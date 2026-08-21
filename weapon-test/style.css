@@ -127,6 +127,8 @@ html, body {
 
 .settings { display: grid; gap: 16px; margin: 0 0 22px; }
 .field { display: grid; gap: 8px; }
+.field.disabled { opacity: .55; filter: grayscale(.25); }
+.field.disabled .radio { cursor: not-allowed; }
 .field-label { font-size: 13px; font-weight: 600; color: var(--ink-2); }
 .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); cursor: pointer; }
 .check input { width: 17px; height: 17px; accent-color: var(--accent); }
@@ -218,6 +220,7 @@ html, body {
 }
 .fate-banner { background: var(--gold-soft); color: var(--gold); border: 1px solid rgba(201,154,60,.28); }
 .flat-banner { background: var(--accent-soft); color: var(--accent-strong); border: 1px solid rgba(42,120,214,.22); }
+.version-banner { background: rgba(27,175,122,.12); color: var(--aqua-strong); border: 1px solid rgba(27,175,122,.28); }
 
 /* ---------- 雷达 ---------- */
 .radar-card { border-left: 4px solid var(--accent); }
