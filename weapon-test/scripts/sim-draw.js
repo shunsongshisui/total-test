@@ -33,7 +33,7 @@ function buildWeaponList() {
 const weapons = buildWeaponList();
 
 const W = {};
-DIM_KEYS.forEach(d => W[d.key] = 1);
+DIM_KEYS.forEach(k => W[k] = 1);
 W.era = SC.eraWeight;
 
 function distSq(profile, stats) {
