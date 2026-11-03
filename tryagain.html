@@ -502,6 +502,33 @@ const HIGH_AMON_POOL = CARDS.filter(c => c.amon && RARITY_ORDER.indexOf(c.rarity
 const NORMAL_GIFT_POOL = CARDS.filter(c => RARITY_ORDER.indexOf(c.rarity) >= RARITY_ORDER.indexOf('S'));        // S 及以下赠礼池
 const HUNT_CHANCE = 0.15;   // 愚者/克莱恩马甲现身并把低阶阿蒙"下走"后，下一抽命中高阶阿蒙的概率（想调难度改这里）
 
+/* ============ 高档稀有度下调 ============
+   把 SSS / SS / S 三档的出现率等比压低，空出来的概率按原比例补给 A 及以下。
+   档内相对比例完全不变：龙、阿蒙、愚者马甲这些特殊卡也跟着同倍率变稀有，
+   不会被抬高（概率守恒下，"只降普通卡"必然把特殊卡抬上去，方向反了）。
+
+   想再调难度改 HIGHRATE_SQUEEZE；全部设成 1 即恢复原状。 */
+const HIGHRATE_SQUEEZE = { SSS: 0.70, SS: 0.38, S: 0.60 };
+
+(function applyHighRateSqueeze() {
+    const LOW = ['A', 'B', 'C', 'D', '人渣'];
+    const highKeys = ['SSS', 'SS', 'S'];
+
+    highKeys.forEach(r => {
+        const sq = HIGHRATE_SQUEEZE[r];
+        if (sq === undefined) return;
+        RATES[r] = RATES[r] * sq;
+    });
+
+    // 空出来的概率按各低档原有比例分配，保证总和仍为 1
+    const highNow = highKeys.reduce((s, r) => s + RATES[r], 0);
+    const lowSum = LOW.reduce((s, r) => s + RATES[r], 0);
+    const lowTarget = 1 - highNow;
+    if (lowSum > 0 && lowTarget > 0) {
+        LOW.forEach(r => { RATES[r] = RATES[r] / lowSum * lowTarget; });
+    }
+})();
+
 /* ============ 命运执笔：规则改写系统 ============
    执笔者：噩梦之龙阿勒苏霍德 / 空想之龙（艾瑞霍格、安格尔威德）/ 心灵巨龙厄德法纳 / 封印物 0-08 阿勒苏霍德之笔
    抽到其中任意一张：随机改写一条抽卡规则（永久 or 时效），并预言你的下一张牌——必成真。
