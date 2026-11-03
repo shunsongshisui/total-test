@@ -20,11 +20,10 @@
     // 小红书号（对外展示的短号，不是主页 URL 里的内部 ID）
     redId: '63064928254',
 
-    // 小红书主页地址。
-    //   填真实地址（形如 https://www.xiaohongshu.com/user/profile/<24 位内部 ID>），
-    //   点击即直达主页。
-    //   留空时依次降级为：小红书号搜索 → 昵称搜索。
-    url: '',
+    // 小红书主页地址（24 位内部 ID，由短链 xhslink.cn/o/7wBvrSRONhs 解析得出）。
+    // 刻意不带 xsec_token：那是会过期的分享凭证，写进站点后徽章会失效。
+    // 留空时依次降级为：小红书号搜索 → 昵称搜索。
+    url: 'https://www.xiaohongshu.com/user/profile/6a364db0000000000f03b802',
 
     // 平台标签（徽章上显示的小字）
     platform: '小红书'
