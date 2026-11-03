@@ -263,5 +263,7 @@ const b=document.querySelector('.fb-btn');b.disabled=1;b.textContent='📨 发�
 let x='\n\n——— 测试结果 ———\n人格类型：'+getResultType();if(z)x+='\n星座：'+z;if(m)x+='\nMBTI：'+m;if(e)x+='\n\n来自邮箱：'+e;
 fetch(FEEDBACK_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({message:t+x,_subject:'《诡秘之主·LOM·天命版》意见反馈',_captcha:false})}).then(r=>{if(r.ok){s.textContent='✅ 已发送！感谢你的意见 🙏';s.style.color='#6a8a6a';document.getElementById('fbText').value='';document.getElementById('fbEmail').value='';}else throw new Error();}).catch(()=>{s.textContent='❌ 发送失败，请稍后再试';s.style.color='#b06060';}).finally(()=>{b.disabled=0;b.textContent='📨 发送';})}
 </script>
+<script src="counter.js"></script>
+<script src="signature.js"></script>
 </body>
 </html>
