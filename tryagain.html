@@ -284,9 +284,120 @@ body::before {
 .prophecy.show{display:block;animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
 .prophecy b{color:#fff7d6}
 .prophecy .pw{font-size:11px;color:rgba(232,220,200,.45);margin-top:5px;letter-spacing:1px}
+
+/* ============ 规则改写 · 整页动画 ============ */
+.rw-wrap{
+    position:fixed; inset:0; z-index:9999; display:none;
+    align-items:center; justify-content:center;
+    padding:24px; opacity:0;
+    transition:opacity .26s ease;
+    background:
+        radial-gradient(ellipse at 50% 50%, rgba(124,80,180,.30) 0%, rgba(8,10,18,.97) 72%),
+        rgba(8,10,18,.94);
+    -webkit-backdrop-filter:blur(9px) saturate(.6); backdrop-filter:blur(9px) saturate(.6);
+}
+.rw-wrap.show{display:flex; opacity:1}
+.rw-wrap.leaving{opacity:0}
+
+/* 全屏放大的「书」字水印 */
+.rw-wrap::before{
+    content:'书'; position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:min(62vw, 620px); font-weight:900; line-height:1;
+    color:rgba(159,122,234,.055); pointer-events:none; user-select:none;
+    letter-spacing:0;
+}
+
+.rw-panel{
+    position:relative; max-width:660px; width:100%;
+    text-align:center; color:#f3e0b0;
+    border-top:1px solid rgba(232,200,122,.30);
+    border-bottom:1px solid rgba(232,200,122,.30);
+    padding:30px 12px;
+}
+.rw-wrap.show .rw-panel{animation:rwGlitch .8s steps(1) both}
+@keyframes rwGlitch{
+    0%   {clip-path:inset(0 0 88% 0);}   16% {clip-path:inset(0 0 12% 0);}
+    22%  {clip-path:inset(0 0 62% 0);}   40% {clip-path:inset(0 0 24% 0);}
+    52%  {clip-path:inset(0 0 74% 0);}   68% {clip-path:inset(0 0 8% 0);}
+    84%  {clip-path:inset(0 0 40% 0);}   100%{clip-path:inset(0 0 0 0);}
+}
+
+.rw-quill{
+    font-size:34px; line-height:1; margin-bottom:16px;
+    filter:drop-shadow(0 0 18px rgba(232,200,122,.7));
+}
+.rw-wrap.show .rw-quill{animation:rwFloat 2.4s ease-in-out infinite}
+@keyframes rwFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+.rw-title{
+    font-size:12px; letter-spacing:.55em; color:#c084fc; font-weight:700;
+    margin-bottom:16px; padding-left:.55em;
+}
+.rw-writer{
+    font-size:19px; font-weight:900; letter-spacing:.14em;
+    color:#fff7d6; margin-bottom:22px; line-height:1.55;
+    text-shadow:0 0 26px rgba(232,200,122,.55);
+}
+.rw-line{
+    font-size:15px; letter-spacing:.06em; line-height:1.9;
+    color:#e8e0d0; margin:0 auto 10px; max-width:560px;
+}
+.rw-line > b{font-weight:800}
+.rw-line.rw-buff > b{color:#8fd9a0}
+.rw-line.rw-nerf > b{color:#fca5a5}
+.rw-line .rw-flavor{color:rgba(232,220,200,.62); font-style:italic}
+
+.rw-badge{
+    display:inline-block; margin-top:12px; padding:5px 15px; border-radius:999px;
+    font-size:12px; font-weight:800; letter-spacing:.16em;
+    border:1px solid rgba(232,200,122,.42);
+    color:#f3e0b0; background:rgba(232,200,122,.08);
+}
+.rw-badge.rw-forever{
+    border-color:rgba(159,122,234,.65); color:#d8b4fe;
+    background:rgba(159,122,234,.12); animation:rwGlow 1.5s ease-in-out infinite;
+}
+@keyframes rwGlow{
+    0%,100%{box-shadow:0 0 0 rgba(159,122,234,0)}
+    50%{box-shadow:0 0 22px rgba(159,122,234,.5)}
+}
+
+.rw-hint{
+    margin-top:22px; font-size:11px; letter-spacing:.28em;
+    color:rgba(232,220,200,.30);
+}
+
+@media (max-width:620px){
+    .rw-quill{font-size:26px; margin-bottom:12px}
+    .rw-title{font-size:11px; letter-spacing:.42em; padding-left:.42em; margin-bottom:12px}
+    .rw-writer{font-size:16px; margin-bottom:16px}
+    .rw-line{font-size:13px; line-height:1.8}
+    .rw-panel{padding:22px 10px}
+    .rw-hint{font-size:10px; letter-spacing:.2em; margin-top:16px}
+}
+
+@media (prefers-reduced-motion:reduce){
+    .rw-wrap.show .rw-panel,
+    .rw-wrap.show .rw-quill,
+    .rw-badge.rw-forever{animation:none}
+    .rw-wrap{transition:none}
+}
 </style>
 </head>
 <body>
+
+<div class="rw-wrap" id="rwWrap" aria-hidden="true">
+<div class="rw-panel" id="rwPanel">
+    <div class="rw-quill" id="rwQuill">🖊️</div>
+    <div class="rw-title">规 则 改 写</div>
+    <div class="rw-writer" id="rwWriter"></div>
+    <div id="rwLines"></div>
+    <div><span class="rw-badge" id="rwBadge"></span></div>
+    <div class="rw-hint" id="rwHint"></div>
+</div>
+</div>
+
 <div class="container">
     <div class="header">
         <h1>诡秘之主 · 幸运抽卡</h1>
@@ -493,6 +604,9 @@ function pickProphecyCard() {
     for (const c of pool) { r -= (PROPHECY_RATE[c.rarity] || 5); if (r <= 0) return c; }
     return pool[pool.length - 1];
 }
+/* 规则改写动画队列：一次抽卡可能有多张执笔者，攒齐后由 playRewriteCinematics 依次演出 */
+let ruleRewriteQueue = [];
+
 function doRewrite(card, lines) {
     const tpl = pickRewriteTemplate();
     const perm = Math.random() < 0.5;                            // 一半永久，一半时效
@@ -508,13 +622,125 @@ function doRewrite(card, lines) {
 
     const meta = RULE_META[tpl.key];
     const color = tpl.tone === 'buff' ? '#8fd9a0' : '#fca5a5';
+    const writerLine = WRITER_LINES[card.name] || ('🖊️ 「' + card.name + '」改写了规则。');
+    const before = meta.fmt(BASE_RULES[tpl.key]);
+    const after = meta.fmt(ruleVal(tpl.key));
+    const prophecy = '你的下一张牌必为「' + target.emoji + ' ' + target.name + '」（' + target.rarity + '）';
+
+    // 供整页动画使用：剧本数据直接带上，避免动画层重新计算结果
+    ruleRewriteQueue.push({
+        writer: card.name,
+        flavor: writerLine.replace(/^🖊️\s*/, ''),
+        label: meta.label,
+        before: before,
+        after: after,
+        tone: tpl.tone,
+        perm: perm,
+        dur: dur,
+        prophecy: prophecy
+    });
+
     lines.push('<div style="margin-top:8px;font-size:12px;color:#c084fc;font-weight:700;letter-spacing:1px;">'
-        + (WRITER_LINES[card.name] || ('🖊️ 「' + card.name + '」改写了规则。')) + '</div>'
+        + writerLine + '</div>'
         + '<div style="margin-top:4px;font-size:12px;color:' + color + ';font-weight:700;letter-spacing:1px;">'
-        + '　规则改写｜' + meta.label + '：' + meta.fmt(BASE_RULES[tpl.key]) + ' → ' + meta.fmt(ruleVal(tpl.key))
+        + '　规则改写｜' + meta.label + '：' + before + ' → ' + after
         + '　' + (perm ? '【永久】' : '【时效 · ' + dur + ' 抽】') + '</div>'
         + '<div style="margin-top:4px;font-size:12px;color:#e8c87a;font-weight:700;letter-spacing:1px;">'
-        + '　🖊️ 预言：你的下一张牌必为「' + target.emoji + ' ' + target.name + '」（' + target.rarity + '）</div>');
+        + '　🖊️ 预言：' + prophecy + '</div>');
+}
+
+/* ============ 规则改写 · 整页演出 ============ */
+/* 纯函数：把一条改写事件编译成一帧的展示数据，便于脱离浏览器单元测试 */
+function buildRewriteFrame(item) {
+    var isBuff = item.tone === 'buff';
+    return {
+        writer: '🖊️ ' + item.writer,
+        hint: item.perm ? '此 条 改 写 已 永 久 生 效'
+                        : '此 条 改 写 生 效 ' + item.dur + ' 抽',
+        linesHtml:
+            '<div class="rw-line rw-flavor" style="opacity:0">' + item.flavor + '</div>' +
+            '<div class="rw-line rw-' + (isBuff ? 'buff' : 'nerf') + '" style="opacity:0">' +
+                item.label + '：<b>' + item.before + '</b> → <b>' + item.after + '</b>' +
+            '</div>' +
+            '<div class="rw-line" style="opacity:0">🖊️ 预言：<b>' + item.prophecy + '</b></div>',
+        lineCount: 3,
+        badgeText: item.perm ? '永 久' : '时 效',
+        badgeClass: 'rw-badge' + (item.perm ? ' rw-forever' : ''),
+        ariaHidden: 'false',
+        // 时间轴：逐行浮现起点 -> 停留 -> 淡出 -> 收尾
+        lineDelayBase: 250,
+        lineDelayStep: 200,
+        holdMs: 0,   // 由 lineCount 推算，见下
+        fadeMs: 460
+    };
+}
+function rewriteFrameTimeline(frame) {
+    return {
+        lineDelays: Array.from({ length: frame.lineCount }, function (_, i) {
+            return frame.lineDelayBase + i * frame.lineDelayStep;
+        }),
+        hold: 2050 + frame.lineCount * frame.lineDelayStep,
+        fade: frame.fadeMs
+    };
+}
+
+/* 演出：依赖 Promise 链与浏览器时序 */
+function playRewriteCinematics(queue) {
+    const wrap = el('rwWrap');
+    if (!queue.length || !wrap) return Promise.resolve();
+
+    const writerEl = el('rwWriter');
+    const linesEl = el('rwLines');
+    const badgeEl = el('rwBadge');
+    const hintEl = el('rwHint');
+    const panelEl = el('rwPanel');
+
+    return queue.reduce(function (chain, item) {
+        return chain.then(function () {
+            const frame = buildRewriteFrame(item);
+            const tl = rewriteFrameTimeline(frame);
+
+            // 每次演出前重置，并用强制回流让 CSS 动画重新触发
+            panelEl.style.animation = 'none';
+            wrap.className = 'rw-wrap';
+            void wrap.offsetWidth;
+            panelEl.style.animation = '';
+
+            writerEl.textContent = frame.writer;
+            hintEl.textContent = frame.hint;
+            linesEl.innerHTML = frame.linesHtml;
+            badgeEl.textContent = frame.badgeText;
+            badgeEl.className = frame.badgeClass;
+
+            wrap.classList.add('show');
+            wrap.setAttribute('aria-hidden', frame.ariaHidden);
+
+            // 文案逐行浮现
+            const lineNodes = linesEl.querySelectorAll('.rw-line');
+            for (let i = 0; i < lineNodes.length; i++) {
+                (function (node, delay) {
+                    setTimeout(function () {
+                        node.style.transition = 'opacity .42s ease, transform .42s ease';
+                        node.style.transform = 'translateY(9px)';
+                        node.style.opacity = '1';
+                        node.style.transform = 'translateY(0)';
+                    }, delay);
+                })(lineNodes[i], tl.lineDelays[i] !== undefined ? tl.lineDelays[i] : tl.lineDelays[0]);
+            }
+
+            // 停留够读完，再淡出
+            return new Promise(function (resolve) {
+                setTimeout(function () {
+                    wrap.classList.add('leaving');
+                    setTimeout(function () {
+                        wrap.className = 'rw-wrap';
+                        wrap.setAttribute('aria-hidden', 'true');
+                        resolve();
+                    }, tl.fade);
+                }, tl.hold);
+            });
+        });
+    }, Promise.resolve());
 }
 
 /* ============ 状态 ============ */
@@ -523,6 +749,7 @@ let state = { total: 0, pity: 0, taroPity: 0, singlePity: 0, inventory: {},
               perm: [], temp: [], rewrites: 0, prophecy: null };  // inventory: name -> count；perm/temp: 被改写的规则
 let busy = false;
 let huntPending = false;   // 愚者"阿蒙追击"：只作用于下一次点击的第一张，未中即失效
+let unlockTimer = null;    // 抽卡按钮解锁定时器（有改写演出时改由动画结束解锁）
 
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
 function load() {
@@ -960,6 +1187,7 @@ function drawCards(n) {
 
     // ⑥ 命运执笔：噩梦之龙 / 空想之龙 / 心灵巨龙 / 0-08 —— 随机改写一条规则（永久 or 时效），并预言下一张（必成真）
     const writers = cards.filter(c => c.rewrite);
+    ruleRewriteQueue = [];
     for (const w of writers) doRewrite(w, extraLines);
 
     // 标记本次首次抽到的卡（NEW）
@@ -972,7 +1200,20 @@ function drawCards(n) {
     renderCollection();
     showResult(cards, extraLines.join(''), gifts.concat(fusedGifts), newNames);
 
-    setTimeout(() => {
+    // 整页规则改写演出：排在本次结果之后，播放期间锁定抽卡按钮，放完再解锁
+    if (ruleRewriteQueue.length) {
+        const pending = ruleRewriteQueue.slice();
+        ruleRewriteQueue = [];
+        clearTimeout(unlockTimer);
+        playRewriteCinematics(pending).then(() => {
+            busy = false;
+            el('btn1').disabled = false;
+            el('btn10').disabled = false;
+        });
+        return;
+    }
+
+    unlockTimer = setTimeout(() => {
         busy = false;
         el('btn1').disabled = false;
         el('btn10').disabled = false;
