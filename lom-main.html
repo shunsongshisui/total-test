@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LOM · 诡秘之主 · 人格谱系测试</title>
-    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-    <style>
+<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         /* 字体使用系统默认，确保国内可无阻碍访问 */
 
@@ -401,6 +400,7 @@
             <div class="ranking-wrap" id="rankingWrap"></div>
 
             <div class="result-actions">
+                <button class="btn btn-sm" id="btnShare" onclick="saveResultImage(this)">💾 保存为图片</button>
                 <button class="btn btn-sm" onclick="startQuiz()">🔄 重新测试</button>
                 <button class="btn btn-sm btn-teal" onclick="location.href='index.html'">← 回主页</button>
             </div>
@@ -460,7 +460,7 @@
             </div>
         </div>
 
-        <div class="footer-text">献给诡秘之主 · Memories老师 · 👁 已接待 <span id="busuanzi_value_page_pv">---</span> 次窥视</div>
+        <div class="footer-text">献给诡秘之主 · Memories老师</div>
     </div>
 </div>
 
@@ -1188,6 +1188,55 @@ function showFinalResult(topType) {
 // ========================================
 // RADAR CHART (clips negatives to 0)
 // ========================================
+/* ============ 保存结果为图片 ============ */
+function saveResultImage(btn) {
+    if (typeof ShareCard === 'undefined' || !ShareCard.save) {
+        alert('图片组件未加载，请刷新页面重试。');
+        return;
+    }
+    try {
+        const scores = computeScores();
+        const typeKeys = Object.keys(TYPES);
+
+        // 当前结果类型：分数最高者
+        const topKey = typeKeys.reduce((a, b) => (scores[b] > scores[a] ? b : a));
+        const t = TYPES[topKey];
+
+        // 雷达取前 6 名，按最高分归一化（负分压到 0）
+        const ranked = typeKeys
+            .map(k => ({ k, name: TYPES[k].name, score: scores[k] }))
+            .sort((x, y) => y.score - x.score);
+        const maxScore = Math.max(1, ranked[0] ? ranked[0].score : 1);
+        const radar = ranked.slice(0, 6).map(r => ({
+            label: r.name,
+            value: Math.max(0, Math.min(1, r.score / maxScore))
+        }));
+
+        // 前三名做 chips
+        const chips = ranked.slice(0, 3).map((r, i) => ({
+            label: '第 ' + (i + 1) + ' 相像',
+            value: r.name
+        }));
+
+        ShareCard.save({
+            theme: 'purple',
+            tag: '诡秘之主',
+            title: 'LOM · 人格谱系测试',
+            value: t.name,
+            unit: '',
+            badge: t.code + ' · ' + t.char,
+            note: t.quote || '',
+            chips: chips,
+            radar: radar,
+            radarRef: [],
+            footer: '诡秘之主 · 人格谱系测试 · 仅供自我探索'
+        }, btn);
+    } catch (e) {
+        console.error('[saveResultImage]', e);
+        alert('生成图片失败，请重试。');
+    }
+}
+
 function drawRadar(scores) {
     const canvas = document.getElementById('radarChart');
     const ctx = canvas.getContext('2d');
@@ -1374,6 +1423,7 @@ function sendFeedback() {
     });
 }
 </script>
+<script src="share-card.js"></script>
 <script src="counter.js"></script>
 <script src="signature.js"></script>
 </body>
