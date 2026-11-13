@@ -29,14 +29,21 @@
 
   // ---------- 1. 兜底样式：仅在脚本自动创建元素时注入 ----------
   function injectStyles() {
+    // 作用域类：只有脚本自己生成计数器时才挂上，避免覆盖各页自带的 .ctr-line 样式
+    ROOT.classList.add('dsh-counter-on');
     if (document.getElementById('dsh-counter-styles')) return;
     var css = [
-      '.dsh-counter-on .ctr-line{text-align:center;font-size:12px;',
-      'line-height:1.9;color:#8a8f98;padding:20px 0 0;',
-      'font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB",',
-      '"Microsoft YaHei",sans-serif;}',
+      '.dsh-counter-on .ctr-line{',
+      'display:block;width:100%;max-width:100%;margin:0 auto;',
+      'text-align:center;font-size:12px;line-height:1.9;letter-spacing:.02em;',
+      'color:#8a8f98;padding:28px 16px 34px;box-sizing:border-box;}',
       '.dsh-counter-on .ctr-line b{font-variant-numeric:tabular-nums;',
-      'color:#5c6270;font-weight:600;}'
+      'color:#5c6270;font-weight:600;margin:0 2px;}',
+      '/* 深色页面自动提亮 */',
+      '@media (prefers-color-scheme:dark){',
+      ':root:not([data-theme="light"]) .dsh-counter-on .ctr-line{color:#8a8f98;}',
+      ':root:not([data-theme="light"]) .dsh-counter-on .ctr-line b{color:#c3c2b7;}',
+      '}'
     ].join('');
     var s = document.createElement('style');
     s.id = 'dsh-counter-styles';
@@ -66,11 +73,16 @@
     line.appendChild(b2);
     line.appendChild(document.createTextNode(' 位访客'));
 
-    // 插到页脚之前（若有页脚），否则追加到 <body> 末尾
+    // 统一放到页面底部：有页脚就排在页脚之后，否则追加到 <body> 末尾
     var footer = document.querySelector('footer, .footer');
     var body = document.body;
     if (footer && footer.parentNode) {
-      footer.parentNode.insertBefore(line, footer);
+      var parent = footer.parentNode;
+      if (footer.nextSibling) {
+        parent.insertBefore(line, footer.nextSibling);
+      } else {
+        parent.appendChild(line);
+      }
     } else if (body) {
       body.appendChild(line);
     } else {
