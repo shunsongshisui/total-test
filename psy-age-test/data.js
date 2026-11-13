@@ -14,12 +14,12 @@ window.PSYCH_DATA = {
      weight: 合成总心理年龄时的权重（合计 1.00）
   */
   dimensions: [
-    { key: 'cog', name: '认知活力', short: '认知', role: 'youth',  minAge: 16, maxAge: 56, weight: 0.16, cluster: 'youth',    about: '好奇心、认知弹性与学习取向' },
-    { key: 'emo', name: '情绪成熟', short: '情绪', role: 'mature', minAge: 16, maxAge: 42, weight: 0.15, cluster: 'maturity', about: '情绪调节能力与情绪洞察' },
-    { key: 'prd', name: '审慎自律', short: '审慎', role: 'mature', minAge: 16, maxAge: 46, weight: 0.14, cluster: 'maturity', about: '冲动控制与延迟满足' },
-    { key: 'fut', name: '未来导向', short: '时间观', role: 'mature', minAge: 16, maxAge: 44, weight: 0.12, cluster: 'maturity', about: '时间观：当下享乐 vs 长远规划' },
-    { key: 'soc', name: '社会开放', short: '社会', role: 'youth',  minAge: 16, maxAge: 54, weight: 0.12, cluster: 'youth',    about: '对新关系、新文化的开放度' },
-    { key: 'vit', name: '活力体能', short: '活力', role: 'youth',  minAge: 16, maxAge: 56, weight: 0.15, cluster: 'youth',    about: '精力水平与身体活动意愿' },
+    { key: 'cog', name: '认知活力', short: '认知', role: 'youth',  minAge: 16, maxAge: 44, weight: 0.16, cluster: 'youth',    about: '好奇心、认知弹性与学习取向' },
+    { key: 'emo', name: '情绪成熟', short: '情绪', role: 'mature', minAge: 16, maxAge: 26, weight: 0.15, cluster: 'maturity', about: '情绪调节能力与情绪洞察' },
+    { key: 'prd', name: '审慎自律', short: '审慎', role: 'mature', minAge: 16, maxAge: 34, weight: 0.14, cluster: 'maturity', about: '冲动控制与延迟满足' },
+    { key: 'fut', name: '未来导向', short: '时间观', role: 'mature', minAge: 16, maxAge: 28, weight: 0.12, cluster: 'maturity', about: '时间观：当下享乐 vs 长远规划' },
+    { key: 'soc', name: '社会开放', short: '社会', role: 'youth',  minAge: 16, maxAge: 42, weight: 0.12, cluster: 'youth',    about: '对新关系、新文化的开放度' },
+    { key: 'vit', name: '活力体能', short: '活力', role: 'youth',  minAge: 16, maxAge: 44, weight: 0.15, cluster: 'youth',    about: '精力水平与身体活动意愿' },
     { key: 'res', name: '责任担当', short: '责任', role: 'mature', minAge: 16, maxAge: 60, weight: 0.16, cluster: 'none',     about: '责任心、承诺感与稳定性（不计入年龄）' }
   ],
 
@@ -132,9 +132,9 @@ window.PSYCH_DATA = {
     // 相对生理年龄判断"偏年轻/平衡/偏成熟"的阈值（岁）
     diffYoung: -10,
     diffOld: 10,
-    // 未填写生理年龄时使用的固定分档
-    fixedYoung: 28,
-    fixedOld: 48,
+    // 未填写生理年龄时使用的固定分档（校准后中立值约 26 岁）
+    fixedYoung: 22,
+    fixedOld: 33,
     // 双轴"偏高"的判定阈值（成熟度/少年感 0-100 分）
     duoThreshold: 60
   },
@@ -225,7 +225,7 @@ window.PSYCH_DATA = {
     '心理年龄不是一条线，而是两条独立的轴：成熟度（认清世事）与少年感（永葆童心）。它们可以同时很高——正如"看清世界"与"童心未泯"可以共存，这也是最理想的状态。',
     '心理年龄是"画像"，不是"标签"。它由多个维度加权合成，任何单一数字（包括顶部那个概括值）都只是参考，请以双轴画像和逐维度解析为准。',
     '责任担当不计入年龄——它是"担当"而非"年龄"，单独立卡展示。',
-    '如果你年纪较轻，绝对的心理年龄数字往往会显得偏大——它是按"典型成年人"校准的。请以"与生理年龄的差值"和双轴画像为准，而不是只盯着那个数字。',
+    '概括值按典型成年人作答校准到约 26 岁：作答越偏向成熟，数字越高；越偏少年，数字越低——它衡量的是相对倾向，不是精确年龄。请以「与生理年龄的差值」和双轴画像为准，而不是只盯着那个数字。',
     '心理年龄反映的是"当前状态"，不是固定宿命。主观年龄会随生活事件、压力、关系与作息而波动，也可以被主动调整——运动、学习新事物、建立新关系、练习情绪觉察，都是被研究支持的调整方式。'
   ],
 

@@ -235,7 +235,12 @@
 
     // 概括值 = 6 个年龄维度加权（权重在年龄维度内重归一化）
     const totalW = ageDims.reduce((s, d) => s + d.weight, 0);
-    const basePsychAge = ageDims.reduce((s, d) => s + ages[d.key] * d.weight / totalW, 0);
+    const rawPsychAge = ageDims.reduce((s, d) => s + ages[d.key] * d.weight / totalW, 0);
+
+    // 校准：把"全部中立作答"的结果锚定到 TYPICAL_AGE，
+    // 并按 GAIN 放大维度间的相对差异（原始合成跨度偏窄，直接加权几乎不随作答变化）。
+    const neutralRaw = ageDims.reduce((s, d) => s + (d.minAge + d.maxAge) / 2 * d.weight, 0) / totalW;
+    const basePsychAge = clamp(TYPICAL_AGE + (rawPsychAge - neutralRaw) * GAIN, SC.ageFloor, 60);
     const sd = Math.sqrt(withAge.reduce((s, d) => s + Math.pow(d.age - basePsychAge, 2), 0) / withAge.length);
 
     // 双轴：成熟度（认清世事）× 少年感（永葆童心），互相独立
@@ -297,8 +302,14 @@
     return { mean, dimMean };
   }
 
-  // 全部中立时的合成结果，作为"典型平衡成年"的收敛锚点（校准下修后约 33）
-  const NEUTRAL_ANCHOR = 33;
+  // 全部中立时的合成结果，作为"典型平衡成年"的收敛锚点（2026-11 校准后约 26）
+  const NEUTRAL_ANCHOR = 26;
+
+  /* 年龄校准 —— 两处一起改才一致
+     TYPICAL_AGE : 全部选"中立"时输出的心理年龄
+     GAIN        : 维度差异放大倍数（原始加权跨度约 ±2.2 岁，×2.4 后约 ±5.3 岁） */
+  const TYPICAL_AGE = 26;
+  const GAIN = 2.4;
   function hesitationDelta(baseAge, meanMs) {
     const factor = Math.min(1, meanMs / 8000);
     return clamp((NEUTRAL_ANCHOR - baseAge) * factor * 0.6, -2, 2);
@@ -526,7 +537,7 @@
         notesEl.appendChild(p);
       });
 
-      $('rhythmMethod').textContent = '方法说明：作答用时（反应时）是真实的心理学信号，但受设备、阅读速度与外界干扰影响较大，因此这里只作为"温和修正"而非硬性计分——整体越犹豫，结果越向典型平衡值（33 岁）收敛，幅度上限 ±2 岁。第一题热身、主观年龄题与超长停顿（>2 分钟）不计入统计。';
+      $('rhythmMethod').textContent = '方法说明：作答用时（反应时）是真实的心理学信号，但受设备、阅读速度与外界干扰影响较大，因此这里只作为"温和修正"而非硬性计分——整体越犹豫，结果越向典型平衡值（26 岁）收敛，幅度上限 ±2 岁。第一题热身、主观年龄题与超长停顿（>2 分钟）不计入统计。';
     } else {
       rc.hidden = true;
     }
@@ -560,7 +571,7 @@
     const N = dims.length;
     const cx = W / 2, cy = H / 2;
     const R = Math.min(W, H) / 2 - 56;
-    const FLOOR = 16, CEIL = 60;
+    const FLOOR = 16, CEIL = 48;
     const rFor = (age) => R * (clamp(age, FLOOR, CEIL) - FLOOR) / (CEIL - FLOOR);
     const ang = (i) => -Math.PI / 2 + i * 2 * Math.PI / N;
     const pt = (i, age) => {
@@ -787,7 +798,7 @@
   $('btnRestart').addEventListener('click', () => show('view-start'));
 
   /* ---------------- 保存为图片 ---------------- */
-  const FLOOR_AGE = 16, CEIL_AGE = 60;   // 与雷达图同一坐标基准
+  const FLOOR_AGE = 16, CEIL_AGE = 48;   // 与雷达图同一坐标基准
 
   $('btnShare').addEventListener('click', () => {
     const r = state.results;
