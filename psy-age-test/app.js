@@ -786,6 +786,48 @@
   $('btnRetryShuffle').addEventListener('click', () => begin(true));
   $('btnRestart').addEventListener('click', () => show('view-start'));
 
+  /* ---------------- 保存为图片 ---------------- */
+  const FLOOR_AGE = 16, CEIL_AGE = 60;   // 与雷达图同一坐标基准
+
+  $('btnShare').addEventListener('click', () => {
+    const r = state.results;
+    if (!r) return;
+
+    const p = Math.round(r.psychAge);
+    const chips = [
+      { label: '生理年龄', value: r.chrono != null ? r.chrono + ' 岁' : '未填写' },
+      { label: '心理年龄', value: p + ' 岁' }
+    ];
+    if (r.diff != null) {
+      const d = Math.round(r.diff);
+      chips.push({ label: '差值', value: d === 0 ? '相当' : (d < 0 ? '小 ' + (-d) + ' 岁' : '大 ' + d + ' 岁') });
+    }
+
+    // 六维雷达：年龄映射到 16~60 的比例
+    const radar = (r.dims || []).map((d) => ({
+      label: d.short || d.name,
+      value: Math.max(0, Math.min(1, ((d.age || FLOOR_AGE) - FLOOR_AGE) / (CEIL_AGE - FLOOR_AGE)))
+    }));
+    const refVal = r.chrono != null
+      ? Math.max(0, Math.min(1, (r.chrono - FLOOR_AGE) / (CEIL_AGE - FLOOR_AGE)))
+      : null;
+    const radarRef = refVal != null ? radar.map(() => refVal) : [];
+
+    ShareCard.open({
+      tag: '心理测试',
+      title: '心理年龄测验',
+      value: String(p),
+      unit: '岁',
+      badge: r.descriptor || '',
+      note: '42 题 × 7 维度 · 记录作答节奏 · 附逐项解析与文献支撑',
+      chips: chips,
+      radar: radar,
+      radarRef: radarRef,
+      footer: '心理年龄测验 · 仅供自我探索',
+      accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2a78d6'
+    });
+  });
+
   /* ---------------- 演示模式 ----------------
      打开 index.html#demo 可自动作答并直接看到结果页，方便预览效果。 */
   function demo() {

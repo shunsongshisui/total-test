@@ -479,6 +479,30 @@
   $('btnRetryShuffle').addEventListener('click', () => begin(true));
   $('btnRestart').addEventListener('click', () => show('view-start'));
 
+  /* ---------------- 保存为图片 ---------------- */
+  $('btnShare').addEventListener('click', () => {
+    const r = state.results;
+    if (!r) return;
+    try {
+      
+      ShareCard.open({
+        tag: '心理测试',
+        title: '变态心理测试',
+        value: String(Math.round(r.index)),
+        unit: '指数',
+        badge: r.tier.label,
+        note: '57 题 × 23 个暗黑维度 · 7 核心暗黑特质 + 12 型人格障碍谱',
+        chips: [{ label: '主导特质', value: r.dominant.icon + ' ' + r.dominant.name },{ label: '潜在倾向', value: r.latent.icon + ' ' + r.latent.name }],
+        radar: Object.keys(r.scores).slice(0, 8).map((k) => ({ label: r.scores[k].name, value: r.scores[k].pct })),
+        radarRef: [],
+        footer: '变态心理测试 · 仅供娱乐与自我探索',
+        accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#9f7aea'
+      });
+    } catch (err) {
+      alert('生成图片失败：' + (err && err.message ? err.message : err));
+    }
+  });
+
   /* ---------------- 演示模式 ----------------
      打开 index.html#demo 可自动作答并直接看到结果页，方便预览效果。 */
   function demo() {

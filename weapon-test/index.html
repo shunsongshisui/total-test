@@ -6,6 +6,7 @@
 <meta name="description" content="本命武器测试：情境量表或二选一快答（42/56/70 题可选）× 7 维战斗气质（刚猛/迅捷/精准/射程/灵动/坚韧/时代），从 341 件武器全库（冷兵器/热武器/爆炸物/传说名器）中匹配你的本命武器，含完整图鉴。">
 <title>本命武器 · Destiny Weapon Test</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../share-card.css">
 </head>
 <body>
 <div id="app">
@@ -179,7 +180,8 @@
     </section>
 
     <div class="result-actions">
-      <button id="btnRetrySame" class="btn-primary">再测一次（同样设置）</button>
+      <button id="btnShare" class="btn-primary">保存为图片</button>
+          <button id="btnRetrySame" class="btn-primary">再测一次（同样设置）</button>
       <div class="result-actions-row">
         <button id="btnRetryShuffle" class="btn-ghost">换顺序重测</button>
         <button id="galleryFromResult" class="btn-ghost">查看图鉴</button>
@@ -251,6 +253,7 @@
 <script src="data-mythic.js"></script>
 <script src="data-specs.js"></script>
 <script src="data-story.js"></script>
+<script src="../share-card.js"></script>
 <script src="app.js"></script>
 <script src="../signature.js"></script>
 </body>

@@ -412,6 +412,30 @@
   $('btnRetryShuffle').addEventListener('click', () => begin(true));
   $('btnRestart').addEventListener('click', () => show('view-start'));
 
+  /* ---------------- 保存为图片 ---------------- */
+  $('btnShare').addEventListener('click', () => {
+    const r = state.results;
+    if (!r) return;
+    try {
+      
+      ShareCard.open({
+        tag: '心理测试',
+        title: '犯罪潜力测试',
+        value: String(Math.round(r.index)),
+        unit: '指数',
+        badge: r.tier.label + ' · ' + r.tier.text,
+        note: '38 题 × 7 个犯罪风险因子 · 情境化隐晦题面',
+        chips: [{ label: '主导风险', value: r.dominant.icon + ' ' + r.dominant.name },{ label: '防火墙', value: r.firewall.icon + ' ' + r.firewall.name }],
+        radar: Object.keys(r.scores).map((k) => ({ label: r.scores[k].name, value: r.scores[k].pct })),
+        radarRef: [],
+        footer: '犯罪潜力测试 · 仅供娱乐与自我探索',
+        accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c25a3a'
+      });
+    } catch (err) {
+      alert('生成图片失败：' + (err && err.message ? err.message : err));
+    }
+  });
+
   /* ---------------- 演示模式 ----------------
      打开 index.html#demo 可自动作答并直接看到结果页，方便预览效果。 */
   function demo() {
