@@ -514,7 +514,7 @@
     if (!r) return;
     try {
       
-      ShareCard.open({
+      ShareCard.save({
         tag: '心理测试',
         title: '七美德与七宗罪',
         value: String(Math.round(r.sinIndex)),
@@ -525,8 +525,9 @@
         radar: D.sins.map((s) => ({ label: s.name, value: r.sinScores[s.key].pct })),
         radarRef: [],
         footer: '七美德与七宗罪 · 仅供自我探索',
+        theme: 'amber',
         accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c98500'
-      });
+      }, $('btnShare'));
     } catch (err) {
       alert('生成图片失败：' + (err && err.message ? err.message : err));
     }

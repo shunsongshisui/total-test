@@ -418,7 +418,7 @@
     if (!r) return;
     try {
       
-      ShareCard.open({
+      ShareCard.save({
         tag: '心理测试',
         title: '犯罪潜力测试',
         value: String(Math.round(r.index)),
@@ -429,8 +429,9 @@
         radar: Object.keys(r.scores).map((k) => ({ label: r.scores[k].name, value: r.scores[k].pct })),
         radarRef: [],
         footer: '犯罪潜力测试 · 仅供娱乐与自我探索',
+        theme: 'rust',
         accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c25a3a'
-      });
+      }, $('btnShare'));
     } catch (err) {
       alert('生成图片失败：' + (err && err.message ? err.message : err));
     }

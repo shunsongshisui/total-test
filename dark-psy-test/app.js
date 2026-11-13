@@ -485,7 +485,7 @@
     if (!r) return;
     try {
       
-      ShareCard.open({
+      ShareCard.save({
         tag: '心理测试',
         title: '变态心理测试',
         value: String(Math.round(r.index)),
@@ -496,8 +496,9 @@
         radar: Object.keys(r.scores).slice(0, 8).map((k) => ({ label: r.scores[k].name, value: r.scores[k].pct })),
         radarRef: [],
         footer: '变态心理测试 · 仅供娱乐与自我探索',
+        theme: 'purple',
         accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#9f7aea'
-      });
+      }, $('btnShare'));
     } catch (err) {
       alert('生成图片失败：' + (err && err.message ? err.message : err));
     }

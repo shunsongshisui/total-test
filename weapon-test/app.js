@@ -912,7 +912,7 @@
       const top = r.ranked[0];
       const w = top.w;
       const sub = D.subs[w.sub];
-      ShareCard.open({
+      ShareCard.save({
         tag: '本命武器',
         title: '本命武器测试',
         value: w.n,
@@ -923,8 +923,9 @@
         radar: (D.dims || []).map((d) => ({ label: d.short || d.name, value: Math.max(0, Math.min(1, (r.profile[d.key] || 0) / 100)) })),
         radarRef: [],
         footer: '本命武器测试 · 仅供娱乐与自我探索',
+        theme: 'teal',
         accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2a78d6'
-      });
+      }, $('btnShare'));
     } catch (err) {
       alert('生成图片失败：' + (err && err.message ? err.message : err));
     }

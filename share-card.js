@@ -5,8 +5,8 @@
    不依赖任何第三方库，离线可用。
 
    用法：页面里引入本文件，然后
-       ShareCard.render({ ... })   // 返回 dataURL
-       ShareCard.open({ ... })     // 弹出预览，带保存按钮
+       ShareCard.save({ ... }, btn)   // 立即生成并下载，btn 用于按钮状态反馈
+       ShareCard.render({ ... })      // 返回 canvas，需要自定义用途时用
 
    spec 结构：
      title     {string}  测试名，如「心理年龄测验」
@@ -26,6 +26,44 @@
 
   var W = 1080;
   var PAD = 64;
+
+  /* 各测试的配色主题：base 为主色，deep 为深色背景，glow 为光晕 */
+  var THEMES = {
+    blue:   { base: '#2a78d6', deep: '#0f2440', mid: '#1d4f8f', glow: '#5b9df0' },
+    purple: { base: '#9f7aea', deep: '#241a3d', mid: '#4c2f80', glow: '#c4a5f5' },
+    amber:  { base: '#c98500', deep: '#3a2a06', mid: '#8a5f00', glow: '#f0bc55' },
+    rust:   { base: '#c25a3a', deep: '#3d1a12', mid: '#8f3d24', glow: '#e88a63' },
+    teal:   { base: '#1baf7a', deep: '#0c2f24', mid: '#11735c', glow: '#4dd6a8' }
+  };
+
+  function pickTheme(spec) {
+    if (spec.theme && THEMES[spec.theme]) return THEMES[spec.theme];
+    var a = (spec.accent || '').toLowerCase();
+    if (a.indexOf('9f7aea') >= 0 || a.indexOf('8b5cf6') >= 0) return THEMES.purple;
+    if (a.indexOf('c98500') >= 0 || a.indexOf('eda100') >= 0) return THEMES.amber;
+    if (a.indexOf('c25a3a') >= 0 || a.indexOf('f87171') >= 0) return THEMES.rust;
+    if (a.indexOf('1baf7a') >= 0 || a.indexOf('10b981') >= 0) return THEMES.teal;
+    return THEMES.blue;
+  }
+
+  function hexAlpha(hex, a) {
+    var m = /^#([0-9a-f]{6})$/i.exec(hex);
+    if (!m) return 'rgba(42,120,214,' + a + ')';
+    var n = parseInt(m[1], 16);
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+
+  // 柔光圆斑，用于背景氛围
+  function softOrb(g, x, y, r, color, alpha) {
+    var grd = g.createRadialGradient(x, y, 0, x, y, r);
+    grd.addColorStop(0, hexAlpha(color, alpha));
+    grd.addColorStop(0.55, hexAlpha(color, alpha * 0.35));
+    grd.addColorStop(1, hexAlpha(color, 0));
+    g.fillStyle = grd;
+    g.beginPath();
+    g.arc(x, y, r, 0, Math.PI * 2);
+    g.fill();
+  }
 
   function font(size, weight) {
     return (weight ? weight + ' ' : '') + size + 'px -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
@@ -62,14 +100,15 @@
     return lines;
   }
 
-  function drawRadar(g, spec, cx, cy, R) {
+  function drawRadar(g, spec, cx, cy, R, theme) {
     var dims = spec.radar || [];
     var n = dims.length;
     if (n < 3) return false;
 
-    var ac = spec.accent || '#2a78d6';
+    var ac = spec.accent || (theme && theme.glow) || '#5b9df0';
+    var T = theme || { base: ac, glow: ac };
 
-    // 背景网格
+    // 背景网格（深色卡片用浅色描边）
     for (var ring = 1; ring <= 4; ring++) {
       var r = R * ring / 4;
       g.beginPath();
@@ -80,8 +119,8 @@
         if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
       }
       g.closePath();
-      g.strokeStyle = 'rgba(11,11,11,0.10)';
-      g.lineWidth = 1.5;
+      g.strokeStyle = ring === 4 ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.09)';
+      g.lineWidth = ring === 4 ? 2 : 1.5;
       g.stroke();
     }
 
@@ -91,12 +130,12 @@
       g.beginPath();
       g.moveTo(cx, cy);
       g.lineTo(cx + Math.cos(ang) * R, cy + Math.sin(ang) * R);
-      g.strokeStyle = 'rgba(11,11,11,0.08)';
+      g.strokeStyle = 'rgba(255,255,255,0.07)';
       g.lineWidth = 1.5;
       g.stroke();
     }
 
-    // 参照圈
+    // 参照多边形（虚线）
     if (spec.radarRef && spec.radarRef.length === n) {
       g.beginPath();
       for (var k = 0; k <= n; k++) {
@@ -108,14 +147,14 @@
         if (k === 0) g.moveTo(xx, yy); else g.lineTo(xx, yy);
       }
       g.closePath();
-      g.strokeStyle = 'rgba(11,11,11,0.28)';
+      g.strokeStyle = 'rgba(255,255,255,0.35)';
       g.lineWidth = 2.5;
-      g.setLineDash([8, 6]);
+      g.setLineDash([9, 7]);
       g.stroke();
       g.setLineDash([]);
     }
 
-    // 数据面
+    // 数据面：渐变填充 + 发光描边
     g.beginPath();
     for (var m = 0; m <= n; m++) {
       var ii = m % n;
@@ -126,43 +165,50 @@
       if (m === 0) g.moveTo(px, py); else g.lineTo(px, py);
     }
     g.closePath();
-    g.fillStyle = ac;
-    g.globalAlpha = 0.20;
+
+    var fillGrad = g.createRadialGradient(cx, cy, 0, cx, cy, R);
+    fillGrad.addColorStop(0, hexAlpha(T.base, 0.55));
+    fillGrad.addColorStop(1, hexAlpha(T.glow, 0.18));
+    g.fillStyle = fillGrad;
     g.fill();
-    g.globalAlpha = 1;
-    g.strokeStyle = ac;
-    g.lineWidth = 3.5;
+
+    g.save();
+    g.shadowColor = hexAlpha(T.glow, 0.75);
+    g.shadowBlur = 22;
+    g.strokeStyle = T.glow;
+    g.lineWidth = 4;
     g.lineJoin = 'round';
     g.stroke();
+    g.restore();
 
     // 顶点
     for (var q = 0; q < n; q++) {
       var aq = -Math.PI / 2 + q * 2 * Math.PI / n;
       var rq = R * Math.max(0, Math.min(1, dims[q].value || 0));
+      var vx = cx + Math.cos(aq) * rq;
+      var vy = cy + Math.sin(aq) * rq;
       g.beginPath();
-      g.arc(cx + Math.cos(aq) * rq, cy + Math.sin(aq) * rq, 7, 0, Math.PI * 2);
-      g.fillStyle = ac;
+      g.arc(vx, vy, 8, 0, Math.PI * 2);
+      g.fillStyle = '#ffffff';
       g.fill();
-      g.strokeStyle = '#ffffff';
-      g.lineWidth = 3;
-      g.stroke();
+      g.beginPath();
+      g.arc(vx, vy, 4, 0, Math.PI * 2);
+      g.fillStyle = T.base;
+      g.fill();
     }
 
     // 轴标签
-    g.font = font(26, '600');
-    g.fillStyle = '#52514e';
-    g.textAlign = 'center';
+    g.font = font(25, '600');
     g.textBaseline = 'middle';
     for (var t = 0; t < n; t++) {
       var at = -Math.PI / 2 + t * 2 * Math.PI / n;
-      var lx = cx + Math.cos(at) * (R + 52);
-      var ly = cy + Math.sin(at) * (R + 52);
-      var label = dims[t].label || '';
-      // 左右两侧标签避免贴边
+      var lx = cx + Math.cos(at) * (R + 56);
+      var ly = cy + Math.sin(at) * (R + 56);
       if (Math.cos(at) > 0.3) g.textAlign = 'left';
       else if (Math.cos(at) < -0.3) g.textAlign = 'right';
       else g.textAlign = 'center';
-      g.fillText(label, lx, ly);
+      g.fillStyle = 'rgba(255,255,255,0.72)';
+      g.fillText(dims[t].label || '', lx, ly);
     }
     return true;
   }
@@ -170,154 +216,235 @@
   function render(spec, opts) {
     opts = opts || {};
     var g = opts.ctx;
+    var T = pickTheme(spec);
+    var accent = T.base;
 
-    // 先量高度：用离屏 canvas 估
+    // 先量高度
     var measure = document.createElement('canvas').getContext('2d');
-    var chipsH = (spec.chips && spec.chips.length) ? 118 : 0;
-    measure.font = font(64, '800');
-    var valH = 96;
-    var titleLines = 1;
     measure.font = font(40, '700');
+    var titleLines = wrapText(measure, spec.title || '', W - PAD * 2).length || 1;
+    measure.font = font(36, '700');
     var badgeLines = wrapText(measure, spec.badge || '', W - PAD * 2).length || 1;
-    measure.font = font(28);
-    var noteLines = spec.note ? wrapText(measure, spec.note, W - PAD * 2).slice(0, 3).length : 0;
-    var hasRadar = (spec.radar && spec.radar.length >= 3);
-    var radarH = hasRadar ? 520 : 0;
+    measure.font = font(26);
+    var noteLines = spec.note ? Math.min(3, wrapText(measure, spec.note, W - PAD * 2).length) : 0;
 
-    var H = 96 + 64 + 44 * titleLines + 24 + valH + 28 + badgeLines * 46 + 28 + noteLines * 42 + chipsH + radarH + 110 + 72;
-    H = Math.max(H, 900);
+    var hasChips = !!(spec.chips && spec.chips.length);
+    var chipsH = hasChips ? 132 : 0;
+    var hasRadar = (spec.radar && spec.radar.length >= 3);
+    var radarH = hasRadar ? 560 : 0;
+
+    // 布局常量
+    var M = 44;                        // 外边距（深色底）
+    var IN = 56;                       // 卡片内边距
+    var headH = 120;                   // 顶部标签区
+    var titleH = 56 * titleLines;
+    var valueH = 150;
+    var badgeH = 52 * badgeLines;
+    var noteH = noteLines * 40;
+
+    var bodyH = headH + titleH + 30 + valueH + 26 + badgeH + (noteH ? noteH + 22 : 0)
+              + (hasChips ? chipsH + 22 : 0) + radarH;
+    var footH = 128;
+    var cardH = bodyH + footH + IN * 2;
+    var H = cardH + M * 2;
 
     var canvas = g ? g.canvas : document.createElement('canvas');
     canvas.width = W;
     canvas.height = H;
     if (!g) g = canvas.getContext('2d');
 
-    // 背景
-    var bg = g.createLinearGradient(0, 0, W, H);
-    bg.addColorStop(0, '#ffffff');
-    bg.addColorStop(1, '#f4f3ef');
+    /* ---------- 底色：深色渐变 + 氛围光斑 ---------- */
+    var bg = g.createLinearGradient(0, 0, W * 0.6, H);
+    bg.addColorStop(0, T.deep);
+    bg.addColorStop(0.55, '#0b0d14');
+    bg.addColorStop(1, '#07080c');
     g.fillStyle = bg;
     g.fillRect(0, 0, W, H);
 
-    // 顶部色条
-    var accent = spec.accent || '#2a78d6';
-    var top = g.createLinearGradient(0, 0, W, 0);
-    top.addColorStop(0, accent);
-    top.addColorStop(1, '#9f7aea');
-    g.fillStyle = top;
-    g.fillRect(0, 0, W, 10);
+    softOrb(g, W * 0.86, H * 0.10, 520, T.glow, 0.30);
+    softOrb(g, W * 0.10, H * 0.72, 460, T.base, 0.22);
+    softOrb(g, W * 0.72, H * 0.94, 380, T.glow, 0.16);
 
-    var y = 96;
+    /* ---------- 主卡片 ---------- */
+    var cx = M, cy = M, cw = W - M * 2, ch = cardH;
+    g.save();
+    g.shadowColor = 'rgba(0,0,0,0.55)';
+    g.shadowBlur = 60;
+    g.shadowOffsetY = 24;
+    roundRect(g, cx, cy, cw, ch, 40);
+    g.fillStyle = 'rgba(255,255,255,0.055)';
+    g.fill();
+    g.restore();
 
-    // 标签
+    // 卡片描边（渐变）
+    var stroke = g.createLinearGradient(cx, cy, cx + cw, cy + ch);
+    stroke.addColorStop(0, hexAlpha(T.glow, 0.55));
+    stroke.addColorStop(0.5, 'rgba(255,255,255,0.10)');
+    stroke.addColorStop(1, hexAlpha(T.base, 0.35));
+    roundRect(g, cx, cy, cw, ch, 40);
+    g.strokeStyle = stroke;
+    g.lineWidth = 2;
+    g.stroke();
+
+    // 卡片顶部渐变高光条
+    g.save();
+    roundRect(g, cx, cy, cw, ch, 40);
+    g.clip();
+    var bar = g.createLinearGradient(cx, cy, cx + cw, cy);
+    bar.addColorStop(0, T.base);
+    bar.addColorStop(0.55, T.glow);
+    bar.addColorStop(1, T.base);
+    g.fillStyle = bar;
+    g.fillRect(cx, cy, cw, 6);
+    g.restore();
+
+    var left = cx + IN;
+    var contentW = cw - IN * 2;
+    var y = cy + IN;
+
+    /* ---------- 顶部：标签胶囊 + 右上角署名 ---------- */
     if (spec.tag) {
-      g.font = font(26, '600');
-      g.fillStyle = '#898781';
-      g.textAlign = 'left';
-      g.textBaseline = 'alphabetic';
-      g.fillText(spec.tag, PAD, y - 24);
-      y += 40;
+      g.font = font(24, '700');
+      var tw = g.measureText(spec.tag).width;
+      var pillW = tw + 44;
+      roundRect(g, left, y, pillW, 46, 23);
+      g.fillStyle = hexAlpha(T.base, 0.20);
+      g.fill();
+      g.strokeStyle = hexAlpha(T.glow, 0.45);
+      g.lineWidth = 1.5;
+      g.stroke();
+      g.fillStyle = T.glow;
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(spec.tag, left + pillW / 2, y + 24);
     }
 
-    // 标题（自动折行，最多 3 行）
-    g.font = font(40, '700');
-    g.fillStyle = '#0b0b0b';
+    // 右上角小字
+    g.font = font(22, '600');
+    g.fillStyle = 'rgba(255,255,255,0.34)';
+    g.textAlign = 'right';
+    g.textBaseline = 'middle';
+    g.fillText(spec.signature || '愿安 · 测试合集', left + contentW, y + 24);
+
+    y += headH;
+
+    /* ---------- 标题 ---------- */
     g.textAlign = 'left';
     g.textBaseline = 'alphabetic';
-    var tLines = wrapText(g, spec.title || '', W - PAD * 2).slice(0, 3);
-    for (var ti = 0; ti < tLines.length; ti++) {
-      g.fillText(tLines[ti], PAD, y + 32 + ti * 52);
+    g.font = font(40, '700');
+    g.fillStyle = 'rgba(255,255,255,0.92)';
+    var tls = wrapText(g, spec.title || '', contentW).slice(0, 2);
+    for (var ti = 0; ti < tls.length; ti++) {
+      g.fillText(tls[ti], left, y + 40 + ti * 54);
     }
-    y += 96 + Math.max(0, tLines.length - 1) * 52;
+    y += titleH + 30;
 
-    // 主分数
-    g.textBaseline = 'alphabetic';
-    g.font = font(120, '900');
-    g.fillStyle = '#0b0b0b';
+    /* ---------- 主分数（渐变字） ---------- */
     var valText = String(spec.value == null ? '—' : spec.value);
-    g.fillText(valText, PAD, y + 96);
+    // 长文本（如武器名）自动降字号
+    var valSize = 132;
+    g.font = font(valSize, '900');
+    while (g.measureText(valText).width > contentW * 0.92 && valSize > 60) {
+      valSize -= 8;
+      g.font = font(valSize, '900');
+    }
+    var valGrad = g.createLinearGradient(left, y, left + Math.min(contentW, g.measureText(valText).width + 40), y + valSize);
+    valGrad.addColorStop(0, '#ffffff');
+    valGrad.addColorStop(1, T.glow);
+    g.fillStyle = valGrad;
+    g.fillText(valText, left, y + valSize * 0.82);
     var vw = g.measureText(valText).width;
+
     if (spec.unit) {
-      g.font = font(38, '600');
-      g.fillStyle = '#898781';
-      g.fillText(spec.unit, PAD + vw + 16, y + 96);
+      g.font = font(34, '600');
+      g.fillStyle = 'rgba(255,255,255,0.45)';
+      g.fillText(spec.unit, left + vw + 18, y + valSize * 0.82 - 6);
     }
-    y += 130;
+    y += valueH + 26;
 
-    // 档位
+    /* ---------- 档位评语 ---------- */
     g.font = font(36, '700');
-    g.textBaseline = 'top';
-    var bLines = wrapText(g, spec.badge || '', W - PAD * 2);
-    g.fillStyle = accent;
-    for (var i = 0; i < bLines.length; i++) {
-      g.fillText(bLines[i], PAD, y + i * 46);
+    var bls = wrapText(g, spec.badge || '', contentW);
+    for (var bi = 0; bi < bls.length; bi++) {
+      g.fillStyle = T.glow;
+      g.fillText(bls[bi], left, y + 40 + bi * 52);
     }
-    y += bLines.length * 46 + 22;
+    y += badgeH;
 
-    // 说明
+    /* ---------- 说明 ---------- */
     if (noteLines) {
-      g.font = font(28);
-      g.fillStyle = '#52514e';
-      var nLines = wrapText(g, spec.note, W - PAD * 2).slice(0, 3);
-      for (var j = 0; j < nLines.length; j++) {
-        g.fillText(nLines[j], PAD, y + j * 42);
+      y += 14;
+      g.font = font(26, '400');
+      g.fillStyle = 'rgba(255,255,255,0.46)';
+      var nls = wrapText(g, spec.note, contentW).slice(0, 3);
+      for (var ni = 0; ni < nls.length; ni++) {
+        g.fillText(nls[ni], left, y + 28 + ni * 40);
       }
-      y += nLines.length * 42 + 26;
+      y += noteH + 22;
     }
 
-    // chips
-    if (spec.chips && spec.chips.length) {
-      var cw = (W - PAD * 2 - 16 * (spec.chips.length - 1)) / spec.chips.length;
-      for (var c = 0; c < spec.chips.length; c++) {
-        var ch = spec.chips[c];
-        var cx = PAD + c * (cw + 16);
-        roundRect(g, cx, y, cw, 92, 18);
-        g.fillStyle = '#f4f3ef';
+    /* ---------- chips ---------- */
+    if (hasChips) {
+      var n = Math.min(spec.chips.length, 4);
+      var gap = 16;
+      var cwd = (contentW - gap * (n - 1)) / n;
+      for (var ci = 0; ci < n; ci++) {
+        var chd = spec.chips[ci];
+        var chx = left + ci * (cwd + gap);
+        roundRect(g, chx, y, cwd, 108, 20);
+        g.fillStyle = 'rgba(255,255,255,0.066)';
         g.fill();
-        g.strokeStyle = 'rgba(11,11,11,0.07)';
-        g.lineWidth = 2;
+        g.strokeStyle = 'rgba(255,255,255,0.10)';
+        g.lineWidth = 1.5;
         g.stroke();
 
         g.textAlign = 'left';
-        g.textBaseline = 'top';
-        g.font = font(24);
-        g.fillStyle = '#898781';
-        g.fillText(ch.label || '', cx + 22, y + 18);
+        g.font = font(22, '500');
+        g.fillStyle = 'rgba(255,255,255,0.42)';
+        g.fillText(String(chd.label || ''), chx + 22, y + 38);
+
         g.font = font(34, '700');
-        g.fillStyle = '#0b0b0b';
-        g.fillText(String(ch.value == null ? '—' : ch.value), cx + 22, y + 46);
+        g.fillStyle = 'rgba(255,255,255,0.94)';
+        var cv = String(chd.value == null ? '—' : chd.value);
+        while (g.measureText(cv).width > cwd - 44 && cv.length > 1) {
+          cv = cv.slice(0, -1);
+        }
+        g.fillText(cv, chx + 22, y + 80);
       }
-      y += chipsH + 26;
+      y += chipsH + 22;
     }
 
-    // 雷达图
+    /* ---------- 雷达 ---------- */
     if (hasRadar) {
-      var R = 210;
-      var cx2 = W / 2;
-      var cy2 = y + radarH / 2 + 10;
-      drawRadar(g, { radar: spec.radar, radarRef: spec.radarRef, accent: accent }, cx2, cy2, R);
+      var R = 200;
+      drawRadar(g, { radar: spec.radar, radarRef: spec.radarRef, accent: T.glow }, cx + cw / 2, y + radarH / 2, R, T);
       y += radarH;
     }
 
-    // 页脚
-    var fy = H - 96;
+    /* ---------- 页脚 ---------- */
+    y += 14;
+    var lineGrad = g.createLinearGradient(left, 0, left + contentW, 0);
+    lineGrad.addColorStop(0, hexAlpha(T.base, 0.55));
+    lineGrad.addColorStop(0.5, 'rgba(255,255,255,0.14)');
+    lineGrad.addColorStop(1, 'rgba(255,255,255,0)');
     g.beginPath();
-    g.moveTo(PAD, fy - 30);
-    g.lineTo(W - PAD, fy - 30);
-    g.strokeStyle = 'rgba(11,11,11,0.10)';
-    g.lineWidth = 2;
+    g.moveTo(left, y);
+    g.lineTo(left + contentW, y);
+    g.strokeStyle = lineGrad;
+    g.lineWidth = 1.5;
     g.stroke();
 
     g.textAlign = 'left';
     g.textBaseline = 'top';
-    g.font = font(26, '600');
-    g.fillStyle = '#52514e';
-    g.fillText(spec.footer || '', PAD, fy);
+    g.font = font(24, '600');
+    g.fillStyle = 'rgba(255,255,255,0.50)';
+    g.fillText(spec.footer || '', left, y + 24);
 
+    // 右下角品牌点
     g.textAlign = 'right';
-    g.font = font(24);
-    g.fillStyle = '#898781';
-    g.fillText(spec.signature || '愿安 · 测试合集', W - PAD, fy);
+    g.font = font(22, '600');
+    g.fillStyle = hexAlpha(T.glow, 0.75);
+    g.fillText('愿安 · 测试合集', left + contentW, y + 26);
 
     return canvas;
   }
@@ -384,104 +511,87 @@
       radarRef: opts.radarRef || j.radarRef || [],
       footer: opts.footer || j.footer || '',
       accent: opts.accent || j.accent || '#2a78d6',
+      theme: opts.theme || j.theme || '',
       signature: opts.signature || j.signature || '愿安 · 测试合集'
     };
   }
 
-  /* ---------- 预览弹窗 ---------- */
-  var modal = null;
-  var currentSpec = null;
-
-  function ensureModal() {
-    if (modal && document.body.contains(modal)) return modal;
-    modal = document.createElement('div');
-    modal.className = 'share-modal';
-    modal.innerHTML = [
-      '<div class="share-modal-card">',
-      '  <div class="share-modal-head">',
-      '    <span class="share-modal-title">保存为图片</span>',
-      '    <button class="share-modal-close" type="button" aria-label="关闭">×</button>',
-      '  </div>',
-      '  <div class="share-modal-body"><img class="share-modal-img" alt="结果分享图"></div>',
-      '  <div class="share-modal-foot">',
-      '    <button class="share-btn share-btn-primary" type="button" data-act="download">保存图片</button>',
-      '    <button class="share-btn" type="button" data-act="share">分享</button>',
-      '    <button class="share-btn share-btn-ghost" type="button" data-act="close">关闭</button>',
-      '  </div>',
-      '</div>'
-    ].join('');
-    document.body.appendChild(modal);
-
-    modal.addEventListener('click', function (e) {
-      var t = e.target;
-      if (t === modal || (t.getAttribute && t.getAttribute('data-act') === 'close') ||
-          (t.className && String(t.className).indexOf('share-modal-close') >= 0)) {
-        close();
-        return;
-      }
-      var act = t.getAttribute && t.getAttribute('data-act');
-      if (act === 'download') doDownload();
-      if (act === 'share') doShare();
-    });
-    return modal;
-  }
-
-  function close() {
-    if (modal) {
-      modal.classList.remove('show');
-      document.body.style.overflow = '';
-    }
-  }
-
+  /* ---------- 直接下载（无弹窗） ---------- */
   function fileName(spec) {
     var n = (spec.title || '结果').replace(/[\\/:*?"<>|\s]+/g, '');
-    return n + '-' + (spec.value || '') + '.png';
+    return n + '-' + String(spec.value || '').replace(/[\\/:*?"<>|\s]+/g, '') + '.png';
   }
 
-  function doDownload() {
-    if (!currentSpec) return;
-    try {
-      var url = dataURL(currentSpec);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = fileName(currentSpec);
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    } catch (e) {
-      alert('保存失败，请重试或长按图片保存。');
+  function triggerDownload(url, name) {
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    // 移动端部分浏览器需要延迟移除，否则下载可能被取消
+    setTimeout(function () {
+      if (a.parentNode) a.parentNode.removeChild(a);
+    }, 1500);
+  }
+
+  /**
+   * 点击即生成并下载。buttons 传入被点击的按钮，用于显示"生成中/已保存"。
+   */
+  function save(opts, btn) {
+    opts = opts || {};
+    var originText = btn ? btn.textContent : null;
+    var originDisabled = btn ? btn.disabled : null;
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '生成中…';
     }
-  }
 
-  function doShare() {
-    if (!currentSpec) return;
-    var canvas = render(currentSpec);
-    if (canvas.toBlob && navigator.canShare) {
-      canvas.toBlob(function (blob) {
-        if (!blob) { doDownload(); return; }
-        var file = new File([blob], fileName(currentSpec), { type: 'image/png' });
-        if (navigator.canShare({ files: [file] })) {
-          navigator.share({ files: [file], title: currentSpec.title }).catch(function () {});
-        } else {
-          doDownload();
-        }
-      }, 'image/png');
-    } else {
-      doDownload();
-    }
-  }
+    var done = function (msg) {
+      if (btn) {
+        btn.textContent = msg;
+        setTimeout(function () {
+          btn.textContent = originText;
+          btn.disabled = originDisabled || false;
+        }, 1600);
+      }
+    };
 
-  function open(opts) {
     try {
-      currentSpec = buildSpec(opts);
-      var m = ensureModal();
-      var img = m.querySelector('.share-modal-img');
-      img.src = dataURL(currentSpec);
-      m.classList.add('show');
-      document.body.style.overflow = 'hidden';
+      var spec = buildSpec(opts);
+      var canvas = render(spec);
+      var name = fileName(spec);
+
+      // 优先用 toBlob（内存占用低），失败回退 toDataURL
+      var downloaded = false;
+      if (canvas.toBlob) {
+        canvas.toBlob(function (blob) {
+          if (blob && window.URL && window.URL.createObjectURL) {
+            var url = window.URL.createObjectURL(blob);
+            triggerDownload(url, name);
+            setTimeout(function () { window.URL.revokeObjectURL(url); }, 4000);
+            done('已保存 ✅');
+          } else {
+            triggerDownload(canvas.toDataURL('image/png'), name);
+            done('已保存 ✅');
+          }
+        }, 'image/png');
+        downloaded = true;
+      }
+      if (!downloaded) {
+        triggerDownload(canvas.toDataURL('image/png'), name);
+        done('已保存 ✅');
+      }
       return true;
     } catch (e) {
-      alert('生成图片失败：' + (e && e.message ? e.message : e));
+      if (btn) {
+        btn.textContent = originText;
+        btn.disabled = originDisabled || false;
+      }
+      // 生成失败不应影响页面其它功能
+      console.error('[ShareCard] 生成失败', e);
+      alert('生成图片失败，请重试。');
       return false;
     }
   }
@@ -490,8 +600,7 @@
     render: render,
     dataURL: dataURL,
     download: download,
-    open: open,
-    buildSpec: buildSpec,
-    close: close
+    save: save,
+    buildSpec: buildSpec
   };
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this));

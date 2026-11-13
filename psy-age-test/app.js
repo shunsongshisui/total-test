@@ -813,7 +813,7 @@
       : null;
     const radarRef = refVal != null ? radar.map(() => refVal) : [];
 
-    ShareCard.open({
+    ShareCard.save({
       tag: '心理测试',
       title: '心理年龄测验',
       value: String(p),
@@ -824,8 +824,9 @@
       radar: radar,
       radarRef: radarRef,
       footer: '心理年龄测验 · 仅供自我探索',
+      theme: 'blue',
       accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2a78d6'
-    });
+      }, $('btnShare'));
   });
 
   /* ---------------- 演示模式 ----------------
