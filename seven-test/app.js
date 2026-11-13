@@ -533,6 +533,30 @@
     }
   });
 
+  $('btnShareImage').addEventListener('click', () => {
+    const r = state.results;
+    if (!r) return;
+    try {
+      
+      ShareCard.share({
+        tag: '心理测试',
+        title: '七美德与七宗罪',
+        value: String(Math.round(r.sinIndex)),
+        unit: '罪孽指数',
+        badge: r.sinTier.label,
+        note: '60 题 × 7 宗罪与 7 美德独立测量 · 罪德共存分析',
+        chips: [{ label: '美德指数', value: Math.round(r.virtueIndex) },{ label: '主导之罪', value: r.dominant.icon + ' ' + r.dominant.name },{ label: '守护美德', value: r.guardian.icon + ' ' + r.guardian.name }],
+        radar: D.sins.map((s) => ({ label: s.name, value: r.sinScores[s.key].pct })),
+        radarRef: [],
+        footer: '七美德与七宗罪 · 仅供自我探索',
+        theme: 'amber',
+        accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c98500'
+      }, $('btnShareImage'));
+    } catch (err) {
+      alert('生成图片失败：' + (err && err.message ? err.message : err));
+    }
+  });
+
   /* ---------------- 演示模式 ---------------- */
   function demo() {
     state.shuffle = true;

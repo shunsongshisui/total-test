@@ -596,11 +596,91 @@
     }
   }
 
+  /**
+   * 生成图片并调起系统分享（iOS / Android 支持分享图片文件）。
+   * 不支持或失败时自动降级为下载，保证一定有出口。
+   */
+  function share(opts, btn) {
+    opts = opts || {};
+    var originText = btn ? btn.textContent : null;
+    var originDisabled = btn ? btn.disabled : null;
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '生成中…';
+    }
+
+    var restore = function (msg) {
+      if (!btn) return;
+      btn.textContent = msg;
+      setTimeout(function () {
+        btn.textContent = originText;
+        btn.disabled = originDisabled || false;
+      }, 1600);
+    };
+
+    var fallback = function () {
+      if (btn) { btn.textContent = originText; btn.disabled = originDisabled || false; }
+      save(opts, btn);
+    };
+
+    try {
+      var spec = buildSpec(opts);
+      var canvas = render(spec);
+      var name = fileName(spec);
+
+      // 不支持 Web Share Level 2（分享文件）时直接降级
+      var canShareFiles = !!(navigator.canShare && navigator.share && canvas.toBlob);
+      if (!canShareFiles) {
+        if (btn) { btn.textContent = originText; btn.disabled = originDisabled || false; }
+        save(opts, btn);
+        return true;
+      }
+
+      canvas.toBlob(function (blob) {
+        if (!blob) { fallback(); return; }
+        var file;
+        try {
+          file = new File([blob], name, { type: 'image/png' });
+        } catch (e) {
+          fallback();
+          return;
+        }
+        if (!navigator.canShare({ files: [file] })) {
+          fallback();
+          return;
+        }
+        navigator.share({
+          files: [file],
+          title: spec.title || '测试结果',
+          text: (spec.title || '') + ' · ' + (spec.value || '')
+        }).then(function () {
+          restore('已分享 ✅');
+        }).catch(function (err) {
+          // 用户取消不当作失败
+          if (err && err.name === 'AbortError') {
+            restore(originText || '分享');
+          } else {
+            fallback();
+          }
+        });
+      }, 'image/png');
+      return true;
+    } catch (e) {
+      console.error('[ShareCard] 分享失败', e);
+      if (btn) { btn.textContent = originText; btn.disabled = originDisabled || false; }
+      alert('分享失败，已改用下载。');
+      save(opts, btn);
+      return false;
+    }
+  }
+
   global.ShareCard = {
     render: render,
     dataURL: dataURL,
     download: download,
     save: save,
+    share: share,
     buildSpec: buildSpec
   };
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this));

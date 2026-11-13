@@ -252,6 +252,8 @@
                 <div class="result-details" id="result-details"></div>
                 <div class="result-stats" id="result-stats"></div>
                 <div class="result-actions">
+                    <button class="btn-small" id="btnShare" onclick="saveResultImage(this)">💾 保存图片</button>
+                    <button class="btn-small" id="btnShareImage" onclick="shareResultImage(this)">📤 分享</button>
                     <button class="btn-small" onclick="restartQuiz()">再测一次</button>
                     <button class="btn-small primary" onclick="window.location.href='index.html'">→ 去答题版</button>
                 </div>
@@ -467,6 +469,53 @@ function submitQuiz() {
     setTimeout(() => { const r = calculateResult(); showResult(r); }, 1500);
 }
 
+
+/* ============ 保存 / 分享结果图片 ============ */
+function __amtiSpec() {
+    const r = calculateResult();
+    const type = TYPES.find(t => t.id === r.top);
+    const stats = (r.stats || []).slice().sort((a, b) => b.pct - a.pct);
+    const maxPct = Math.max(1, stats[0] ? stats[0].pct : 1);
+
+    return {
+        theme: 'purple',
+        tag: '阿蒙人格',
+        title: 'AMTI · 阿蒙人格测试',
+        value: type.name,
+        unit: '',
+        badge: type.code + ' · ' + (type.vibe || ''),
+        note: type.quote || '',
+        chips: stats.slice(0, 3).map((s, i) => {
+            const t = TYPES.find(x => x.id === s.id);
+            return { label: '第 ' + (i + 1) + ' 相像', value: t ? t.name : s.id };
+        }),
+        radar: stats.slice(0, 6).map(s => {
+            const t = TYPES.find(x => x.id === s.id);
+            return { label: t ? t.name : s.id, value: Math.max(0, Math.min(1, s.pct / maxPct)) };
+        }),
+        radarRef: [],
+        footer: 'AMTI · 阿蒙人格测试 · 仅供娱乐'
+    };
+}
+
+function saveResultImage(btn) {
+    if (typeof ShareCard === 'undefined' || !ShareCard.save) {
+        alert('图片组件未加载，请刷新页面重试。');
+        return;
+    }
+    try { ShareCard.save(__amtiSpec(), btn); }
+    catch (e) { console.error('[saveResultImage]', e); alert('生成图片失败，请重试。'); }
+}
+
+function shareResultImage(btn) {
+    if (typeof ShareCard === 'undefined' || !ShareCard.share) {
+        alert('图片组件未加载，请刷新页面重试。');
+        return;
+    }
+    try { ShareCard.share(__amtiSpec(), btn); }
+    catch (e) { console.error('[shareResultImage]', e); alert('分享失败，请重试。'); }
+}
+
 function calculateResult() {
     const scores = {};
     TYPES.forEach(t => scores[t.id] = 0);
@@ -535,6 +584,7 @@ function showResult(result) {
     document.getElementById('panel').scrollIntoView({ behavior: 'smooth' });
 }
 </script>
+<script src="share-card.js"></script>
 <script src="counter.js"></script>
 <script src="signature.js"></script>
 </body>

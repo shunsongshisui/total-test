@@ -307,6 +307,8 @@
       <div class="result-tags" id="resultTags"></div>
     </div>
     <div class="btn-group">
+      <button class="btn-secondary" id="btnShare" onclick="saveResultImage(this)">💾 保存图片</button>
+      <button class="btn-secondary" id="btnShareImage" onclick="shareResultImage(this)">📤 分享</button>
       <button class="btn-primary" onclick="restartFate()">☯ 再测一次</button>
       <button class="btn-secondary" onclick="location.href='index.html'">✦ 全面版</button>
     </div>
@@ -509,6 +511,55 @@ function drawFate() {
     btn.disabled = false;
     btn.textContent = '☯ 听 凭 天 命';
   }
+}
+
+
+/* ============ 保存 / 分享结果图片 ============ */
+function __baxianSpec() {
+    const nameEl = document.getElementById('resultName');
+    const titleEl = document.getElementById('resultTitle');
+    const descEl = document.getElementById('resultDesc');
+    const tagsEl = document.getElementById('resultTags');
+    const name = nameEl ? nameEl.textContent.trim() : '';
+    const title = titleEl ? titleEl.textContent.trim() : '';
+    const desc = descEl ? descEl.textContent.trim() : '';
+    let tags = [];
+    if (tagsEl) {
+        tags = Array.prototype.slice.call(tagsEl.querySelectorAll('span'))
+            .map(function (s) { return s.textContent.trim(); })
+            .filter(Boolean).slice(0, 4);
+    }
+    return {
+        theme: 'teal',
+        tag: '八仙人格',
+        title: '八仙人格测试 · 天命版',
+        value: name || '—',
+        unit: '',
+        badge: title.replace(/^[「『]|[」』]$/g, ''),
+        note: desc.length > 90 ? desc.slice(0, 90) + '…' : desc,
+        chips: tags.map(function (t) { return { label: '特质', value: t }; }),
+        radar: [],
+        radarRef: [],
+        footer: '八仙人格测试 · 仅供娱乐与自我探索'
+    };
+}
+
+function saveResultImage(btn) {
+    if (typeof ShareCard === 'undefined' || !ShareCard.save) {
+        alert('图片组件未加载，请刷新页面重试。');
+        return;
+    }
+    try { ShareCard.save(__baxianSpec(), btn); }
+    catch (e) { console.error('[saveResultImage]', e); alert('生成图片失败，请重试。'); }
+}
+
+function shareResultImage(btn) {
+    if (typeof ShareCard === 'undefined' || !ShareCard.share) {
+        alert('图片组件未加载，请刷新页面重试。');
+        return;
+    }
+    try { ShareCard.share(__baxianSpec(), btn); }
+    catch (e) { console.error('[shareResultImage]', e); alert('分享失败，请重试。'); }
 }
 
 function finishFate() {
@@ -809,6 +860,7 @@ function getArt(id) {
 init();
 </script>
 
+<script src="../share-card.js"></script>
 <script src="../counter.js"></script>
 <script src="../signature.js"></script>
 </body>

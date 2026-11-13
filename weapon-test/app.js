@@ -931,6 +931,32 @@
     }
   });
 
+  $('btnShareImage').addEventListener('click', () => {
+    const r = state.results;
+    if (!r) return;
+    try {
+      const top = r.ranked[0];
+      const w = top.w;
+      const sub = D.subs[w.sub];
+      ShareCard.share({
+        tag: '本命武器',
+        title: '本命武器测试',
+        value: w.n,
+        unit: '',
+        badge: (sub ? (sub.group + ' · ' + sub.label) : '') + (w.rarity ? '　' + w.rarity : ''),
+        note: (w.phrase || w.lore || '气质画像 × 武器属性 · 契合度越高越说明它是你气质的外化'),
+        chips: [{ label: '契合度', value: Math.round(top.match) + '%' },{ label: '稀有度', value: w.rarity || '—' }],
+        radar: (D.dims || []).map((d) => ({ label: d.short || d.name, value: Math.max(0, Math.min(1, (r.profile[d.key] || 0) / 100)) })),
+        radarRef: [],
+        footer: '本命武器测试 · 仅供娱乐与自我探索',
+        theme: 'teal',
+        accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2a78d6'
+      }, $('btnShareImage'));
+    } catch (err) {
+      alert('生成图片失败：' + (err && err.message ? err.message : err));
+    }
+  });
+
   /* ---------------- 静态内容（如何阅读 / 参考文献 / 致谢 / 免责声明） ---------------- */
   function formatRef(ref) {
     let s = ref.authors + '. ' + ref.title;

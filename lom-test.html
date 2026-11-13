@@ -400,6 +400,8 @@
             <div class="ranking-wrap" id="rankingWrap"></div>
 
             <div class="result-actions">
+                <button class="btn btn-sm" id="btnShare" onclick="saveResultImage(this)">💾 保存图片</button>
+                <button class="btn btn-sm" id="btnShareImage" onclick="shareResultImage(this)">📤 分享</button>
                 <button class="btn btn-sm" onclick="startQuiz()">🔄 重新测试</button>
                 <button class="btn btn-sm btn-teal" onclick="location.href='https://shunsongshisui.github.io/amti-test/'">← AMTI 主页</button>
             </div>
@@ -972,6 +974,55 @@ function goBack() {
 // ========================================
 // SCORING (with negative weights)
 // ========================================
+
+/* ============ 保存 / 分享结果图片 ============ */
+function __lomSpec() {
+    const scores = computeScores();
+    const typeKeys = Object.keys(TYPES);
+    const topKey = typeKeys.reduce((a, b) => (scores[b] > scores[a] ? b : a));
+    const t = TYPES[topKey];
+
+    const ranked = typeKeys
+        .map(k => ({ k, name: TYPES[k].name, score: scores[k] }))
+        .sort((x, y) => y.score - x.score);
+    const maxScore = Math.max(1, ranked[0] ? ranked[0].score : 1);
+
+    return {
+        theme: 'purple',
+        tag: '诡秘之主',
+        title: 'LOM · 人格谱系测试',
+        value: t.name,
+        unit: '',
+        badge: t.code + ' · ' + t.char,
+        note: t.quote || '',
+        chips: ranked.slice(0, 3).map((r, i) => ({ label: '第 ' + (i + 1) + ' 相像', value: r.name })),
+        radar: ranked.slice(0, 6).map(r => ({
+            label: r.name,
+            value: Math.max(0, Math.min(1, r.score / maxScore))
+        })),
+        radarRef: [],
+        footer: '诡秘之主 · 人格谱系测试 · 仅供自我探索'
+    };
+}
+
+function saveResultImage(btn) {
+    if (typeof ShareCard === 'undefined' || !ShareCard.save) {
+        alert('图片组件未加载，请刷新页面重试。');
+        return;
+    }
+    try { ShareCard.save(__lomSpec(), btn); }
+    catch (e) { console.error('[saveResultImage]', e); alert('生成图片失败，请重试。'); }
+}
+
+function shareResultImage(btn) {
+    if (typeof ShareCard === 'undefined' || !ShareCard.share) {
+        alert('图片组件未加载，请刷新页面重试。');
+        return;
+    }
+    try { ShareCard.share(__lomSpec(), btn); }
+    catch (e) { console.error('[shareResultImage]', e); alert('分享失败，请重试。'); }
+}
+
 function computeScores() {
     const scores = {};
     Object.keys(TYPES).forEach(k => scores[k] = 0);
@@ -1372,6 +1423,7 @@ function sendFeedback() {
     });
 }
 </script>
+<script src="share-card.js"></script>
 <script src="counter.js"></script>
 <script src="signature.js"></script>
 </body>
