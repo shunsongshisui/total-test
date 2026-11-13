@@ -231,6 +231,8 @@ html, body {
 .archetype-card .card-body { color: var(--ink); }
 
 .duo-card { border-left: 4px solid var(--accent); }
+/* 雷达容器：为绝对定位的提示框提供参照 */
+.viz-root { position: relative; }
 #radar { width: 100%; height: 340px; display: block; }
 .radar-tip {
   position: absolute; pointer-events: none;
