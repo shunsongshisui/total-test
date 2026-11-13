@@ -73,9 +73,13 @@
     line.appendChild(b2);
     line.appendChild(document.createTextNode(' 位访客'));
 
-    // 统一放到页面底部：有页脚就排在页脚之后，否则追加到 <body> 末尾
+    // 放置策略（避免成为 body 的 flex 并列子项，那样会被挤到内容旁边）
+    //   ① 有页脚：排在页脚之后
+    //   ② 否则：放进页面的内容容器（.container / main / #app 等）
+    //   ③ 再否则：才追加到 <body>
     var footer = document.querySelector('footer, .footer');
     var body = document.body;
+
     if (footer && footer.parentNode) {
       var parent = footer.parentNode;
       if (footer.nextSibling) {
@@ -83,12 +87,41 @@
       } else {
         parent.appendChild(line);
       }
+      return { pv: b1, uv: b2, created: true };
+    }
+
+    var host = pickBlockHost();
+    if (host) {
+      host.appendChild(line);
     } else if (body) {
+      // 兜底：body 本身是 flex 时，让计数器独占一整行
+      line.style.width = '100%';
+      line.style.flexBasis = '100%';
+      if (window.getComputedStyle) {
+        var bd = '';
+        try { bd = window.getComputedStyle(body).display; } catch (e) { bd = ''; }
+        if (bd === 'flex' || bd === 'inline-flex') body.style.flexWrap = 'wrap';
+      }
       body.appendChild(line);
     } else {
       return null;
     }
     return { pv: b1, uv: b2, created: true };
+  }
+
+  // 选一个块级容器：跳过自身是 flex/grid 的，避免计数器被并排摆放
+  function pickBlockHost() {
+    var selectors = ['.container', 'main', '#app', '.app', '.wrap', '#panel'];
+    for (var i = 0; i < selectors.length; i++) {
+      var el = document.querySelector(selectors[i]);
+      if (!el || el === document.body || el === document.documentElement) continue;
+      var d = '';
+      try {
+        d = window.getComputedStyle ? window.getComputedStyle(el).display : '';
+      } catch (e) { d = ''; }
+      if (d !== 'flex' && d !== 'inline-flex' && d !== 'grid') return el;
+    }
+    return null;
   }
 
   // ---------- 3. 本地降级计数 ----------
