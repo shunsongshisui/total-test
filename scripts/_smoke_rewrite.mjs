@@ -196,6 +196,13 @@ ok(JSON.parse(A.run(`JSON.stringify(decodeSave(${JSON.stringify(rawJson)}))`)).t
 const pretty = A.run(`JSON.stringify({v:1,t:1,state:{total:1,pity:0,singlePity:0,inventory:{"0-08 阿勒苏霍德之笔":1},perm:[],temp:[],rewrites:0,prophecy:null}}, null, 2)`);
 const prettyDecoded = JSON.parse(A.run(`JSON.stringify(decodeSave(${JSON.stringify(pretty)}))`));
 ok(prettyDecoded.inventory['0-08 阿勒苏霍德之笔'] === 1, '带缩进换行的 JSON 也能导入，卡名里的空格没被吃掉');
+const fenceWrapped = '```\n' + saveCode + '\n```';
+ok(JSON.parse(A.run(`JSON.stringify(decodeSave(${JSON.stringify(fenceWrapped)}))`)).total === 12, '带反引号的存档码也能导入');
+const zeroWrapped = saveCode.slice(0, 12) + String.fromCharCode(0x200b) + saveCode.slice(12);
+ok(JSON.parse(A.run(`JSON.stringify(decodeSave(${JSON.stringify(zeroWrapped)}))`)).total === 12, '带零宽字符的存档码也能导入');
+const foreign = A.run(`JSON.stringify({v:1,t:1,state:{total:0,pity:0,singlePity:0,inventory:{"不存在的卡":3,"克莱恩·莫雷蒂":1},perm:[],temp:[],rewrites:0,prophecy:null}})`);
+const filtered = JSON.parse(A.run(`JSON.stringify(decodeSave(${JSON.stringify(foreign)}))`));
+ok(!('不存在的卡' in filtered.inventory) && filtered.inventory['克莱恩·莫雷蒂'] === 1, '不认识的卡名会被丢掉，不虚增图鉴');
 A.elements.get('saveText').value = '这不是存档';
 const beforeTotal = A.run('state.total');
 A.run('confirmImport()');

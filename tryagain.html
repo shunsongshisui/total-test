@@ -1333,14 +1333,20 @@ function encodeSave() {
 }
 function decodeSave(text) {
     if (typeof text !== 'string' || !text.trim()) throw new Error('没有内容');
-    let s = text.trim();
-    if (s.indexOf(SAVE_CODE_PREFIX) === 0) s = s.slice(SAVE_CODE_PREFIX.length);
+    // 复制存档码时经常带上零宽字符、反引号或前后说明文字，这里一并容忍
+    const s = text.replace(/[\u200b-\u200d\ufeff]/g, '').trim();
     let obj;
     try {
-        // 兼容三种输入：LOM-1: 开头的存档码、纯 base64、下载下来的原始 JSON。
-        // 只有 base64 才去掉空白；JSON 里的空格（比如「0-08 阿勒苏霍德之笔」）不能动。
-        obj = s.charAt(0) === '{' ? JSON.parse(s) : JSON.parse(b64decode(s.replace(/\s+/g, '')));
-    } catch (e) { throw new Error('存档码解不开'); }
+        const m = s.match(/LOM-1:\s*([A-Za-z0-9+/=\s]+)/);
+        if (m) {
+            obj = JSON.parse(b64decode(m[1].replace(/\s+/g, '')));
+        } else if (s.charAt(0) === '{') {
+            // 下载下来的原始 JSON；里面的空格（比如「0-08 阿勒苏霍德之笔」）不能动
+            obj = JSON.parse(s);
+        } else {
+            obj = JSON.parse(b64decode(s.replace(/\s+/g, '')));   // 纯 base64
+        }
+    } catch (e) { throw new Error('存档码解不开，确认复制完整（要以 LOM-1: 开头）'); }
     return normalizeSave(obj);
 }
 function normalizeSave(obj) {
@@ -1354,7 +1360,8 @@ function normalizeSave(obj) {
                   prophecy: null, hunt: !!src.hunt };
     for (const k in src.inventory) {
         const n = num(src.inventory[k]);
-        if (n > 0) out.inventory[k] = n;
+        // 只收当前卡池里真有的卡，避免旧存档/别处的卡名把图鉴进度虚增
+        if (n > 0 && CARDS.some(c => c.name === k)) out.inventory[k] = n;
     }
     const cleanMod = m => m && typeof m.key === 'string' && m.key in BASE_RULES && typeof m.op === 'string';
     (Array.isArray(src.perm) ? src.perm : []).filter(cleanMod).forEach(m => out.perm.push(m));
@@ -1434,7 +1441,8 @@ function confirmImport() {
     save();
     renderStats();
     renderCollection();
-    setSaveStatus('✅ 已导入：共 ' + next.total + ' 抽、' + cards + ' 种卡');
+    const names = Object.keys(next.inventory).slice(0, 6).join('、');
+    setSaveStatus('✅ 已导入：共 ' + next.total + ' 抽、' + cards + ' 种卡' + (names ? '（' + names + (cards > 6 ? ' …' : '') + '）' : ''));
 }
 
 /* ============ 音效 ============ */
