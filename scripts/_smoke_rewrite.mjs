@@ -43,7 +43,7 @@ function makeContext(store) {
             removeItem: k => { delete store[k]; }
         },
         console, Math, JSON, Date, Promise, Object, Array, String, Number, Boolean, isNaN, parseInt, parseFloat,
-        encodeURIComponent, decodeURIComponent,
+        encodeURIComponent, decodeURIComponent, btoa, atob, TextEncoder, TextDecoder, Uint8Array,
         setTimeout: fn => { try { fn(); } catch (e) { errors.push(e); } return 0; },
         clearTimeout() {},
         confirm: () => true,
@@ -177,6 +177,35 @@ console.log('\n[9] 自然出货率：10 万次随机单抽');
 A.run('state.perm = []; state.temp = []; state.prophecy = null;');
 const natural = A.run(`(() => { let hits = 0; for (let i = 0; i < 100000; i++) if (drawOne().rewrite) hits++; return hits; })()`);
 ok(natural > 40 && natural < 300, '10 万抽里触发 ' + natural + ' 次', natural);
+
+console.log('\n[10] 存档码导出 / 导入');
+A.run(`
+state = { total: 12, pity: 30, singlePity: 2, inventory: {"克莱恩·莫雷蒂": 2, "0-08 阿勒苏霍德之笔": 1}, hunt: false,
+          perm: [{key:'SSS_PITY',op:'set',v:1000,perm:true,text:'永久测试'}],
+          temp: [{key:'SSS_RATE',op:'mul',v:0.5,perm:false,left:5,text:'时效测试'}],
+          rewrites: 3, prophecy: {name:'阿蒙', by:'0-08'} };
+save();`);
+const saveCode = A.run('encodeSave()');
+ok(saveCode.indexOf('LOM-1:') === 0, '存档码带 LOM-1: 前缀', saveCode.slice(0, 12));
+const decoded = JSON.parse(A.run(`JSON.stringify(decodeSave(${JSON.stringify(saveCode)}))`));
+ok(decoded.total === 12 && decoded.inventory['克莱恩·莫雷蒂'] === 2, '解回来抽数与卡数对得上');
+ok(decoded.perm.length === 1 && decoded.temp.length === 1 && decoded.temp[0].left === 5, '永久/时效改写都带回来');
+ok(decoded.prophecy && decoded.prophecy.name === '阿蒙', '未兑现的预言也带回来');
+const rawJson = A.run('JSON.stringify({v:1,t:1,state:state})');
+ok(JSON.parse(A.run(`JSON.stringify(decodeSave(${JSON.stringify(rawJson)}))`)).total === 12, '下载下来的原始 JSON 也能直接导入');
+const pretty = A.run(`JSON.stringify({v:1,t:1,state:{total:1,pity:0,singlePity:0,inventory:{"0-08 阿勒苏霍德之笔":1},perm:[],temp:[],rewrites:0,prophecy:null}}, null, 2)`);
+const prettyDecoded = JSON.parse(A.run(`JSON.stringify(decodeSave(${JSON.stringify(pretty)}))`));
+ok(prettyDecoded.inventory['0-08 阿勒苏霍德之笔'] === 1, '带缩进换行的 JSON 也能导入，卡名里的空格没被吃掉');
+A.elements.get('saveText').value = '这不是存档';
+const beforeTotal = A.run('state.total');
+A.run('confirmImport()');
+ok(A.run('state.total') === beforeTotal, '坏存档码不改动当前进度');
+ok(A.elements.get('saveStatus').textContent.indexOf('❌') === 0, '坏码会给出提示');
+A.run('state = { total: 0, pity: 0, singlePity: 0, inventory: {}, perm: [], temp: [], rewrites: 0, prophecy: null };');
+A.elements.get('saveText').value = saveCode;
+A.run('confirmImport()');
+ok(A.run('state.total') === 12 && A.run('state.inventory["克莱恩·莫雷蒂"]') === 2, '覆盖导入把进度换成存档里的');
+ok(A.elements.get('saveStatus').textContent.indexOf('已导入') >= 0, '导入成功后状态栏有提示');
 
 console.log('\n' + (fail ? '❌' : '✅') + ' 通过 ' + pass + ' 项，失败 ' + fail + ' 项\n');
 process.exit(fail ? 1 : 0);
