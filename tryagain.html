@@ -296,6 +296,7 @@ body::before {
 .save-text{width:100%;box-sizing:border-box;min-height:64px;padding:10px 12px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(232,220,200,.8);font-size:11px;font-family:ui-monospace,Menlo,monospace;line-height:1.5;resize:vertical;outline:none}
 .save-text:focus{border-color:#9f7aea}
 .save-status{font-size:11px;color:rgba(232,200,122,.7);letter-spacing:1px}
+.save-warn{display:none;margin-top:8px;font-size:11px;line-height:1.7;color:#fca5a5;letter-spacing:.5px}
 
 /* ============ 规则改写 · 整页动画 ============ */
 .rw-wrap{
@@ -482,6 +483,7 @@ body::before {
         </div>
         <textarea class="save-text" id="saveText" placeholder="导出后存档码会出现在这里；也可以把别处的存档码粘进来，再点「覆盖导入」"></textarea>
         <div style="margin-top:8px"><span class="save-status" id="saveStatus"></span></div>
+        <div class="save-warn" id="saveWarn"></div>
         <input type="file" id="saveFile" accept=".json,.txt,application/json,text/plain" style="display:none" onchange="importSaveFile(event)">
     </div>
 
@@ -833,7 +835,30 @@ let busy = false;
 let huntPending = false;   // 愚者"阿蒙追击"：只作用于下一次点击的第一张，未中即失效
 let unlockTimer = null;    // 抽卡按钮解锁定时器（有改写演出时改由动画结束解锁）
 
-function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
+let storageBroken = false;
+function save() {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); storageBroken = false; }
+    catch (e) { storageBroken = true; }
+    renderSaveWarn();
+}
+function checkStorage() {
+    try {
+        localStorage.setItem('__mysteryProbe', '1');
+        localStorage.removeItem('__mysteryProbe');
+        storageBroken = false;
+    } catch (e) { storageBroken = true; }
+    renderSaveWarn();
+}
+function renderSaveWarn() {
+    const w = el('saveWarn');
+    if (!w) return;
+    if (!storageBroken) { w.style.display = 'none'; w.textContent = ''; return; }
+    const isFile = (typeof location !== 'undefined' && location.protocol === 'file:');
+    w.style.display = 'block';
+    w.textContent = isFile
+        ? '⚠️ 你现在是直接用 file:// 打开文件。Safari 在这种方式下会禁用 localStorage，导入的进度一刷新就会丢。请改用本地 http（python3 -m http.server 8000）或线上地址打开。'
+        : '⚠️ 这个浏览器禁用了本地存储，进度只在当前页面有效，刷新后会丢。';
+}
 function load() {
     try {
         const raw = localStorage.getItem(SAVE_KEY);
@@ -1503,6 +1528,7 @@ function sendFeedback() {
 
 /* ============ 启动 ============ */
 load();
+checkStorage();
 renderStats();
 renderCollection();
 </script>

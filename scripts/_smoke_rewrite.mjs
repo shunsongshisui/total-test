@@ -28,7 +28,7 @@ function makeEl(id) {
     };
     return el;
 }
-function makeContext(store) {
+function makeContext(store, broken) {
     const elements = new Map(ids.map(i => [i, makeEl(i)]));
     const errors = [];
     const sandbox = {
@@ -37,7 +37,11 @@ function makeContext(store) {
             createElement: t => makeEl(t),
             querySelector: sel => makeEl(sel)
         },
-        localStorage: {
+        localStorage: broken ? {
+            getItem: () => { throw new Error('denied'); },
+            setItem: () => { throw new Error('denied'); },
+            removeItem: () => { throw new Error('denied'); }
+        } : {
             getItem: k => (k in store ? store[k] : null),
             setItem: (k, v) => { store[k] = String(v); },
             removeItem: k => { delete store[k]; }
@@ -213,6 +217,12 @@ A.elements.get('saveText').value = saveCode;
 A.run('confirmImport()');
 ok(A.run('state.total') === 12 && A.run('state.inventory["克莱恩·莫雷蒂"]') === 2, '覆盖导入把进度换成存档里的');
 ok(A.elements.get('saveStatus').textContent.indexOf('已导入') >= 0, '导入成功后状态栏有提示');
+
+console.log('\n[11] 本地存储不可用时给出警告');
+ok(A.elements.get('saveWarn').style.display === 'none', '正常环境下隐藏警告');
+const C = makeContext({}, true);
+ok(C.elements.get('saveWarn').style.display === 'block', 'localStorage 被禁用时显示警告');
+ok(C.elements.get('saveWarn').textContent.indexOf('本地存储') >= 0, '警告文案说明原因', C.elements.get('saveWarn').textContent.slice(0, 30));
 
 console.log('\n' + (fail ? '❌' : '✅') + ' 通过 ' + pass + ' 项，失败 ' + fail + ' 项\n');
 process.exit(fail ? 1 : 0);
