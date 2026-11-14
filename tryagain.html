@@ -1459,7 +1459,7 @@ function confirmImport() {
     let next;
     try { next = decodeSave(t ? t.value : ''); } catch (e) { setSaveStatus('❌ ' + e.message, false); return; }
     const cards = Object.keys(next.inventory).length;
-    if (!confirm('导入将覆盖当前进度（现有 ' + Object.keys(state.inventory).length + ' 种卡，导入 ' + cards + ' 种）。继续？')) return;
+    if (!confirm('导入将覆盖当前进度（现有 ' + Object.keys(state.inventory).length + ' 种卡，导入 ' + cards + ' 种）。继续？')) { setSaveStatus('已取消导入'); return; }
     state = next;
     busy = false;
     huntPending = false;
