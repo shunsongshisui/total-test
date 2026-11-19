@@ -35,7 +35,8 @@ function makeContext(store, broken) {
         document: {
             getElementById: id => elements.get(id) || null,
             createElement: t => makeEl(t),
-            querySelector: sel => makeEl(sel)
+            querySelector: sel => makeEl(sel),
+            querySelectorAll: () => []
         },
         localStorage: broken ? {
             getItem: () => { throw new Error('denied'); },
@@ -223,6 +224,48 @@ ok(A.elements.get('saveWarn').style.display === 'none', '正常环境下隐藏�
 const C = makeContext({}, true);
 ok(C.elements.get('saveWarn').style.display === 'block', 'localStorage 被禁用时显示警告');
 ok(C.elements.get('saveWarn').textContent.indexOf('本地存储') >= 0, '警告文案说明原因', C.elements.get('saveWarn').textContent.slice(0, 30));
+
+console.log('\n[12] 抽卡历史');
+A.run('state = emptyState();');
+A.run('drawOne(); drawOne(); drawOne();');
+ok(A.run('state.history.length') === 3, '三次单抽记了三条历史');
+ok(!!A.run('state.history[0].name') && !!A.run('state.history[0].rarity'), '历史条目带卡名和稀有度');
+A.run('renderHistory()');
+ok(A.elements.get('histList').innerHTML.includes('hist-row'), '历史面板能渲染出条目');
+
+console.log('\n[13] 未抽到灰显 + 筛选');
+A.run('state = emptyState(); state.inventory = {"克莱恩·莫雷蒂": 1}; state.total = 1;');
+A.run('setFilter("all")');
+const allHtml = A.elements.get('cgrid').innerHTML;
+ok(allHtml.includes('未抽到') && allHtml.includes('克莱恩·莫雷蒂'), '全部模式同时显示已抽到和未抽到');
+A.run('setFilter("owned")');
+ok(!A.elements.get('cgrid').innerHTML.includes('未抽到'), '只看已抽到：不出现未抽到');
+ok(A.elements.get('cgrid').innerHTML.includes('克莱恩·莫雷蒂'), '只看已抽到：保留已有卡');
+A.run('setFilter("unowned")');
+ok(A.elements.get('cgrid').innerHTML.includes('未抽到'), '只看未抽到：出现未抽到');
+ok(!A.elements.get('cgrid').innerHTML.includes('owned-SSS'), '只看未抽到：不出现已拥有卡');
+A.run('setFilter("all")');
+
+console.log('\n[14] 源质：不可偷 + 集齐合成');
+ok(A.run('CARDS.filter(c=>c.sefira).length') === 6, '6 张卡被标成源质');
+A.run('state = emptyState();');
+A.run('SEFIROT.forEach(n => state.inventory[n] = 1);');
+ok(A.run('checkSefirot()') === '最初造物主', '集齐六源质合成最初造物主');
+ok(A.run('state.inventory["最初造物主"]') === 1, '合成后入库一张最初造物主');
+ok(A.run('checkSefirot()') === null, '不会重复合成');
+ok(A.run('state.initialGranted') === true, '合成标记已写入');
+
+console.log('\n[15] 多存档槽');
+A.run('state = emptyState(); state.total = 7; state.inventory = {"克莱恩·莫雷蒂": 1}; save();');
+A.run('switchSlot(1)');
+ok(A.run('currentSlot') === 1, '切到槽 2');
+ok(A.run('state.total') === 0, '槽 2 是空的');
+A.run('state.total = 3; state.inventory = {"阿蒙": 1}; save();');
+A.run('switchSlot(0)');
+ok(A.run('currentSlot') === 0 && A.run('state.total') === 7, '切回槽 1 恢复原进度');
+ok(A.run('state.inventory["克莱恩·莫雷蒂"]') === 1, '槽 1 的卡还在');
+A.run('switchSlot(1)');
+ok(A.run('state.total') === 3 && A.run('state.inventory["阿蒙"]') === 1, '槽 2 的独立进度也在');
 
 console.log('\n' + (fail ? '❌' : '✅') + ' 通过 ' + pass + ' 项，失败 ' + fail + ' 项\n');
 process.exit(fail ? 1 : 0);
