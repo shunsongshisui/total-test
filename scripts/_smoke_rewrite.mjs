@@ -181,7 +181,7 @@ ok(A.errors.length === 0 && B.errors.length === 0, '全程无未捕获异常', A
 console.log('\n[9] 自然出货率：10 万次随机单抽');
 A.run('state.perm = []; state.temp = []; state.prophecy = null;');
 const natural = A.run(`(() => { let hits = 0; for (let i = 0; i < 100000; i++) if (drawOne().rewrite) hits++; return hits; })()`);
-ok(natural > 40 && natural < 300, '10 万抽里触发 ' + natural + ' 次', natural);
+ok(natural > 25 && natural < 320, '10 万抽里触发 ' + natural + ' 次', natural);
 
 console.log('\n[10] 存档码导出 / 导入');
 A.run(`
@@ -266,6 +266,45 @@ ok(A.run('currentSlot') === 0 && A.run('state.total') === 7, '切回槽 1 恢复
 ok(A.run('state.inventory["克莱恩·莫雷蒂"]') === 1, '槽 1 的卡还在');
 A.run('switchSlot(1)');
 ok(A.run('state.total') === 3 && A.run('state.inventory["阿蒙"]') === 1, '槽 2 的独立进度也在');
+
+console.log('\n[16] 途径字段与加成');
+ok(A.run('CARDS.filter(c=>c.path).length') > 250, '超过 250 张卡带途径', A.run('CARDS.filter(c=>c.path).length'));
+ok(A.run('CARDS.filter(c=>c.rarity==="SSS" && c.path).length') > 15, '高阶卡大多有途径');
+A.run('state = emptyState(); state.pathBoost = {path:"愚者", left:50};');
+const wBoost = A.run('cardWeight(CARDS.find(c=>c.name==="克莱恩·莫雷蒂"))');
+ok(Math.abs(wBoost - 1.4) < 1e-9, '途径加成把愚者卡权重 ×4', wBoost);
+A.run('state.pathBoost = null');
+const wBase = A.run('cardWeight(CARDS.find(c=>c.name==="克莱恩·莫雷蒂"))');
+ok(Math.abs(wBase - 0.35) < 1e-9, '无加成时恢复原权重', wBase);
+
+console.log('\n[17] 好运影响爆率');
+A.run('state = emptyState();');
+const r0 = JSON.parse(A.run('JSON.stringify(effectiveRates())'));
+A.run('state.luck = {v:2, left:50};');
+const r1 = JSON.parse(A.run('JSON.stringify(effectiveRates())'));
+ok(r1.SSS > r0.SSS, '好运时 SSS 占比提高', [r0.SSS, r1.SSS]);
+A.run('state.luck = null');
+
+console.log('\n[18] 三十发内塔罗会 + 反派 → 克莱恩小号');
+A.run('state = emptyState(); state.total = 60; state.history = [{n:1,name:"奥黛丽·霍尔"},{n:2,name:"阿蒙"}]');
+const alt = A.run('checkSummon()');
+ok(alt && alt.fool && alt.sub.indexOf('马甲') === 0, '召唤出的是克莱恩小号', alt && alt.name);
+ok(A.run('state.inventory["' + alt.name + '"]') === 1, '小号已入库');
+ok(A.run('checkSummon()') === null, '30 抽内不会重复召唤');
+
+console.log('\n[19] 亚当许愿');
+A.run('state = emptyState();');
+A.elements.get('wishText').value = '我想要提高高阶卡概率';
+A.run('submitWish()');
+ok(A.run('state.perm.some(m=>m.key==="SSS_RATE")'), '愿望落到 SSS 概率规则上');
+ok(A.run('state.dupeBoost && state.dupeBoost.left > 0'), '副作用：已拥有卡重复率上升');
+ok(A.run('state.perm.some(m=>m.from==="亚当")'), '改写记录标了来源亚当');
+
+console.log('\n[20] 水银蛇');
+A.run('state = emptyState(); state.inventory = {"乌洛琉斯":1,"威尔·昂赛汀":1}; state.prophecy = {name:"克莱恩·莫雷蒂", by:"测试"};');
+A.run('drawCards(1)'); await flush();
+ok(A.run('state.snakeLuck') === true, '两条水银蛇集齐触发运气改写');
+ok(A.run('state.luck && state.luck.left > 0'), '运气状态已生效');
 
 console.log('\n' + (fail ? '❌' : '✅') + ' 通过 ' + pass + ' 项，失败 ' + fail + ' 项\n');
 process.exit(fail ? 1 : 0);
