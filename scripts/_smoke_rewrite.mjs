@@ -306,5 +306,24 @@ A.run('drawCards(1)'); await flush();
 ok(A.run('state.snakeLuck') === true, '两条水银蛇集齐触发运气改写');
 ok(A.run('state.luck && state.luck.left > 0'), '运气状态已生效');
 
+console.log('\n[21] 亚当许愿：不在清单里的愿望');
+A.run('state = emptyState();');
+A.elements.get('wishText').value = '我想要红祭司';
+A.run('submitWish()');
+ok(A.run('state.pathBoost && state.pathBoost.path') === '红祭司', '点途径的愿望转成该途径聚合');
+A.run('state = emptyState();');
+A.elements.get('wishText').value = '我想抽到克莱恩·莫雷蒂';
+A.run('submitWish()');
+ok(A.run('state.prophecy && state.prophecy.name') === '克莱恩·莫雷蒂', '点卡的愿望转成必成真的预言');
+A.run('state = emptyState();');
+A.elements.get('wishText').value = '多来点塔罗会成员';
+A.run('submitWish()');
+ok(A.run('state.groupBoost && state.groupBoost.kind') === '塔罗会', '点分组的愿望转成该类卡加成');
+A.run('state = emptyState();');
+A.elements.get('wishText').value = '我希望世界和平';
+A.run('submitWish()');
+ok(A.run('state.perm.length') === 1, '完全没听懂的愿望也会落成一条规则');
+ok(A.elements.get('wishStatus').textContent.indexOf('没完全听懂') >= 0, '状态栏说明是按亚当自己的理解改的');
+
 console.log('\n' + (fail ? '❌' : '✅') + ' 通过 ' + pass + ' 项，失败 ' + fail + ' 项\n');
 process.exit(fail ? 1 : 0);

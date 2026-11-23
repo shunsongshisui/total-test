@@ -743,19 +743,81 @@ function openWish() {
 }
 function closeWish() { const m = el('wishModal'); if (m) m.classList.remove('show'); }
 function applyWish(text) {
-    let key = 'SS_RATE', op = 'mul', v = 1.5, desc = 'SS 概率 ×1.5', side = { kind: 'dupe', v: 1 };
-    if (/高阶|稀有|SSS|SS|传说|出货/.test(text)) { key = 'SSS_RATE'; op = 'mul'; v = 2; desc = 'SSS 概率 ×2'; side = { kind: 'dupe', v: 2 }; }
-    else if (/保底/.test(text)) { key = 'SSS_PITY'; op = 'add'; v = -50; desc = 'SSS 保底 -50 抽'; side = { kind: 'dupe', v: 1 }; }
-    else if (/阿蒙|偷/.test(text)) { key = 'HUNT_CHANCE'; op = 'mul'; v = 2; desc = '阿蒙追击概率 ×2'; side = { kind: 'amon' }; }
-    else if (/十连/.test(text)) { key = 'TEN_RARE'; op = 'set'; v = 'S'; desc = '十连保底 → S'; side = { kind: 'dupe', v: 1 }; }
+    const t = String(text || '');
+    const neg = /不要|别|减少|降低|少来|别再|不想|讨厌/.test(t);
+
+    // ① 点名某张卡：写成必成真的预言，代价是保底 +100
+    let card = null;
+    for (let i = 0; i < CARDS.length; i++) {
+        if (t.indexOf(CARDS[i].name) >= 0 && (!card || CARDS[i].name.length > card.name.length)) card = CARDS[i];
+    }
+    if (card) {
+        state.prophecy = { name: card.name, by: '亚当' };
+        state.pity += 100;
+        save(); renderStats(); renderCollection();
+        return '预言：下一张必为「' + card.name + '」；副作用：SSS 保底 +100 抽';
+    }
+
+    // ② 点名某条途径：100 抽聚合
+    let path = null;
+    PATH_NAMES.forEach(function (p) { if (t.indexOf(p) >= 0) path = p; });
+    if (path) {
+        state.pathBoost = { path: path, left: 100 };
+        state.dupeBoost = { v: 1, left: 50 };
+        save(); renderStats(); renderCollection();
+        return '「' + path + '」途径权重 ×4（100 抽）；副作用：已拥有的卡重复率上升（50 抽）';
+    }
+
+    // ③ 点名某一类卡
+    let group = null;
+    [['塔罗会', /塔罗会/], ['源质', /源质/], ['美食', /美食|吃的/], ['封印物', /封印物/], ['魔药', /魔药/], ['阿蒙', /阿蒙/]].forEach(function (g) {
+        if (g[1].test(t)) group = g[0];
+    });
+    if (group) {
+        state.groupBoost = { kind: group, left: 100 };
+        state.pity += 50;
+        save(); renderStats(); renderCollection();
+        return '「' + group + '」类卡权重 ×5（100 抽）；副作用：SSS 保底 +50 抽';
+    }
+
+    // ④ 稀有度 / 保底 / 十连 / 阿蒙
+    let key = null, op = 'mul', v = 2, desc = '';
+    if (/SSS/.test(t)) { key = 'SSS_RATE'; desc = 'SSS 概率 ×2'; }
+    else if (/SS(?!S)/.test(t)) { key = 'SS_RATE'; desc = 'SS 概率 ×2'; }
+    else if (/保底/.test(t)) { key = 'SSS_PITY'; op = 'add'; v = -50; desc = 'SSS 保底 -50 抽'; }
+    else if (/十连/.test(t)) { key = 'TEN_RARE'; op = 'set'; v = 'S'; desc = '十连保底 → S'; }
+    else if (/阿蒙|偷/.test(t)) { key = 'HUNT_CHANCE'; desc = '阿蒙追击概率 ×2'; }
+    else if (/高阶|稀有|出货|传说/.test(t)) { key = 'SSS_RATE'; desc = 'SSS 概率 ×2'; }
+
+    if (key) {
+        if (neg) { if (op === 'mul') v = 0.5; else if (op === 'add') v = 100; }
+        state.perm = state.perm || [];
+        state.perm.push({ key: key, op: op, v: v, tone: neg ? 'nerf' : 'buff', perm: true, from: '亚当', text: desc, left: 0 });
+        if (/高阶|稀有|SSS|传说/.test(t)) state.dupeBoost = { v: 2, left: 50 };
+        else if (/阿蒙|偷/.test(t)) state.amonBait = 50;
+        else state.dupeBoost = { v: 1, left: 50 };
+        save(); renderStats(); renderCollection();
+        return desc + (neg ? '（反向）' : '') + '；副作用已生效';
+    }
+
+    // ⑤ 兜底：亚当没听懂，按自己的理解曲解愿望
+    const pool = [
+        { key: 'SSS_RATE', op: 'mul', v: 2, desc: 'SSS 概率 ×2' },
+        { key: 'SS_RATE', op: 'mul', v: 2, desc: 'SS 概率 ×2' },
+        { key: 'S_RATE', op: 'mul', v: 2, desc: 'S 概率 ×2' },
+        { key: 'SSS_PITY', op: 'add', v: -50, desc: 'SSS 保底 -50 抽' },
+        { key: 'SINGLE_PITY', op: 'set', v: 5, desc: '单抽金保底 → 5 抽' },
+        { key: 'TEN_RARE', op: 'set', v: 'S', desc: '十连保底 → S' },
+        { key: 'HUNT_CHANCE', op: 'mul', v: 2, desc: '阿蒙追击概率 ×2' }
+    ];
+    const pick = pool[Math.floor(Math.random() * pool.length)];
     state.perm = state.perm || [];
-    state.perm.push({ key: key, op: op, v: v, tone: 'buff', perm: true, from: '亚当', text: desc, left: 0 });
-    let sideDesc = '';
-    if (side.kind === 'dupe') { state.dupeBoost = { v: side.v, left: 50 }; sideDesc = '副作用：已拥有的卡重复率上升（50 抽）'; }
-    else { state.amonBait = 50; sideDesc = '副作用：阿蒙被吸引（50 抽）'; }
+    state.perm.push({ key: pick.key, op: pick.op, v: pick.v, tone: 'buff', perm: true, from: '亚当', text: pick.desc, left: 0 });
+    state.dupeBoost = { v: 1, left: 50 };
     save(); renderStats(); renderCollection();
-    return desc + '（永久）；' + sideDesc;
+    return '亚当没完全听懂，按自己的理解改成了「' + pick.desc + '」；副作用：已拥有的卡重复率上升';
 }
+
 function submitWish() {
     const t = el('wishText') ? el('wishText').value.trim() : '';
     const st = el('wishStatus');
@@ -959,7 +1021,7 @@ function slotKey(i) { return SLOT_KEYS[i] || SLOT_KEYS[0]; }
 function emptyState() {
     return { total: 0, pity: 0, singlePity: 0, inventory: {}, hunt: false,
              perm: [], temp: [], rewrites: 0, prophecy: null, history: [], initialGranted: false,
-             luck: null, pathBoost: null, amonBait: 0, dupeBoost: null, snakeLuck: false, summonAt: 0, pendingWish: false };
+             luck: null, pathBoost: null, amonBait: 0, dupeBoost: null, groupBoost: null, snakeLuck: false, summonAt: 0, pendingWish: false };
 }
 let state = emptyState();   // inventory: name -> count；perm/temp: 被改写的规则
 let busy = false;
@@ -1016,6 +1078,7 @@ function load() {
         if (!state.pathBoost) state.pathBoost = null;
         if (typeof state.amonBait !== 'number') state.amonBait = 0;
         if (!state.dupeBoost) state.dupeBoost = null;
+        if (!state.groupBoost) state.groupBoost = null;
         if (typeof state.snakeLuck !== 'boolean') state.snakeLuck = false;
         if (typeof state.summonAt !== 'number') state.summonAt = 0;
         if (typeof state.pendingWish !== 'boolean') state.pendingWish = false;
@@ -1066,10 +1129,19 @@ function newSave() {
 }
 
 /* ============ 抽取逻辑 ============ */
+const PATH_NAMES = Array.from(new Set(CARDS.map(function (c) { return c.path; }).filter(Boolean)));
 function cardWeight(c) {
     let w = c.w || 1;
     if (state.pathBoost && state.pathBoost.left > 0 && c.path === state.pathBoost.path) w *= 4;
     if (state.amonBait > 0 && c.amon) w *= 6;
+    if (state.groupBoost && state.groupBoost.left > 0) {
+        const k = state.groupBoost.kind;
+        if ((k === '塔罗会' && c.taro) || (k === '源质' && c.sefira) ||
+            (k === '阿蒙' && c.amon) ||
+            (k === '美食' && c.sub.indexOf('诡秘美食') === 0) ||
+            (k === '封印物' && c.sub === '封印物') ||
+            (k === '魔药' && c.sub === '魔药')) w *= 5;
+    }
     if (state.dupeBoost && state.dupeBoost.left > 0 && (state.inventory[c.name] || 0) > 0) w *= (1 + state.dupeBoost.v);
     return w;
 }
@@ -1128,7 +1200,7 @@ function drawOne(forceRarity) {
     huntPending = false;   // "阿蒙追击"只结算这一次
     state.pity++;
     state.total++;
-    ['luck', 'pathBoost', 'amonBait', 'dupeBoost'].forEach(function (k) {
+    ['luck', 'pathBoost', 'amonBait', 'dupeBoost', 'groupBoost'].forEach(function (k) {
         if (state[k] && state[k].left > 0) state[k].left--;
     });
     let card = null;
