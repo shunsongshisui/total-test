@@ -325,5 +325,10 @@ A.run('submitWish()');
 ok(A.run('state.perm.length') === 1, '完全没听懂的愿望也会落成一条规则');
 ok(A.elements.get('wishStatus').textContent.indexOf('没完全听懂') >= 0, '状态栏说明是按亚当自己的理解改的');
 
+console.log('\n[22] 偷盗者序列越低越容易招阿蒙');
+ok(A.run('thiefBaitChance(CARDS.find(c=>c.name==="偷盗者魔药"))') > A.run('thiefBaitChance(CARDS.find(c=>c.name==="时之虫魔药"))'), '偷盗者魔药比时之虫魔药更容易招阿蒙');
+ok(Math.abs(A.run('thiefBaitChance(CARDS.find(c=>c.name==="偷盗者魔药"))') - 0.5) < 1e-9, '序列 9 偷盗者的概率是 50%');
+ok(A.run('thiefBaitChance(CARDS.find(c=>c.name==="时之虫魔药"))') < 0.2, '序列 1 时之虫的概率低于 20%');
+
 console.log('\n' + (fail ? '❌' : '✅') + ' 通过 ' + pass + ' 项，失败 ' + fail + ' 项\n');
 process.exit(fail ? 1 : 0);
