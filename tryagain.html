@@ -169,6 +169,7 @@ body::before {
 .banner-D { background: linear-gradient(90deg,#2b3648,#475569); color:#e2e8f0; }
 .banner-人渣 { background: linear-gradient(90deg,#2f2f05,#6b6b10); color:#e8e8a0; }
 @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.evt-head{font-size:11px;color:rgba(232,220,200,.4);letter-spacing:3px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.12)}
 
 /* Buttons */
 .btns { display: flex; justify-content: center; gap: 14px; margin-bottom: 30px; flex-wrap: wrap; }
@@ -1461,7 +1462,7 @@ function showResult(cards, extraHtml, gifts, newNames) {
     setTimeout(() => {
         bannerEl.className = 'banner banner-' + best.rarity + ' show';
         const stars = best.rarity === 'SSS' ? '✦ ✦ ✦ ' : (best.rarity === 'SS' ? '✦ ✦ ' : '✦ ');
-        bannerEl.innerHTML = stars + best.name + ' ' + stars + (extraHtml || '');
+        bannerEl.innerHTML = stars + best.name + ' ' + stars + (extraHtml ? '<div class="evt-head">本 次 触 发</div>' + extraHtml : '');
         if (best.rarity === 'SSS' || best.rarity === 'SS') playJingle(best.rarity);
     }, 150 + (sorted.length - 1 + giftCount) * 160 + 200);
 }
@@ -1601,7 +1602,7 @@ function drawCards(n) {
         state.snakeLuck = true;
         var luckV = [-2, -1, 0, 1, 2, 3][Math.floor(Math.random() * 6)];
         state.luck = { v: luckV, left: 50 };
-        extraLines.push('<div style="margin-top:8px;font-size:12px;color:#c084fc;font-weight:700;letter-spacing:1px;">🐍 两条水银蛇首尾相衔，运气被随机改写：' + (luckV >= 0 ? '+' : '') + luckV + '（50 抽）。</div>');
+        extraLines.push('<div style="margin-top:8px;font-size:12px;color:#c084fc;font-weight:700;letter-spacing:1px;">🐍 乌洛琉斯与威尔·昂赛汀首尾相衔，运气被随机改写：' + (luckV >= 0 ? '+' : '') + luckV + '（50 抽）。</div>');
     }
 
     // ⑨ 途径高阶成员：接下来 50 抽该途径概率提升
@@ -1611,10 +1612,12 @@ function drawCards(n) {
         extraLines.push('<div style="margin-top:8px;font-size:12px;color:#7cc4f0;font-weight:700;letter-spacing:1px;">🧭 非凡特性聚合定律：「' + highPath.name + '」吸引同途径的非凡特性，接下来 50 抽「' + highPath.path + '」途径概率提升。</div>');
     }
 
-    // ⑩ 偷盗者途径吸引阿蒙
-    if (cards.some(function (c) { return c.path === '错误' && !c.amon; })) {
+    // ⑩ 偷盗者途径吸引阿蒙（点名是哪张卡引来的，避免误读成别的卡）
+    var thiefCards = cards.filter(function (c) { return c.path === '错误' && !c.amon; });
+    if (thiefCards.length) {
         state.amonBait = 5;
-        extraLines.push('<div style="margin-top:8px;font-size:12px;color:#fca5a5;font-weight:700;letter-spacing:1px;">🕶️ 偷盗者的气息引来了阿蒙：接下来 5 抽阿蒙更易现身。</div>');
+        var thiefNames = thiefCards.map(function (c) { return c.name; }).join('、');
+        extraLines.push('<div style="margin-top:8px;font-size:12px;color:#fca5a5;font-weight:700;letter-spacing:1px;">🕶️ 「' + thiefNames + '」的偷盗者气息引来了阿蒙：接下来 5 抽阿蒙更易现身。</div>');
     }
 
     // ⑪ 三十发内塔罗会 + 重要反派：摇来克莱恩小号
